@@ -35,9 +35,11 @@ namespace GPS_Logger.Controllers
         }
 
         /// <summary>
-        /// Creates a new credential
+        /// Creates a new credential.
+        /// Note that HMAC'ing the response does nothing to hide the secret part of the returned credential from eavesdroppers.
+        /// If you want to hide the response, then make sure you're using encryption
         /// </summary>
         /// <returns></returns>
-        public MessageToClient<Credential> Get() => _messageHandler.CreateUnsignedResponse(_generateCredential(_generateSalt()), _credentialSerializer);
+        public MessageToClient<Credential> Get([FromUri] MessageFromClient<bool> request) => _messageHandler.CreateResponse(request, Serializer<bool>.CreatePassthroughSerializer(), valid => _generateCredential(_generateSalt()), _credentialSerializer);
     }
 }
