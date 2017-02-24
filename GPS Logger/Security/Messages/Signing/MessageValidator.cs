@@ -69,10 +69,10 @@ namespace GPS_Logger.Security.Messages.Signing
                     {
                         var newSerializer = new Serializer<MessageFromClient<T>>();
 
-                        newSerializer.EnqueueStep(x => x.ClientEpoch);
-                        newSerializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ID));
-                        newSerializer.EnqueueStep(x => payloadSerializationStep(x.Contents));
                         newSerializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ClientSalt));
+                        newSerializer.EnqueueStep(x => x.ClientEpoch);
+                        newSerializer.EnqueueStep(x => payloadSerializationStep(x.Contents));
+                        newSerializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ID));
 
                         return newSerializer;
                     });

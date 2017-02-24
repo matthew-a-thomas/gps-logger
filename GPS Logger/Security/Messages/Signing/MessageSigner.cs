@@ -40,8 +40,8 @@ namespace GPS_Logger.Security
                     var newSerializer = new Serializer<MessageToClient<T>>();
 
                     newSerializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ClientSalt));
-                    newSerializer.EnqueueStep(x => x.ServerEpoch);
                     newSerializer.EnqueueStep(x => payloadSerializationStep(x.Contents));
+                    newSerializer.EnqueueStep(x => x.ServerEpoch);
                     newSerializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ServerSalt));
 
                     return newSerializer;
