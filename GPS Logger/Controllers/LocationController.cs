@@ -1,0 +1,75 @@
+﻿using System.Collections.Generic;
+using System.Web.Http;
+using GPS_Logger.Models;
+using GPS_Logger.Security.Messages;
+using GPS_Logger.Serialization;
+
+namespace GPS_Logger.Controllers
+{
+    /// <summary>
+    /// Handles saving and storing Locations
+    /// </summary>
+    public class LocationController : ApiController
+    {
+        private readonly LocationProvider _locationProvider;
+        private readonly HandleLocationPost _handleLocationPost;
+        private readonly ISerializer<Location> _locationSerializer;
+        private readonly MessageHandler _messageHandler;
+
+        /// <summary>
+        /// Delegate for storing a new location. The ID has already been validated
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="location"></param>
+        public delegate void HandleLocationPost(string id, Location location);
+
+        /// <summary>
+        /// Delegate for reading locations for the given ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public delegate IEnumerable<Location> LocationProvider(string id);
+        
+        public LocationController(
+            LocationProvider locationProvider,
+            HandleLocationPost handleLocationPost,
+            ISerializer<Location> locationSerializer,
+            MessageHandler messageHandler)
+        {
+            _locationProvider = locationProvider;
+            _handleLocationPost = handleLocationPost;
+            _locationSerializer = locationSerializer;
+            _messageHandler = messageHandler;
+        }
+
+        /// <summary>
+        /// Gives a helpful message when an ID isn't provided
+        /// </summary>
+        /// <returns></returns>
+        public string Get() => "Please specify an ID in order to retrieve the location history of that ID";
+
+        /// <summary>
+        /// Gets all the locations for the given ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public IEnumerable<Location> Get(string id) => _locationProvider(id);
+
+        /// <summary>
+        /// Posts a new location
+        /// </summary>
+        /// <param name="posted"></param>
+        /// <returns></returns>
+        public MessageToClient<bool> Post(MessageFromClient<Location> posted) => _messageHandler.CreateResponse(
+            posted,
+            _locationSerializer,
+            valid =>
+            {
+                if (valid)
+                    _handleLocationPost(posted.ID, posted.Contents);
+
+                return valid;
+            },
+            Serializer<bool>.CreatePassthroughSerializer());
+    }
+}
