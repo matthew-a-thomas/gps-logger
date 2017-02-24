@@ -8,9 +8,25 @@ See it in action here: https://switchigan.azurewebsites.net/
 
 # Documentation
 
+This is code for a website that lets clients record their physical location, and allows others to query that history.
+
+Everything is being designed with embedded clients in mind.
+
+## Security
+
+The server can verify requests from clients by deriving the client's secret from the ID it provided, then checking an HMAC to see if the message was signed by the client owning that ID.
+
+In a similar way, clients can verify responses from the server by HMAC'ing them using its own secret.
+
+Therefore, clients can only post locations for themselves. The server can tell if a client (or middle man) sends a request with an ID that it doesn't have the secret for.
+
+Timestamps are included in messages so that replay attacks can be limited. This isn't perfect, though: the server currently only checks to make sure the request timestamp is within +/- 1 minute of the current time.
+
+MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). If you know of a more secure HMAC that is at least as fast for resource-constrained clients, then please [create an issue](https://github.com/matthew-a-thomas/gps-logger/issues/new).
+
 ## Message protocol
 
-Unless otherwise specified, requests and responses follow a standard format, and the documentation for `GET`/`POST` operations is talking about what's in the `Contents` field.
+Unless otherwise specified, requests and responses follow a standard format, and the parameters listed for for `GET`/`POST` operations is talking about what's in the `Contents` field.
 
 ### Requests
 
