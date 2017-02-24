@@ -20,13 +20,17 @@ In a similar way, clients can verify responses from the server by HMAC'ing them 
 
 Therefore, clients can only post locations for themselves. The server can tell if a client (or middle man) sends a request with an ID that it doesn't have the secret for.
 
-Timestamps are included in messages so that replay attacks can be limited. This isn't perfect, though: the server currently only checks to make sure the request timestamp is within +/- 1 minute of the current time.
+Timestamps are included in messages so that replay attacks can be limited. This isn't perfect, though: the server currently only checks to make sure the request timestamp is within +/- 1 minute of the server's current time.
 
 MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). If you know of a more secure HMAC that is at least as fast for resource-constrained clients, then please [create an issue](https://github.com/matthew-a-thomas/gps-logger/issues/new).
 
+If you need more security than this, then feel free to run this software behind an SSL certificate.
+
 ## Message protocol
 
-Unless otherwise specified, requests and responses follow a standard format, and the parameters listed for for `GET`/`POST` operations is talking about what's in the `Contents` field.
+Unless otherwise specified, requests and responses follow a standard format, and the parameters listed for for `GET`/`POST` operations are talking about what's in the `Contents` field.
+
+Also note that requests with a `Content-Type` of `text/html` will receive responses in JSON.
 
 ### Requests
 
