@@ -1,10 +1,13 @@
 # gps-logger
 
 GPS logging website
-
-# Work in progress
+ - .Net 4.6.2
+ - WebApi 2
+ - Autofac
 
 See it in action here: https://switchigan.azurewebsites.net/
+
+[Skip down to the good stuff](#generate-new-client-credentials).
 
 # Documentation
 
@@ -24,7 +27,11 @@ Timestamps are included in messages so that replay attacks can be limited. This 
 
 MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). If you know of a more secure HMAC that is at least as fast for resource-constrained clients, then please [create an issue](https://github.com/matthew-a-thomas/gps-logger/issues/new).
 
-If you need more security than this, then feel free to run this software behind an SSL certificate.
+## Design choices
+
+ - Autofac is used for Dependency Injection
+ - Resource-constrained clients
+ - Private logging, public reading
 
 ## Message protocol
 
