@@ -6,14 +6,15 @@ using Newtonsoft.Json;
 namespace GPS_Logger
 {
     /// <summary>
-    /// http://stackoverflow.com/a/20556625/3063273
+    /// Makes responses to text/html requests format to JSON
     /// </summary>
+    /// <remarks>Inspired by http://stackoverflow.com/a/20556625/3063273</remarks>
     public class BrowserJsonFormatter : JsonMediaTypeFormatter
     {
         public BrowserJsonFormatter()
         {
-            this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
-            this.SerializerSettings.Formatting = Formatting.Indented;
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
+            SerializerSettings.Formatting = Formatting.Indented;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)

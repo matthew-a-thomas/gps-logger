@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
+using AutoMapper;
 
 namespace GPS_Logger
 {
@@ -13,7 +14,10 @@ namespace GPS_Logger
         {
             // Web API configuration and services
 
-            // Dependency injection
+            // Automapper initialization
+            Mapper.Initialize(mapperConfig => { mapperConfig.CreateMissingTypeMaps = true; mapperConfig.AllowNullCollections = true; });
+
+            // Autofac dependency injection
             var builder = new ContainerBuilder();
             builder.RegisterModule<CompositionRoot>();
             var container = builder.Build();

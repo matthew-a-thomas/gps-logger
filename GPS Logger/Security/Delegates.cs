@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using GPS_Logger.Models;
 
 namespace GPS_Logger.Security
 {
@@ -10,22 +9,21 @@ namespace GPS_Logger.Security
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Credential GenerateCredentialDelegate(byte[] id);
+        public delegate Credential<byte[]> GenerateCredentialDelegate(byte[] id);
 
         /// <summary>
         /// Delegate that generates a random salt
         /// </summary>
         /// <returns></returns>
         public delegate byte[] GenerateSaltDelegate();
-
+        
         /// <summary>
-        /// Delegate that generates a new HMAC.
-        /// The returned object needs to be disposed after use
+        /// Returns a copy of this server's HMAC key
         /// </summary>
         /// <returns></returns>
         // ReSharper disable once InconsistentNaming
-        public delegate HMAC HMACFactory();
-
+        public delegate byte[] HMACKeyProvider();
+        
         /// <summary>
         /// Delegate that generates a new RandomNumberGenerator.
         /// The returned object is disposed after use

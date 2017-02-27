@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Web.Http;
 using GPS_Logger.Models;
-using GPS_Logger.Security.Messages;
-using GPS_Logger.Serialization;
+using GPS_Logger.Extensions;
+using GPS_Logger.Models.Messages;
+using GPS_Logger.Security.Signing;
 
 namespace GPS_Logger.Controllers
 {
@@ -13,32 +14,29 @@ namespace GPS_Logger.Controllers
     {
         private readonly LocationProvider _locationProvider;
         private readonly HandleLocationPost _handleLocationPost;
-        private readonly ISerializer<Location> _locationSerializer;
-        private readonly MessageHandler _messageHandler;
+        private readonly MessageHandler<Location, bool> _messageHandler;
 
         /// <summary>
         /// Delegate for storing a new location. The ID has already been validated
         /// </summary>
         /// <param name="id"></param>
         /// <param name="location"></param>
-        public delegate void HandleLocationPost(string id, Location location);
+        public delegate void HandleLocationPost(byte[] id, Location location);
 
         /// <summary>
         /// Delegate for reading locations for the given ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate IEnumerable<Location> LocationProvider(string id);
+        public delegate IEnumerable<Location> LocationProvider(byte[] id);
         
         public LocationController(
             LocationProvider locationProvider,
             HandleLocationPost handleLocationPost,
-            ISerializer<Location> locationSerializer,
-            MessageHandler messageHandler)
+            MessageHandler<Location, bool> messageHandler)
         {
             _locationProvider = locationProvider;
             _handleLocationPost = handleLocationPost;
-            _locationSerializer = locationSerializer;
             _messageHandler = messageHandler;
         }
 
@@ -53,23 +51,21 @@ namespace GPS_Logger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IEnumerable<Location> Get(string id) => _locationProvider(id);
+        public IEnumerable<Location> Get(string id) => _locationProvider(ByteArrayExtensions.FromHexString(id));
 
         /// <summary>
         /// Posts a new location
         /// </summary>
         /// <param name="posted"></param>
         /// <returns></returns>
-        public MessageToClient<bool> Post(MessageFromClient<Location> posted) => _messageHandler.CreateResponse(
+        public SignedMessage<bool> Post(SignedMessage<Location> posted) => _messageHandler.CreateResponse(
             posted,
-            _locationSerializer,
             valid =>
             {
                 if (valid)
-                    _handleLocationPost(posted.ID, posted.Contents);
+                    _handleLocationPost(ByteArrayExtensions.FromHexString(posted.ID), posted.Contents);
 
                 return valid;
-            },
-            Serializer<bool>.CreatePassthroughSerializer());
+            });
     }
 }
