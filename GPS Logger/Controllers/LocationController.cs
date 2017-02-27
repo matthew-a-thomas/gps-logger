@@ -2,7 +2,6 @@
 using System.Web.Http;
 using GPS_Logger.Models;
 using GPS_Logger.Security.Messages;
-using GPS_Logger.Serialization;
 using GPS_Logger.Extensions;
 
 namespace GPS_Logger.Controllers
@@ -14,7 +13,6 @@ namespace GPS_Logger.Controllers
     {
         private readonly LocationProvider _locationProvider;
         private readonly HandleLocationPost _handleLocationPost;
-        private readonly ISerializer<Location> _locationSerializer;
         private readonly MessageHandler<Location, bool> _messageHandler;
 
         /// <summary>
@@ -34,12 +32,10 @@ namespace GPS_Logger.Controllers
         public LocationController(
             LocationProvider locationProvider,
             HandleLocationPost handleLocationPost,
-            ISerializer<Location> locationSerializer,
             MessageHandler<Location, bool> messageHandler)
         {
             _locationProvider = locationProvider;
             _handleLocationPost = handleLocationPost;
-            _locationSerializer = locationSerializer;
             _messageHandler = messageHandler;
         }
 

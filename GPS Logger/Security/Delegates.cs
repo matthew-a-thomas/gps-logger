@@ -22,6 +22,7 @@ namespace GPS_Logger.Security
         /// Returns a copy of this server's HMAC key
         /// </summary>
         /// <returns></returns>
+        // ReSharper disable once InconsistentNaming
         public delegate byte[] HMACKeyProvider();
         
         /// <summary>

@@ -12,8 +12,8 @@ namespace GPS_Logger
     {
         public BrowserJsonFormatter()
         {
-            this.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
-            this.SerializerSettings.Formatting = Formatting.Indented;
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
+            SerializerSettings.Formatting = Formatting.Indented;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)

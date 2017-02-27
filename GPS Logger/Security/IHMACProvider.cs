@@ -5,6 +5,7 @@ namespace GPS_Logger.Security
     /// <summary>
     /// Provides an HMAC
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     public interface IHMACProvider
     {
         /// <summary>

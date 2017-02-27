@@ -2,7 +2,6 @@
 using GPS_Logger.Models;
 using GPS_Logger.Security;
 using GPS_Logger.Security.Messages;
-using GPS_Logger.Serialization;
 
 namespace GPS_Logger.Controllers
 {
@@ -16,19 +15,16 @@ namespace GPS_Logger.Controllers
         
         private readonly Delegates.GenerateSaltDelegate _generateSalt;
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
-        private readonly ISerializer<Credential> _credentialSerializer;
         private readonly MessageHandler<bool, Credential> _messageHandler;
 
         public CredentialController(
             Delegates.GenerateSaltDelegate generateSalt,
             Delegates.GenerateCredentialDelegate generateCredential,
-            ISerializer<Credential> credentialSerializer,
             MessageHandler<bool, Credential> messageHandler
             )
         {
             _generateSalt = generateSalt;
             _generateCredential = generateCredential;
-            _credentialSerializer = credentialSerializer;
             _messageHandler = messageHandler;
         }
 

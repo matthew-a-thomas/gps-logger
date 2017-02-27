@@ -2,6 +2,7 @@
 
 namespace GPS_Logger.Security
 {
+    // ReSharper disable once InconsistentNaming
     public class HMACProvider : IHMACProvider
     {
         private readonly Delegates.HMACKeyProvider _hmacKeyProvider;

@@ -7,6 +7,7 @@ namespace GPS_Logger.Security.Messages.Signing
     public class Validator<TSigned, TUnsigned>
         where TSigned : TUnsigned, ISignable, new()
     {
+        // ReSharper disable once InconsistentNaming
         private readonly Func<TSigned, byte[]> _deriveIDFromThing;
         private readonly Delegates.GenerateCredentialDelegate _generateCredentials;
         private readonly Func<TSigned, bool> _passesDomainSpecificValidation;
@@ -16,6 +17,7 @@ namespace GPS_Logger.Security.Messages.Signing
             Delegates.GenerateCredentialDelegate generateCredentials,
             Signer<TSigned, TUnsigned> signer,
             Func<TSigned, bool> passesDomainSpecificValidation,
+            // ReSharper disable once InconsistentNaming
             Func<TSigned, byte[]> deriveIDFromThing
             )
         {

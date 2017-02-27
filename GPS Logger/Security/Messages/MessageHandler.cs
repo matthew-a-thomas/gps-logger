@@ -1,7 +1,6 @@
 ﻿using System;
 using GPS_Logger.Extensions;
 using GPS_Logger.Security.Messages.Signing;
-using GPS_Logger.Serialization;
 using AutoMapper;
 
 namespace GPS_Logger.Security.Messages
@@ -12,21 +11,16 @@ namespace GPS_Logger.Security.Messages
     public class MessageHandler<TRequest, TResponse>
     {
         private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
-        private readonly Delegates.GenerateSaltDelegate _generateSalt;
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
         private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
 
         public MessageHandler(
             Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
-            Delegates.GenerateSaltDelegate generateSalt,
             Delegates.GenerateCredentialDelegate generateCredential,
-            ISerializer<TRequest> requestContentSerializer,
-            Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
-            ISerializer<TResponse> responseContentSerializer
+            Signer<SignedMessage<TResponse>, Message<TResponse>> signer
             )
         {
             _validator = validator;
-            _generateSalt = generateSalt;
             _generateCredential = generateCredential;
             _signer = signer;
         }
