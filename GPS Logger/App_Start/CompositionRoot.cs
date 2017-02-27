@@ -3,12 +3,15 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Cryptography;
 using System.Web.Hosting;
+using System.Web.Services.Description;
 using Autofac;
 using GPS_Logger.Controllers;
 using GPS_Logger.Extensions;
 using GPS_Logger.LocalStorage;
 using GPS_Logger.Models;
 using GPS_Logger.Security;
+using GPS_Logger.Security.Messages;
+using GPS_Logger.Security.Messages.Signing;
 using GPS_Logger.Serialization;
 
 namespace GPS_Logger
@@ -92,13 +95,73 @@ namespace GPS_Logger
                     serializer.EnqueueStep(x => x.Secret);
                     return (ISerializer<Credential>)serializer;
                 });
-                
+
+                // Message handlers, validators, and signers
+                {
+                    // "bool" requests leading to "long" responses
+                    RegisterHandlerValidatorAndSigner(
+                        builder,
+                        Serializer<bool>.CreatePassthroughSerializer(),
+                        Serializer<long>.CreatePassthroughSerializer()
+                        );
+
+                    // "Location" requests leading to "bool" responses
+                    var locationSerializer = new Serializer<Location>();
+                    locationSerializer.EnqueueStep(x => x.Latitude);
+                    locationSerializer.EnqueueStep(x => x.Longitude);
+                    RegisterHandlerValidatorAndSigner(
+                        builder,
+                        locationSerializer,
+                        Serializer<bool>.CreatePassthroughSerializer()
+                        );
+
+                    // "bool" requests leading to "Credential" responses
+                    var credentialSerializer = new Serializer<Credential>();
+                    credentialSerializer.EnqueueStep(x => x.ID?.Length ?? 0);
+                    credentialSerializer.EnqueueStep(x => x.ID);
+                    credentialSerializer.EnqueueStep(x => x.Secret?.Length ?? 0);
+                    credentialSerializer.EnqueueStep(x => x.Secret);
+                    RegisterHandlerValidatorAndSigner(
+                        builder,
+                        Serializer<bool>.CreatePassthroughSerializer(),
+                        credentialSerializer
+                        );
+                }
+
                 // Controllers
                 builder.RegisterType<CredentialController>();
                 builder.RegisterType<EpochController>();
                 builder.RegisterType<HMACKeyController>();
                 builder.RegisterType<LocationController>();
             }
+        }
+
+        private static void RegisterHandlerValidatorAndSigner<TRequest, TResponse>(
+            ContainerBuilder builder,
+            ISerializer<TRequest> requestContentSerializer,
+            ISerializer<TResponse> responseContentSerializer)
+        {
+            builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
+            builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
+            builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
+            {
+                // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
+                var minutesOff = (DateTimeOffset.Now - DateTimeOffset.FromUnixTimeSeconds(message.UnixTime)).TotalMinutes;
+                return !(Math.Abs(minutesOff) > 1.0);
+            })).SingleInstance();
+            builder.RegisterInstance(new Func<SignedMessage<TRequest>, byte[]>(message => message?.ID ?? new byte[0])); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
+
+            RegisterSignerAndSerializers(builder, requestContentSerializer);
+            RegisterSignerAndSerializers(builder, responseContentSerializer);
+        }
+
+        private static void RegisterSignerAndSerializers<T>(
+            ContainerBuilder builder,
+            ISerializer<T> contentSerializer)
+        {
+            builder.RegisterType<Signer<SignedMessage<T>, Message<T>>>().SingleInstance();
+            builder.RegisterType<MessageSerializer<T>>().As<ISerializer<Message<T>>>().SingleInstance();
+            builder.RegisterInstance(contentSerializer).SingleInstance();
         }
     }
 }
