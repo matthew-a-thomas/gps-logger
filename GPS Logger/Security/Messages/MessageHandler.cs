@@ -37,8 +37,8 @@ namespace GPS_Logger.Security.Messages
             var response = new Message<TResponse>
             {
                 Contents = contentGenerator(isValid),
-                ID = isValid ? request.ID.CreateClone() : null,
-                Salt = isValid ? request.Salt.CreateClone() : null,
+                ID = isValid ? request.ID?.CreateClone() : null,
+                Salt = isValid ? request.Salt?.CreateClone() : null,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 
