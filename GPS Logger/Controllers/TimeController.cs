@@ -4,11 +4,11 @@ using GPS_Logger.Security.Messages;
 
 namespace GPS_Logger.Controllers
 {
-    public class EpochController : ApiController
+    public class TimeController : ApiController
     {
         private readonly MessageHandler<bool, long> _messageHandler;
         
-        public EpochController(
+        public TimeController(
             MessageHandler<bool, long> messageHandler)
         {
             _messageHandler = messageHandler;

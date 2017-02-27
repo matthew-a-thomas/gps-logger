@@ -131,7 +131,7 @@ namespace GPS_Logger
 
                 // Controllers
                 builder.RegisterType<CredentialController>();
-                builder.RegisterType<EpochController>();
+                builder.RegisterType<TimeController>();
                 builder.RegisterType<HMACKeyController>();
                 builder.RegisterType<LocationController>();
             }

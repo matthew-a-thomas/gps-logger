@@ -278,7 +278,7 @@
   <ItemGroup>
     <Compile Include="App_Start\BrowserJsonFormatter.cs" />
     <Compile Include="App_Start\CompositionRoot.cs" />
-    <Compile Include="Controllers\EpochController.cs" />
+    <Compile Include="Controllers\TimeController.cs" />
     <Compile Include="Controllers\HMACKeyController.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="LocalStorage\IPersistentStore.cs" />
