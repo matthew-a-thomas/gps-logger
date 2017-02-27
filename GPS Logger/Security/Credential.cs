@@ -1,4 +1,4 @@
-﻿namespace GPS_Logger.Models
+﻿namespace GPS_Logger.Security
 {
     public class Credential
     {

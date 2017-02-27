@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using GPS_Logger.Models;
 
 namespace GPS_Logger.Security
 {
