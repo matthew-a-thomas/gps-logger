@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Web.Hosting;
 using System.Web.Services.Description;
@@ -146,10 +147,27 @@ namespace GPS_Logger
             builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
+
+                // It isn't valid if the timestamps are too different
                 var minutesOff = (DateTimeOffset.Now - DateTimeOffset.FromUnixTimeSeconds(message.UnixTime)).TotalMinutes;
-                return !(Math.Abs(minutesOff) > 1.0);
+                if (Math.Abs(minutesOff) > 1.0)
+                    return false;
+
+                // It isn't valid if the hex string fields aren't valid hex strings
+                return new[] { message.ID, message.Salt }.All(x =>
+                {
+                    try
+                    {
+                        ByteArrayExtensions.FromHexString(x);
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
             })).SingleInstance();
-            builder.RegisterInstance(new Func<SignedMessage<TRequest>, byte[]>(message => message?.ID ?? new byte[0])); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
+            builder.RegisterInstance(new Func<SignedMessage<TRequest>, byte[]>(message => ByteArrayExtensions.FromHexString(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
 
             RegisterSignerAndSerializers(builder, requestContentSerializer);
             RegisterSignerAndSerializers(builder, responseContentSerializer);

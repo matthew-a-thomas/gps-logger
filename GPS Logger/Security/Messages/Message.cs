@@ -4,8 +4,8 @@
     {
         public T Contents { get; set; }
         // ReSharper disable once InconsistentNaming
-        public byte[] ID { get; set; }
-        public byte[] Salt { get; set; }
+        public string ID { get; set; }
+        public string Salt { get; set; }
         public long UnixTime { get; set; }
     }
 }

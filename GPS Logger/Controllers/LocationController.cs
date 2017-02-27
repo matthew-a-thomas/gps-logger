@@ -62,7 +62,7 @@ namespace GPS_Logger.Controllers
             valid =>
             {
                 if (valid)
-                    _handleLocationPost(posted.ID, posted.Contents);
+                    _handleLocationPost(ByteArrayExtensions.FromHexString(posted.ID), posted.Contents);
 
                 return valid;
             });

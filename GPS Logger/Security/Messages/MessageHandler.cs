@@ -13,16 +13,19 @@ namespace GPS_Logger.Security.Messages
         private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
         private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
+        private readonly Func<SignedMessage<TRequest>, byte[]> _idExtractor;
 
         public MessageHandler(
             Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
             Delegates.GenerateCredentialDelegate generateCredential,
-            Signer<SignedMessage<TResponse>, Message<TResponse>> signer
+            Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
+            Func<SignedMessage<TRequest>, byte[]> idExtractor
             )
         {
             _validator = validator;
             _generateCredential = generateCredential;
             _signer = signer;
+            _idExtractor = idExtractor;
         }
         
         public SignedMessage<TResponse> CreateResponse(
@@ -37,8 +40,8 @@ namespace GPS_Logger.Security.Messages
             var response = new Message<TResponse>
             {
                 Contents = contentGenerator(isValid),
-                ID = isValid ? request.ID?.CreateClone() : null,
-                Salt = isValid ? request.Salt?.CreateClone() : null,
+                ID = isValid ? request.ID : null,
+                Salt = isValid ? request.Salt : null,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 
@@ -46,7 +49,7 @@ namespace GPS_Logger.Security.Messages
                 return Mapper.Map<SignedMessage<TResponse>>(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
 
             // Derive the client's secret
-            var derivedCredential = _generateCredential(request.ID);
+            var derivedCredential = _generateCredential(_idExtractor(request));
 
             // Sign the response with the client's secret
             var signedResponse = _signer.Sign(response, derivedCredential.Secret);
