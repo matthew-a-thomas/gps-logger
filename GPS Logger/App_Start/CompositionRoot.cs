@@ -9,8 +9,6 @@ using GPS_Logger.Extensions;
 using GPS_Logger.LocalStorage;
 using GPS_Logger.Models;
 using GPS_Logger.Security;
-using GPS_Logger.Security.Messages;
-using GPS_Logger.Security.Messages.Signing;
 using GPS_Logger.Serialization;
 
 namespace GPS_Logger
@@ -36,23 +34,26 @@ namespace GPS_Logger
                 // GenerateCredentialDelegate
                 builder.Register(c =>
                 {
-                    var hmacFactory = c.Resolve<Delegates.HMACFactory>();
+                    var hmacProvider = c.Resolve<IHMACProvider>();
                     return new Delegates.GenerateCredentialDelegate(id =>
                     {
-                        using (var hmac = hmacFactory())
+                        using (var hmac = hmacProvider.Get())
                         {
                             var secret = hmac.ComputeHash(id);
-                            return new Credential { ID = id.ToHexString(), Secret = secret.ToHexString() };
+                            return new Credential { ID = id.CreateClone(), Secret = secret };
                         }
                     });
                 });
 
-                // HMACFactory
+                // HMACKeyProvider
                 builder.Register(c =>
                 {
-                    var keyController = c.Resolve<HMACKeyController>();
-                    return new Delegates.HMACFactory(() => new HMACMD5(keyController.GetCurrent()));
-                }); // Not single instance, since we need a new HMAC each time
+                    var controller = c.Resolve<HMACKeyController>();
+                    return new Delegates.HMACKeyProvider(controller.GetCurrent);
+                });
+
+                // IHMACProvider
+                builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
 
                 // RNG factory
                 builder.RegisterInstance(new Delegates.RNGFactory(RandomNumberGenerator.Create)); // Not single instance, since we need a new RNG each time
@@ -66,17 +67,13 @@ namespace GPS_Logger
                 return (IPersistentStore)new PersistentStore(root);
             }).SingleInstance();
             builder.RegisterType<PersistentStoreManager>().SingleInstance();
-
-            // Message signing/validating
-            builder.RegisterType<MessageSigner>().SingleInstance();
-            builder.RegisterType<MessageValidator>().SingleInstance();
-
+            
             { // Controllers
                 // Location storage
                 var locations = new ConcurrentDictionary<string, ConcurrentQueue<Location>>();
                 var listGetter = new Func<string, ConcurrentQueue<Location>>(id => locations.GetOrAdd(id, x => new ConcurrentQueue<Location>()));
-                builder.RegisterInstance(new LocationController.HandleLocationPost((id, location) => listGetter(id).Enqueue(location))).SingleInstance();
-                builder.RegisterInstance(new LocationController.LocationProvider(id => listGetter(id))).SingleInstance();
+                builder.RegisterInstance(new LocationController.HandleLocationPost((id, location) => listGetter(id.ToHexString()).Enqueue(location))).SingleInstance();
+                builder.RegisterInstance(new LocationController.LocationProvider(id => listGetter(id.ToHexString()))).SingleInstance();
 
                 // Location serializer
                 builder.Register(c =>
@@ -91,14 +88,11 @@ namespace GPS_Logger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Credential>();
-                    serializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.ID));
-                    serializer.EnqueueStep(x => ByteArrayExtensions.FromHexString(x.Secret));
+                    serializer.EnqueueStep(x => x.ID);
+                    serializer.EnqueueStep(x => x.Secret);
                     return (ISerializer<Credential>)serializer;
                 });
-
-                // Message handler
-                builder.RegisterType<MessageHandler>().SingleInstance(); // We only need one
-
+                
                 // Controllers
                 builder.RegisterType<CredentialController>();
                 builder.RegisterType<EpochController>();

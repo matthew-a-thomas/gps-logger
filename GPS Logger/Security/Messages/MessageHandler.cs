@@ -1,66 +1,63 @@
 ﻿using System;
 using GPS_Logger.Extensions;
-using GPS_Logger.Extensions.Security;
 using GPS_Logger.Security.Messages.Signing;
 using GPS_Logger.Serialization;
+using AutoMapper;
 
 namespace GPS_Logger.Security.Messages
 {
     /// <summary>
     /// Helps create responses to requests
     /// </summary>
-    public class MessageHandler
+    public class MessageHandler<TRequest, TResponse>
     {
-        private readonly MessageValidator _messageValidator;
+        private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
         private readonly Delegates.GenerateSaltDelegate _generateSalt;
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
-        private readonly MessageSigner _messageSigner;
+        private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
 
         public MessageHandler(
-            MessageValidator messageValidator,
+            Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
             Delegates.GenerateSaltDelegate generateSalt,
             Delegates.GenerateCredentialDelegate generateCredential,
-            MessageSigner messageSigner
+            ISerializer<TRequest> requestContentSerializer,
+            Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
+            ISerializer<TResponse> responseContentSerializer
             )
         {
-            _messageValidator = messageValidator;
+            _validator = validator;
             _generateSalt = generateSalt;
             _generateCredential = generateCredential;
-            _messageSigner = messageSigner;
+            _signer = signer;
         }
-
-        /// <summary>
-        /// Creates a response to the given request
-        /// </summary>
-        /// <typeparam name="TFromClient">The payload type of the request message</typeparam>
-        /// <typeparam name="TToClient">The payload type of the response message</typeparam>
-        /// <param name="request">The client's request</param>
-        /// <param name="requestContentSerializer">Something that can serialize the request's payload</param>
-        /// <param name="contentGenerator">Something that generates a response based on the request being valid or not</param>
-        /// <param name="responseContentSerializer">Something that can serialize the response's payload</param>
-        /// <returns></returns>
-        public MessageToClient<TToClient> CreateResponse<TFromClient, TToClient>(MessageFromClient<TFromClient> request, ISerializer<TFromClient> requestContentSerializer, Func<bool, TToClient> contentGenerator, ISerializer<TToClient> responseContentSerializer)
+        
+        public SignedMessage<TResponse> CreateResponse(
+            SignedMessage<TRequest> request,
+            Func<bool, TResponse> contentGenerator
+            )
         {
             // Figure out if the request is valid
-            var isValid = request != null && _messageValidator.IsValid(request, requestContentSerializer);
+            var isValid = request != null && _validator.IsValid(request);
 
             // Generate a response based on that
-            var response = new MessageToClient<TToClient>
+            var response = new Message<TResponse>
             {
-                ClientSalt = isValid ? request.ClientSalt : null,
-                ServerEpoch = DateTimeOffset.Now.ToUnixTimeSeconds(),
-                ServerSalt = _generateSalt().ToHexString(),
-                Contents = contentGenerator(isValid)
+                Contents = contentGenerator(isValid),
+                ID = isValid ? request.ID.CreateClone() : null,
+                Salt = isValid ? request.Salt.CreateClone() : null,
+                UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 
             if (!isValid)
-                return response; // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
+                return Mapper.Map<SignedMessage<TResponse>>(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
 
-            // Derive the client's secret, and HMAC the response with that
-            var derivedCredential = _generateCredential(ByteArrayExtensions.FromHexString(request.ID));
-            _messageSigner.Sign(response, ByteArrayExtensions.FromHexString(derivedCredential.Secret), responseContentSerializer);
+            // Derive the client's secret
+            var derivedCredential = _generateCredential(request.ID);
 
-            return response;
+            // Sign the response with the client's secret
+            var signedResponse = _signer.Sign(response, derivedCredential.Secret);
+
+            return signedResponse;
         }
     }
 }

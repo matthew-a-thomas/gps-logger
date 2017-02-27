@@ -1,7 +1,4 @@
-﻿using System;
-using System.Web.Http;
-using GPS_Logger.Extensions;
-using GPS_Logger.Extensions.Messages;
+﻿using System.Web.Http;
 using GPS_Logger.Models;
 using GPS_Logger.Security;
 using GPS_Logger.Security.Messages;
@@ -20,13 +17,14 @@ namespace GPS_Logger.Controllers
         private readonly Delegates.GenerateSaltDelegate _generateSalt;
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
         private readonly ISerializer<Credential> _credentialSerializer;
-        private readonly MessageHandler _messageHandler;
+        private readonly MessageHandler<bool, Credential> _messageHandler;
 
         public CredentialController(
             Delegates.GenerateSaltDelegate generateSalt,
             Delegates.GenerateCredentialDelegate generateCredential,
             ISerializer<Credential> credentialSerializer,
-            MessageHandler messageHandler)
+            MessageHandler<bool, Credential> messageHandler
+            )
         {
             _generateSalt = generateSalt;
             _generateCredential = generateCredential;
@@ -40,6 +38,6 @@ namespace GPS_Logger.Controllers
         /// If you want to hide the response, then make sure you're using encryption
         /// </summary>
         /// <returns></returns>
-        public MessageToClient<Credential> Get([FromUri] MessageFromClient<bool> request) => _messageHandler.CreateResponse(request, Serializer<bool>.CreatePassthroughSerializer(), valid => _generateCredential(_generateSalt()), _credentialSerializer);
+        public SignedMessage<Credential> Get([FromUri] SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => _generateCredential(_generateSalt()));
     }
 }

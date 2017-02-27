@@ -2,7 +2,7 @@
 {
     public class Credential
     {
-        public string ID { get; set; }
-        public string Secret { get; set; }
+        public byte[] ID { get; set; }
+        public byte[] Secret { get; set; }
     }
 }

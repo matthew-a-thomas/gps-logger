@@ -17,15 +17,13 @@ namespace GPS_Logger.Security
         /// </summary>
         /// <returns></returns>
         public delegate byte[] GenerateSaltDelegate();
-
+        
         /// <summary>
-        /// Delegate that generates a new HMAC.
-        /// The returned object needs to be disposed after use
+        /// Returns a copy of this server's HMAC key
         /// </summary>
         /// <returns></returns>
-        // ReSharper disable once InconsistentNaming
-        public delegate HMAC HMACFactory();
-
+        public delegate byte[] HMACKeyProvider();
+        
         /// <summary>
         /// Delegate that generates a new RandomNumberGenerator.
         /// The returned object is disposed after use

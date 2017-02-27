@@ -51,6 +51,10 @@
       <HintPath>..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="AutoMapper, Version=5.2.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.0.7\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
       <Private>True</Private>
@@ -276,9 +280,7 @@
     <Compile Include="App_Start\CompositionRoot.cs" />
     <Compile Include="Controllers\EpochController.cs" />
     <Compile Include="Controllers\HMACKeyController.cs" />
-    <Compile Include="Extensions\Messages\MessageHandlerExtensions.cs" />
-    <Compile Include="Extensions\Security\MessageSignerExtensions.cs" />
-    <Compile Include="Extensions\Security\MessageValidatorExtensions.cs" />
+    <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="LocalStorage\IPersistentStore.cs" />
     <Compile Include="LocalStorage\Options.cs" />
     <Compile Include="LocalStorage\PersistentStoreManager.cs" />
@@ -295,12 +297,16 @@
     <Compile Include="Models\Location.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Delegates.cs" />
-    <Compile Include="Security\Messages\MessageFromClient.cs" />
+    <Compile Include="Security\HMACProvider.cs" />
+    <Compile Include="Security\IHMACProvider.cs" />
+    <Compile Include="Security\Messages\ISignable.cs" />
+    <Compile Include="Security\Messages\Message.cs" />
     <Compile Include="Security\Messages\MessageHandler.cs" />
-    <Compile Include="Security\Messages\MessageToClient.cs" />
-    <Compile Include="Security\Messages\Signing\MessageSigner.cs" />
-    <Compile Include="Security\Messages\Signing\MessageValidator.cs" />
+    <Compile Include="Security\Messages\SignedMessage.cs" />
+    <Compile Include="Security\Messages\Signing\Validator.cs" />
+    <Compile Include="Security\Messages\Signing\Signer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
+    <Compile Include="Serialization\MessageSerializer.cs" />
     <Compile Include="Serialization\Serializer.cs" />
   </ItemGroup>
   <ItemGroup>
