@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using GPS_Logger.Serialization;
 
-namespace GPS_Logger.Security.Messages.Signing
+namespace GPS_Logger.Security.Signing
 {
     /// <summary>
     /// Something that can sign things

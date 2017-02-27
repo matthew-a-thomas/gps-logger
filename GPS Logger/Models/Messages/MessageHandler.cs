@@ -1,9 +1,9 @@
 ﻿using System;
-using GPS_Logger.Extensions;
-using GPS_Logger.Security.Messages.Signing;
 using AutoMapper;
+using GPS_Logger.Security;
+using GPS_Logger.Security.Signing;
 
-namespace GPS_Logger.Security.Messages
+namespace GPS_Logger.Models.Messages
 {
     /// <summary>
     /// Helps create responses to requests

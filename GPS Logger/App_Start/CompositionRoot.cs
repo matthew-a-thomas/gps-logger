@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Web.Hosting;
-using System.Web.Services.Description;
 using Autofac;
 using GPS_Logger.Controllers;
 using GPS_Logger.Extensions;
 using GPS_Logger.LocalStorage;
 using GPS_Logger.Models;
+using GPS_Logger.Models.Messages;
 using GPS_Logger.Security;
-using GPS_Logger.Security.Messages;
-using GPS_Logger.Security.Messages.Signing;
+using GPS_Logger.Security.Signing;
 using GPS_Logger.Serialization;
 
 namespace GPS_Logger

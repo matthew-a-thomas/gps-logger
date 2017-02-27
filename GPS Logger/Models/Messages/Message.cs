@@ -1,4 +1,4 @@
-﻿namespace GPS_Logger.Security.Messages
+﻿namespace GPS_Logger.Models.Messages
 {
     public class Message<T>
     {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Web.Http;
 using GPS_Logger.Models;
-using GPS_Logger.Security.Messages;
 using GPS_Logger.Extensions;
+using GPS_Logger.Models.Messages;
+using GPS_Logger.Security.Signing;
 
 namespace GPS_Logger.Controllers
 {

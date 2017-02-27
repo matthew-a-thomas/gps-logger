@@ -1,4 +1,4 @@
-﻿using GPS_Logger.Security.Messages;
+﻿using GPS_Logger.Models.Messages;
 
 namespace GPS_Logger.Serialization
 {

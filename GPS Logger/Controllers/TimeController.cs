@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web.Http;
-using GPS_Logger.Security.Messages;
+using GPS_Logger.Models.Messages;
+using GPS_Logger.Security.Signing;
 
 namespace GPS_Logger.Controllers
 {

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace GPS_Logger.Security.Messages.Signing
+namespace GPS_Logger.Security.Signing
 {
     public class Validator<TSigned, TUnsigned>
         where TSigned : TUnsigned, ISignable, new()
