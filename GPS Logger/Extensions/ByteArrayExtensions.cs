@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GPS_Logger.Extensions
@@ -20,10 +21,10 @@ namespace GPS_Logger.Extensions
             ?? new byte[0];
 
         /// <summary>
-        /// Creates a lowercased hex string from the byte array
+        /// Creates a lowercased hex string from the byte enumerable
         /// </summary>
-        /// <param name="array"></param>
+        /// <param name="list"></param>
         /// <returns></returns>
-        public static string ToHexString(this byte[] array) => BitConverter.ToString(array).Replace("-", "").ToLower();
+        public static string ToHexString(this IEnumerable<byte> list) => BitConverter.ToString(list.ToArray()).Replace("-", "").ToLower();
     }
 }
