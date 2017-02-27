@@ -35,7 +35,12 @@ namespace GPS_Logger.Serialization
             if (writeMethodInfo == null) throw new Exception("Cannot serialized type " + typeof(TMember).Name + ". Please try a type that you can write to a BinaryWriter");
             var writeMethod = new Action<TMember, BinaryWriter>((member, writer) =>
             {
-                writeMethodInfo.Invoke(writer, new object[] { member });
+                try
+                {
+                    writeMethodInfo.Invoke(writer, new object[] {member});
+                }
+                // ReSharper disable once EmptyGeneralCatchClause
+                catch { }
             });
             
             // Add a serialization step to write the converted thing into the binary writer

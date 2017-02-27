@@ -40,6 +40,7 @@ namespace GPS_Logger
                     var hmacProvider = c.Resolve<IHMACProvider>();
                     return new Delegates.GenerateCredentialDelegate(id =>
                     {
+                        id = id ?? new byte[0];
                         using (var hmac = hmacProvider.Get())
                         {
                             var secret = hmac.ComputeHash(id);
