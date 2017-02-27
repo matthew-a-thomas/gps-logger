@@ -35,7 +35,6 @@ namespace GPS_Logger.Models.Messages
         {
             // Figure out if the request is valid
             var isValid = request != null && _validator.IsValid(request);
-            isValid = true;
 
             // Generate a response based on that
             var response = new Message<TResponse>
