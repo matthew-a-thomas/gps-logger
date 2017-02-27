@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GPS_Logger.Extensions;
 using GPS_Logger.Serialization;
 
 namespace GPS_Logger.Security.Signing
@@ -38,7 +39,7 @@ namespace GPS_Logger.Security.Signing
             using (var hmac = _hmacProvider.Get(hmacKey))
             {
                 var signature = hmac.ComputeHash(serialized);
-                result.HMAC = signature;
+                result.HMAC = signature.ToHexString();
             }
             return result;
         }

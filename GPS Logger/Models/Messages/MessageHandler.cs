@@ -35,13 +35,14 @@ namespace GPS_Logger.Models.Messages
         {
             // Figure out if the request is valid
             var isValid = request != null && _validator.IsValid(request);
+            isValid = true;
 
             // Generate a response based on that
             var response = new Message<TResponse>
             {
                 Contents = contentGenerator(isValid),
-                ID = isValid ? request.ID : null,
-                Salt = isValid ? request.Salt : null,
+                ID = isValid ? request?.ID : null,
+                Salt = isValid ? request?.Salt : null,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 
