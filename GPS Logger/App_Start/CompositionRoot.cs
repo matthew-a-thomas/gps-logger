@@ -43,7 +43,7 @@ namespace GPS_Logger
                         using (var hmac = hmacProvider.Get())
                         {
                             var secret = hmac.ComputeHash(id);
-                            return new Credential { ID = id.CreateClone(), Secret = secret };
+                            return new Credential<byte[]> { ID = id.CreateClone(), Secret = secret };
                         }
                     });
                 });
@@ -90,10 +90,10 @@ namespace GPS_Logger
                 // Credential serializer
                 builder.Register(c =>
                 {
-                    var serializer = new Serializer<Credential>();
+                    var serializer = new Serializer<Credential<byte[]>>();
                     serializer.EnqueueStep(x => x.ID);
                     serializer.EnqueueStep(x => x.Secret);
-                    return (ISerializer<Credential>)serializer;
+                    return (ISerializer<Credential<byte[]>>)serializer;
                 });
 
                 // Message handlers, validators, and signers
@@ -116,7 +116,7 @@ namespace GPS_Logger
                         );
 
                     // "bool" requests leading to "Credential" responses
-                    var credentialSerializer = new Serializer<Credential>();
+                    var credentialSerializer = new Serializer<Credential<string>>();
                     credentialSerializer.EnqueueStep(x => x.ID?.Length ?? 0);
                     credentialSerializer.EnqueueStep(x => x.ID);
                     credentialSerializer.EnqueueStep(x => x.Secret?.Length ?? 0);

@@ -9,7 +9,7 @@ namespace GPS_Logger.Security
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Credential GenerateCredentialDelegate(byte[] id);
+        public delegate Credential<byte[]> GenerateCredentialDelegate(byte[] id);
 
         /// <summary>
         /// Delegate that generates a random salt

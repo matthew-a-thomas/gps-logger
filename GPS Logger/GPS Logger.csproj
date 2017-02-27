@@ -281,6 +281,7 @@
     <Compile Include="Controllers\TimeController.cs" />
     <Compile Include="Controllers\HMACKeyController.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\Security\CredentialExtensions.cs" />
     <Compile Include="LocalStorage\IPersistentStore.cs" />
     <Compile Include="LocalStorage\Options.cs" />
     <Compile Include="LocalStorage\PersistentStoreManager.cs" />

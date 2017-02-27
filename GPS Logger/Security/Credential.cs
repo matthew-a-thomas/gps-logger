@@ -1,9 +1,9 @@
 ﻿namespace GPS_Logger.Security
 {
-    public class Credential
+    public class Credential<T>
     {
         // ReSharper disable once InconsistentNaming
-        public byte[] ID { get; set; }
-        public byte[] Secret { get; set; }
+        public T ID { get; set; }
+        public T Secret { get; set; }
     }
 }
