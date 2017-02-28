@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Controllers\CredentialControllerClass.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\ByteArrayExtensionsClass.cs" />
     <Compile Include="Extensions\Security\CredentialExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
