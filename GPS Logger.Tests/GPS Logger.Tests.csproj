@@ -72,6 +72,7 @@
     <Compile Include="Controllers\CredentialControllerClass.cs" />
     <Compile Include="Extensions\ArrayExtensionsClass.cs" />
     <Compile Include="Extensions\ByteArrayExtensionsClass.cs" />
+    <Compile Include="Extensions\RandomNumberGeneratorExtensionsClass.cs" />
     <Compile Include="Extensions\Security\CredentialExtensionsClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
