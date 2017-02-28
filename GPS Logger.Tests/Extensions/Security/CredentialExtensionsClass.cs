@@ -13,7 +13,7 @@ using Moq;
 namespace GPS_Logger.Tests.Extensions.Security
 {
     [TestClass]
-    public class CredentialExtensions
+    public class CredentialExtensionsClass
     {
         [TestClass]
         public class ConvertMethod

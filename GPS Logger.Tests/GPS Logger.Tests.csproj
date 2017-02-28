@@ -70,9 +70,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\CredentialControllerClass.cs" />
-    <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\ArrayExtensionsClass.cs" />
     <Compile Include="Extensions\ByteArrayExtensionsClass.cs" />
-    <Compile Include="Extensions\Security\CredentialExtensions.cs" />
+    <Compile Include="Extensions\Security\CredentialExtensionsClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

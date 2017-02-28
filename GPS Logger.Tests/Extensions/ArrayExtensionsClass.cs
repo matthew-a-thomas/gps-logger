@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace GPS_Logger.Tests.Extensions
 {
     [TestClass]
-    public class ArrayExtensions
+    public class ArrayExtensionsClass
     {
         [TestClass]
         public class CreateCloneMethod
