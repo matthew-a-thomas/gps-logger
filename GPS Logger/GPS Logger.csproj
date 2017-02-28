@@ -307,6 +307,8 @@
     <Compile Include="Security\Signing\Validator.cs" />
     <Compile Include="Security\Signing\Signer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
+    <Compile Include="Serialization\ITranslator.cs" />
+    <Compile Include="Serialization\MapperTranslator.cs" />
     <Compile Include="Serialization\MessageSerializer.cs" />
     <Compile Include="Serialization\Serializer.cs" />
   </ItemGroup>
