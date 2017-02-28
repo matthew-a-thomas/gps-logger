@@ -45,6 +45,24 @@ namespace GPS_Logger.Tests.LocalStorage
                 var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()));
                 Assert.IsFalse(store.Exists(Guid.NewGuid().ToString()));
             }
+
+            [TestMethod]
+            public void ReturnsTrueForSomethingThatExists()
+            {
+                var keyName = Guid.NewGuid().ToString();
+                DoWithTempDirectory(store =>
+                {
+                    using (store.Open(keyName, new Options
+                    {
+                        FileAccess = FileAccess.ReadWrite,
+                        FileMode = FileMode.OpenOrCreate,
+                        FileShare = FileShare.None
+                    }))
+                    {
+                        Assert.IsTrue(store.Exists(keyName));
+                    }
+                });
+            }
         }
 
         [TestClass]
