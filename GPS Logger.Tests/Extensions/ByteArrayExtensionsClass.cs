@@ -15,7 +15,7 @@ namespace GPS_Logger.Tests.Extensions
         public class FromHexStringMethod
         {
             [TestMethod]
-            public void ReturnsNullWhenGivenNumm()
+            public void ReturnsNullWhenGivenNull()
             {
                 var b = ByteArrayExtensions.FromHexString(null);
                 Assert.IsNull(b);
