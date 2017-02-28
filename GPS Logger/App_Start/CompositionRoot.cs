@@ -142,6 +142,7 @@ namespace GPS_Logger
             ISerializer<TRequest> requestContentSerializer,
             ISerializer<TResponse> responseContentSerializer)
         {
+            builder.RegisterType<MapperTranslator<Message<TResponse>, SignedMessage<TResponse>>>().As<ITranslator<Message<TResponse>, SignedMessage<TResponse>>>();
             builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
             builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
@@ -177,6 +178,7 @@ namespace GPS_Logger
             ContainerBuilder builder,
             ISerializer<T> contentSerializer)
         {
+            builder.RegisterType<MapperTranslator<Message<T>, SignedMessage<T>>>().As<ITranslator<Message<T>, SignedMessage<T>>>();
             builder.RegisterType<Signer<SignedMessage<T>, Message<T>>>().SingleInstance();
             builder.RegisterType<MessageSerializer<T>>().As<ISerializer<Message<T>>>().SingleInstance();
             builder.RegisterInstance(contentSerializer).SingleInstance();

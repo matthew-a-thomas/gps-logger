@@ -15,14 +15,17 @@ namespace GPS_Logger.Security.Signing
         /// </summary>
         private readonly IHMACProvider _hmacProvider;
         private readonly ISerializer<TUnsigned> _serializer;
+        private readonly ITranslator<TUnsigned, TSigned> _translator;
 
         public Signer(
             IHMACProvider hmacProvider,
-            ISerializer<TUnsigned> serializer
+            ISerializer<TUnsigned> serializer,
+            ITranslator<TUnsigned, TSigned> translator
             )
         {
             _hmacProvider = hmacProvider;
             _serializer = serializer;
+            _translator = translator;
         }
         
         /// <summary>
@@ -34,7 +37,7 @@ namespace GPS_Logger.Security.Signing
         /// <returns></returns>
         public TSigned Sign(TUnsigned thing, byte[] hmacKey)
         {
-            var result = Mapper.Map<TSigned>(thing);
+            var result = _translator.Translate(thing);
             var serialized = _serializer.Serialize(thing);
             using (var hmac = _hmacProvider.Get(hmacKey))
             {

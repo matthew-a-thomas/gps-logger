@@ -2,6 +2,7 @@
 using AutoMapper;
 using GPS_Logger.Security;
 using GPS_Logger.Security.Signing;
+using GPS_Logger.Serialization;
 
 namespace GPS_Logger.Models.Messages
 {
@@ -14,18 +15,21 @@ namespace GPS_Logger.Models.Messages
         private readonly Delegates.GenerateCredentialDelegate _generateCredential;
         private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
         private readonly Func<SignedMessage<TRequest>, byte[]> _idExtractor;
+        private readonly ITranslator<Message<TResponse>, SignedMessage<TResponse>> _messageTranslator;
 
         public MessageHandler(
             Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
             Delegates.GenerateCredentialDelegate generateCredential,
             Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
-            Func<SignedMessage<TRequest>, byte[]> idExtractor
+            Func<SignedMessage<TRequest>, byte[]> idExtractor,
+            ITranslator<Message<TResponse>, SignedMessage<TResponse>> messageTranslator
             )
         {
             _validator = validator;
             _generateCredential = generateCredential;
             _signer = signer;
             _idExtractor = idExtractor;
+            _messageTranslator = messageTranslator;
         }
         
         public SignedMessage<TResponse> CreateResponse(
@@ -46,7 +50,7 @@ namespace GPS_Logger.Models.Messages
             };
 
             if (!isValid)
-                return Mapper.Map<SignedMessage<TResponse>>(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
+                return _messageTranslator.Translate(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
 
             // Derive the client's secret
             var derivedCredential = _generateCredential(_idExtractor(request));

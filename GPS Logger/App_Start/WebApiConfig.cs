@@ -13,10 +13,7 @@ namespace GPS_Logger
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services
-
-            // Automapper initialization
-            Mapper.Initialize(mapperConfig => { mapperConfig.CreateMissingTypeMaps = true; mapperConfig.AllowNullCollections = true; });
-
+            
             // Autofac dependency injection
             var builder = new ContainerBuilder();
             builder.RegisterModule<CompositionRoot>();
