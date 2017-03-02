@@ -76,6 +76,7 @@
     <Compile Include="Extensions\Security\CredentialExtensionsClass.cs" />
     <Compile Include="LocalStorage\PersistentStoreClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\ReplayDetectorClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GPS Logger\GPS Logger.csproj">
