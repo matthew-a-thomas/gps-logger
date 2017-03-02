@@ -74,6 +74,7 @@
     <Compile Include="Extensions\ByteArrayExtensionsClass.cs" />
     <Compile Include="Extensions\RandomNumberGeneratorExtensionsClass.cs" />
     <Compile Include="Extensions\Security\CredentialExtensionsClass.cs" />
+    <Compile Include="LocalStorage\PersistentStoreClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
