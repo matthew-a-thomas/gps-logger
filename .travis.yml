@@ -1,0 +1,8 @@
+language: csharp
+solution: "GPS Logger.sln"
+install:
+  - nuget restore "GPS Logger.sln"
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release "GPS Logger.sln"
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe "./GPS Logger.Tests/bin/Release/GPS Logger.Tests.dll"
