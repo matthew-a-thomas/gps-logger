@@ -18,7 +18,7 @@ namespace Common.Tests.LocalStorage
             return directoryInfo;
         }
 
-        private static void DoWithTempDirectory(Action<PersistentStore> action)
+        internal static void DoWithTempPersistentStore(Action<PersistentStore> action)
         {
             var directory = CreateTempDirectory();
             var store = new PersistentStore(directory);
@@ -36,6 +36,16 @@ namespace Common.Tests.LocalStorage
         public class ExistsMethod
         {
             [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                DoWithTempPersistentStore(store =>
+                {
+                    store.Exists("../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
+                    store.Exists("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                });
+            }
+
+            [TestMethod]
             public void ReturnsFalseForDummyDirectory()
             {
                 var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()));
@@ -46,7 +56,7 @@ namespace Common.Tests.LocalStorage
             public void ReturnsTrueForSomethingThatExists()
             {
                 var keyName = Guid.NewGuid().ToString();
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(keyName, new Options
                     {
@@ -67,7 +77,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public void CanCreateRandomKey()
             {
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -84,7 +94,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public void CanWriteToStreamOpenedAsWrite()
             {
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -109,7 +119,7 @@ namespace Common.Tests.LocalStorage
                     FileMode = FileMode.OpenOrCreate,
                     FileShare = FileShare.None
                 };
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(keyName, options))
                     {
@@ -131,7 +141,7 @@ namespace Common.Tests.LocalStorage
             public void CannotWriteToStreamOpenedAsRead()
             {
                 var failed = false;
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -154,10 +164,39 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                DoWithTempPersistentStore(store =>
+                {
+                    using (
+                        store.Open(
+                            "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../",
+                            new Options
+                            {
+                                FileAccess = FileAccess.ReadWrite,
+                                FileMode = FileMode.OpenOrCreate,
+                                FileShare = FileShare.ReadWrite
+                            }))
+                    {
+                    }
+                    using (
+                        store.Open("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|",
+                            new Options
+                            {
+                                FileAccess = FileAccess.ReadWrite,
+                                FileMode = FileMode.OpenOrCreate,
+                                FileShare = FileShare.ReadWrite
+                            }))
+                    {
+                    }
+                });
+            }
+
+            [TestMethod]
             public void FailsToOpenNewKey()
             {
                 var failed = false;
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     try
                     {
