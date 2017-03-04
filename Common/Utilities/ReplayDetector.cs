@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading;
 
 namespace Common.Utilities
 {
@@ -12,24 +13,11 @@ namespace Common.Utilities
     public class ReplayDetector<T>
     {
         /// <summary>
-        /// Holds all the things that have been seen within the past "window" timeframe
-        /// </summary>
-        private readonly HashSet<T> _contents;
-
-        /// <summary>
-        /// Something to synchronize threads
-        /// </summary>
-        private readonly object _lockObject = new object();
-
-        /// <summary>
-        /// Holds all active timers, which will remove things from _contents as "window" time passes
-        /// </summary>
-        private readonly ConcurrentDictionary<T, IDisposable> _subscriptions;
-
-        /// <summary>
         /// The amount of time to keep something in _contents
         /// </summary>
         private readonly TimeSpan _window;
+
+        private readonly ConcurrentDictionary<T, Wrapper<int>> _counts;
 
         /// <summary>
         /// Creates a new replay detector, which can tell if an instance of T has been seen by the "InNew" function within the past "window" timeframe
@@ -38,8 +26,7 @@ namespace Common.Utilities
         public ReplayDetector(TimeSpan window)
         {
             _window = window;
-            _contents = new HashSet<T>();
-            _subscriptions = new ConcurrentDictionary<T, IDisposable>();
+            _counts = new ConcurrentDictionary<T, Wrapper<int>>();
         }
 
         /// <summary>
@@ -50,50 +37,49 @@ namespace Common.Utilities
         /// <returns></returns>
         public bool IsNew(T thing)
         {
-            // Set up a function to end the subscription for the current thing and remove it from _contents, if it exists in those places
-            var endSubscription = new Action(() =>
+            var result = false;
+            RaceConditionBreaker.BreakRaceCondition(() =>
             {
-                IDisposable subscription;
-                if (_subscriptions.TryRemove(thing, out subscription))
-                    subscription.Dispose();
-            });
-
-            // Set up a function to remove the given thing from _contents
-            var removeFromContents = new Action(() =>
-            {
-                lock (_lockObject)
-                    _contents.Remove(thing);
-            });
-
-            // Sets up a new subscription for the given thing so that "endSubscription" will be called after "window" time
-            var createSubscription = new Func<IDisposable>(() =>
-                Observable
-                    .Timer(_window)
-                    .Subscribe(x =>
+                // ReSharper disable once InconsistentlySynchronizedField
+                var count = _counts.GetOrAdd(thing, new Wrapper<int>());
+                lock (count)
+                {
+                    // It's a race condition between grabbing the thing out of the dictionary and acquiring a lock on it.
+                    // In that time someone could have removed it from the dictionary (meaning the count went down to zero for them)
+                    // so we need to double-check that this exact thing is still in the dictionary
+                    if (!_counts.TryGetValue(thing, out Wrapper<int> check) || !ReferenceEquals(check, count))
                     {
-                        endSubscription();
-                        removeFromContents();
-                    })
-            );
-
-            lock (_lockObject)
-            {
-                // Add a new subscription, or end the current one and create a new one in its place
-                _subscriptions.AddOrUpdate(
-                    thing,
-                    t => createSubscription(), // Create a new subscription
-                    (t, oldSubscription) =>
-                    {
-                        // End the current one and create a new one in its place.
-                        // This is equivalent to resetting the expiration timer for thing
-                        endSubscription();
-                        return createSubscription();
+                        return true; // Try again
                     }
-                );
 
-                // Return true if the given thing is in _contents
-                return _contents.Add(thing);
-            }
+                    // Now that we know that "count" is the official count to use for this thing...
+
+                    // We know whether the thing is new or not
+                    result = count.Value++ == 0;
+
+                    // ...and we can set up a timer so that the count is decremented after so long
+                    IDisposable subscription = null;
+                    subscription = Observable.Timer(_window).Subscribe(x =>
+                    {
+                        // ReSharper disable once AccessToModifiedClosure
+                        using (subscription)
+                        {
+                            lock (count)
+                            {
+                                if (--count.Value <= 0)
+                                {
+                                    // This count is through... we can remove it from memory
+                                    // Note that this is where the race condition above came from
+                                    _counts.TryRemove(thing, out Wrapper<int> o);
+                                }
+                            }
+                        }
+                    });
+                    
+                    return false; // Don't loop again
+                }
+            });
+            return result;
         }
     }
 }
