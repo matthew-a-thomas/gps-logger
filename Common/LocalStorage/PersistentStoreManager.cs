@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Common.Utilities;
 
 namespace Common.LocalStorage
 {
@@ -10,26 +11,14 @@ namespace Common.LocalStorage
     public class PersistentStoreManager
     {
         private readonly IPersistentStore _persistentStore;
-        private readonly ConditionalWeakTable<string, object> _keyLocks;
-
+        private readonly Locker<string> _locker;
+        
         public PersistentStoreManager(IPersistentStore persistentStore)
         {
             _persistentStore = persistentStore;
-            _keyLocks = new ConditionalWeakTable<string, object>();
+            _locker = new Locker<string>();
         }
-
-        /// <summary>
-        /// Executes an action within a lock that is associated with the given key.
-        /// Note that the key is case insensitive
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="action"></param>
-        private void DoLocked(string key, Action action)
-        {
-            lock (_keyLocks.GetValue(key.ToLower(), x => new object())) // .ToLower makes this case insensitive
-                action();
-        }
-
+        
         /// <summary>
         /// Returns the data associated with the given key
         /// </summary>
@@ -38,7 +27,7 @@ namespace Common.LocalStorage
         public byte[] Get(string key)
         {
             byte[] buffer = null;
-            DoLocked(key, () =>
+            _locker.DoLocked(key, () =>
             {
                 if (!IsSet(key))
                     return; // We won't be able to open the stream for reading
@@ -65,7 +54,8 @@ namespace Common.LocalStorage
         /// <param name="value"></param>
         public void Set(string key, byte[] value)
         {
-            DoLocked(key, () =>
+            if (key == null || value == null) return;
+            _locker.DoLocked(key, () =>
             {
                 using (var stream = _persistentStore.Open(key, new Options { FileAccess = FileAccess.Write, FileMode = FileMode.Create, FileShare = FileShare.None }))
                     stream.Write(value, 0, value.Length);
