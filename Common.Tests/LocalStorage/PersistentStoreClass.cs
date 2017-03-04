@@ -18,7 +18,7 @@ namespace Common.Tests.LocalStorage
             return directoryInfo;
         }
 
-        private static void DoWithTempDirectory(Action<PersistentStore> action)
+        internal static void DoWithTempPersistentStore(Action<PersistentStore> action)
         {
             var directory = CreateTempDirectory();
             var store = new PersistentStore(directory);
@@ -46,7 +46,7 @@ namespace Common.Tests.LocalStorage
             public void ReturnsTrueForSomethingThatExists()
             {
                 var keyName = Guid.NewGuid().ToString();
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(keyName, new Options
                     {
@@ -67,7 +67,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public void CanCreateRandomKey()
             {
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -84,7 +84,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public void CanWriteToStreamOpenedAsWrite()
             {
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -109,7 +109,7 @@ namespace Common.Tests.LocalStorage
                     FileMode = FileMode.OpenOrCreate,
                     FileShare = FileShare.None
                 };
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (store.Open(keyName, options))
                     {
@@ -131,7 +131,7 @@ namespace Common.Tests.LocalStorage
             public void CannotWriteToStreamOpenedAsRead()
             {
                 var failed = false;
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
                     {
@@ -157,7 +157,7 @@ namespace Common.Tests.LocalStorage
             public void FailsToOpenNewKey()
             {
                 var failed = false;
-                DoWithTempDirectory(store =>
+                DoWithTempPersistentStore(store =>
                 {
                     try
                     {
