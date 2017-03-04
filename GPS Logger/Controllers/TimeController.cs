@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Web.Http;
-using GPS_Logger.Models.Messages;
-using GPS_Logger.Security.Signing;
+using Common.Messages;
+using Common.Security.Signing;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger.Controllers
 {
-    public class TimeController : ApiController
+    public class TimeController : Controller
     {
         private readonly MessageHandler<bool, long> _messageHandler;
         
@@ -19,6 +19,6 @@ namespace GPS_Logger.Controllers
         /// Returns this server's current time in seconds since Epoch
         /// </summary>
         /// <returns></returns>
-        public SignedMessage<long> Get([FromUri] SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => DateTimeOffset.Now.ToUnixTimeSeconds());
+        public SignedMessage<long> Get(SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => DateTimeOffset.Now.ToUnixTimeSeconds());
     }
 }

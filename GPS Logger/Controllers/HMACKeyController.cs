@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Web.Http;
-using GPS_Logger.Extensions;
-using GPS_Logger.LocalStorage;
+using Common.Extensions;
+using Common.LocalStorage;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger.Controllers
 {
@@ -10,7 +10,7 @@ namespace GPS_Logger.Controllers
     /// Controller for the HMAC key, which is stored in persisted storage
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    public class HMACKeyController : ApiController
+    public class HMACKeyController : Controller
     {
         public class PostParameters
         {

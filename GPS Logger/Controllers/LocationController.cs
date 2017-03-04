@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Web.Http;
+using Common.Extensions;
+using Common.Messages;
+using Common.Security.Signing;
 using GPS_Logger.Models;
-using GPS_Logger.Extensions;
-using GPS_Logger.Models.Messages;
-using GPS_Logger.Security.Signing;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger.Controllers
 {
     /// <summary>
     /// Handles saving and storing Locations
     /// </summary>
-    public class LocationController : ApiController
+    public class LocationController : Controller
     {
         private readonly LocationProvider _locationProvider;
         private readonly HandleLocationPost _handleLocationPost;

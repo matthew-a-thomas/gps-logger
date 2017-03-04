@@ -1,13 +1,13 @@
-﻿using System.Web.Http;
-using GPS_Logger.Extensions;
-using GPS_Logger.Extensions.Security;
-using GPS_Logger.Models.Messages;
-using GPS_Logger.Security;
-using GPS_Logger.Security.Signing;
+﻿using Common.Extensions;
+using Common.Extensions.Security;
+using Common.Messages;
+using Common.Security;
+using Common.Security.Signing;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger.Controllers
 {
-    public class CredentialController : ApiController
+    public class CredentialController : Controller
     {
         /// <summary>
         /// The number of bytes in a Credential's ID
@@ -36,6 +36,6 @@ namespace GPS_Logger.Controllers
         /// If you want to hide the response, then make sure you're using encryption
         /// </summary>
         /// <returns></returns>
-        public SignedMessage<Credential<string>> Get([FromUri] SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => _generateCredential(_generateSalt()).Convert(bytes => bytes.ToHexString()));
+        public SignedMessage<Credential<string>> Get(SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => _generateCredential(_generateSalt()).Convert(bytes => ByteArrayExtensions.ToHexString(bytes)));
     }
 }
