@@ -2,10 +2,10 @@
 using Common.Extensions;
 using Common.Messages;
 using Common.Security.Signing;
-using GPS_Logger.Core.Models;
+using GPS_Logger.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Core.Controllers
+namespace GPS_Logger.Controllers
 {
     /// <summary>
     /// Handles saving and storing Locations

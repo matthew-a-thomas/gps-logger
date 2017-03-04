@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\GPS Logger.Core\GPS Logger.Core.csproj" />
+    <ProjectReference Include="..\GPS Logger\GPS Logger.csproj" />
   </ItemGroup>
 
 </Project>

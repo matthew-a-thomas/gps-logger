@@ -5,7 +5,7 @@ using Common.Security;
 using Common.Security.Signing;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Core.Controllers
+namespace GPS_Logger.Controllers
 {
     public class CredentialController : Controller
     {

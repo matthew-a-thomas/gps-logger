@@ -5,7 +5,7 @@ using Common.Messages;
 using Common.Security;
 using Common.Security.Signing;
 using Common.Serialization;
-using GPS_Logger.Core.Controllers;
+using GPS_Logger.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Common.Tests.Controllers

@@ -13,13 +13,4 @@
     <PackageReference Include="System.Reactive" Version="3.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="AutoMapper">
-      <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq">
-      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net46\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

@@ -4,7 +4,7 @@ using Common.Extensions;
 using Common.LocalStorage;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Core.Controllers
+namespace GPS_Logger.Controllers
 {
     /// <summary>
     /// Controller for the HMAC key, which is stored in persisted storage

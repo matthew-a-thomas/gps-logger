@@ -10,11 +10,11 @@ using Common.Messages;
 using Common.Security;
 using Common.Security.Signing;
 using Common.Serialization;
-using GPS_Logger.Core.Controllers;
-using GPS_Logger.Core.Models;
+using GPS_Logger.Controllers;
+using GPS_Logger.Models;
 using Microsoft.AspNetCore.Hosting;
 
-namespace GPS_Logger.Core
+namespace GPS_Logger
 {
     public class CompositionRoot : Module
     {

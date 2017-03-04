@@ -3,7 +3,7 @@ using Common.Messages;
 using Common.Security.Signing;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Core.Controllers
+namespace GPS_Logger.Controllers
 {
     public class TimeController : Controller
     {
