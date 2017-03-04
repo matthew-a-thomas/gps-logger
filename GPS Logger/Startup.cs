@@ -40,6 +40,7 @@ namespace GPS_Logger
             var builder = new ContainerBuilder();
             builder.RegisterInstance(_hostingEnvironment).SingleInstance();
             builder.RegisterModule<CompositionRoot>();
+            builder.Populate(services);
             var container = builder.Build();
 
             // Verify that all controllers can be created from Autofac
