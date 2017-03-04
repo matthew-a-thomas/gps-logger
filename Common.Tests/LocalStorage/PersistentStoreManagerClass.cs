@@ -35,11 +35,33 @@ namespace Common.Tests.LocalStorage
                     Assert.IsFalse(manager.IsSet(null), "It said null existed even though it's completely random");
                 });
             }
+
+            [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                {
+                    var manager = new PersistentStoreManager(store);
+                    manager.IsSet("../../..");
+                    manager.IsSet("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                });
+            }
         }
 
         [TestClass]
         public class GetMethod
         {
+            [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                {
+                    var manager = new PersistentStoreManager(store);
+                    manager.Get("../../..");
+                    manager.Get("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                });
+            }
+
             [TestMethod]
             public void ReturnsNullForNull()
             {
@@ -94,6 +116,17 @@ namespace Common.Tests.LocalStorage
                     manager.Set(null, null);
                 });
             }
+
+            [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                {
+                    var manager = new PersistentStoreManager(store);
+                    manager.Set("../../..", new byte[0]);
+                    manager.Set("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|", new byte[0]);
+                });
+            }
         }
 
         [TestMethod]
@@ -106,6 +139,24 @@ namespace Common.Tests.LocalStorage
                 var key = Guid.NewGuid().ToString();
                 manager.Set(key, data);
                 var retrieved = manager.Get(key);
+                Assert.IsNotNull(retrieved);
+                Assert.IsTrue(retrieved.SequenceEqual(data));
+            });
+        }
+
+        [TestMethod]
+        public void CanGetBackSameDataAsWasSetWithDifferentCasedKey()
+        {
+            PersistentStoreClass.DoWithTempPersistentStore(store =>
+            {
+                var manager = new PersistentStoreManager(store);
+                var data = Encoding.ASCII.GetBytes("Hello world!");
+                var key = Guid.NewGuid().ToString();
+                var uppercased = key.ToUpper();
+                var lowercased = key.ToLower();
+                Assert.AreNotEqual(uppercased, lowercased);
+                manager.Set(uppercased, data);
+                var retrieved = manager.Get(lowercased);
                 Assert.IsNotNull(retrieved);
                 Assert.IsTrue(retrieved.SequenceEqual(data));
             });
