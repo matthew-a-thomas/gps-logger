@@ -93,7 +93,16 @@ namespace GPS_Logger
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "api/{controller}/{id?}",
+                    defaults: new
+                    {
+                        action = "Get"
+                    });
+            });
         }
     }
 }
