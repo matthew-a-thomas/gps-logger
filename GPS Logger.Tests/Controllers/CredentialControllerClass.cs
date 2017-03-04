@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Security.Cryptography;
-using GPS_Logger.Controllers;
-using GPS_Logger.Extensions;
-using GPS_Logger.Models.Messages;
-using GPS_Logger.Security;
-using GPS_Logger.Security.Signing;
-using GPS_Logger.Serialization;
+using Common.Extensions;
+using Common.Messages;
+using Common.Security;
+using Common.Security.Signing;
+using Common.Serialization;
+using GPS_Logger.Core.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GPS_Logger.Tests.Controllers
+namespace Common.Tests.Controllers
 {
     [TestClass]
     public class CredentialControllerClass
