@@ -8,7 +8,7 @@ using Common.Serialization;
 using GPS_Logger.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Common.Tests.Controllers
+namespace GPS_Logger.Tests.Controllers
 {
     [TestClass]
     public class CredentialControllerClass
