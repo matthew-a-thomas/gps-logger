@@ -36,6 +36,16 @@ namespace Common.Tests.LocalStorage
         public class ExistsMethod
         {
             [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                DoWithTempPersistentStore(store =>
+                {
+                    store.Exists("../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
+                    store.Exists("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                });
+            }
+
+            [TestMethod]
             public void ReturnsFalseForDummyDirectory()
             {
                 var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()));
@@ -151,6 +161,35 @@ namespace Common.Tests.LocalStorage
                     }
                 });
                 Assert.IsTrue(failed);
+            }
+
+            [TestMethod]
+            public void DoesNotBreakWithFunnyNames()
+            {
+                DoWithTempPersistentStore(store =>
+                {
+                    using (
+                        store.Open(
+                            "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../",
+                            new Options
+                            {
+                                FileAccess = FileAccess.ReadWrite,
+                                FileMode = FileMode.OpenOrCreate,
+                                FileShare = FileShare.ReadWrite
+                            }))
+                    {
+                    }
+                    using (
+                        store.Open("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|",
+                            new Options
+                            {
+                                FileAccess = FileAccess.ReadWrite,
+                                FileMode = FileMode.OpenOrCreate,
+                                FileShare = FileShare.ReadWrite
+                            }))
+                    {
+                    }
+                });
             }
 
             [TestMethod]
