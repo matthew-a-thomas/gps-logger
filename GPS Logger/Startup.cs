@@ -40,6 +40,7 @@ namespace GPS_Logger
             var builder = new ContainerBuilder();
             builder.RegisterInstance(_hostingEnvironment).SingleInstance();
             builder.RegisterModule<CompositionRoot>();
+            builder.Populate(services);
             var container = builder.Build();
 
             // Verify that all controllers can be created from Autofac
@@ -92,7 +93,16 @@ namespace GPS_Logger
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "api/{controller}/{id?}",
+                    defaults: new
+                    {
+                        action = "Get"
+                    });
+            });
         }
     }
 }

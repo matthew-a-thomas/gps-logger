@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Common.Extensions;
 using Common.Messages;
 using Common.Security.Signing;
@@ -39,19 +40,13 @@ namespace GPS_Logger.Controllers
             _handleLocationPost = handleLocationPost;
             _messageHandler = messageHandler;
         }
-
-        /// <summary>
-        /// Gives a helpful message when an ID isn't provided
-        /// </summary>
-        /// <returns></returns>
-        public string Get() => "Please specify an ID in order to retrieve the location history of that ID";
-
+        
         /// <summary>
         /// Gets all the locations for the given ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IEnumerable<Location> Get(string id) => _locationProvider(ByteArrayExtensions.FromHexString(id));
+        public IEnumerable<Location> Get(string id) => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : _locationProvider(ByteArrayExtensions.FromHexString(id));
 
         /// <summary>
         /// Posts a new location
