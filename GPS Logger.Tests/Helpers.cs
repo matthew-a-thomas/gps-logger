@@ -6,11 +6,19 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
+using System.Net.Http;
+using Common.Security.Signing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GPS_Logger.Tests
 {
     public static class Helpers
     {
+        public static void AssertNoPropertiesAreNull(object o)
+        {
+            Assert.IsTrue(Helpers.ReflectPropertiesOf<string>(o).All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2)));
+        }
+
         /// <summary>
         /// Asserts that what comes back from the given URL is valid JSON
         /// </summary>
@@ -20,6 +28,13 @@ namespace GPS_Logger.Tests
         public static void AssertReturnsJSON(TestServer server, string url)
         {
             JsonConvert.DeserializeObject(Get(server, url));
+        }
+
+        public static void AssertSigningFieldsAreNonNull<T>(SignedMessage<T> signedMessage)
+        {
+            Assert.IsNotNull(signedMessage.HMAC);
+            Assert.IsNotNull(signedMessage.ID);
+            Assert.IsNotNull(signedMessage.Salt);
         }
     
         /// <summary>
@@ -56,6 +71,24 @@ namespace GPS_Logger.Tests
                 var responseTask = client.GetAsync(url);
                 responseTask.Wait();
                 var response = responseTask.Result;
+                response.EnsureSuccessStatusCode();
+                var responseStringTask = response.Content.ReadAsStringAsync();
+                responseStringTask.Wait();
+                var responseString = responseStringTask.Result;
+                return responseString;
+            }
+        }
+
+        public static string Post(TestServer server, string url, params string[] contentParts)
+        {
+            var contents = new MultipartContent();
+            foreach (var content in contentParts.Select(x => new StringContent(x)))
+                contents.Add(content);
+            using (var client = server.CreateClient())
+            {
+                var postTask = client.PostAsync(url, contents);
+                postTask.Wait();
+                var response = postTask.Result;
                 response.EnsureSuccessStatusCode();
                 var responseStringTask = response.Content.ReadAsStringAsync();
                 responseStringTask.Wait();
