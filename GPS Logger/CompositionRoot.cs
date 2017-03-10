@@ -13,10 +13,12 @@ using Common.Serialization;
 using GPS_Logger.Controllers;
 using GPS_Logger.Models;
 using Microsoft.AspNetCore.Hosting;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger
 {
-    public class CompositionRoot : Module
+    public class CompositionRoot : Autofac.Module
     {
         protected override void Load(ContainerBuilder builder)
         {
@@ -130,11 +132,15 @@ namespace GPS_Logger
                         );
                 }
 
-                // Controllers
-                builder.RegisterType<CredentialController>();
-                builder.RegisterType<TimeController>();
-                builder.RegisterType<HMACKeyController>();
-                builder.RegisterType<LocationController>();
+                // Register all controllers
+                foreach (var type in 
+                    Assembly
+                    .GetEntryAssembly()
+                    .GetTypes()
+                    .Where(type => typeof(Controller).IsAssignableFrom(type)))
+                {
+                    builder.RegisterType(type);
+                }
             }
         }
 
