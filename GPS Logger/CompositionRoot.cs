@@ -133,11 +133,10 @@ namespace GPS_Logger
                 }
 
                 // Register all controllers
-                foreach (var type in 
-                    Assembly
-                    .GetEntryAssembly()
-                    .GetTypes()
-                    .Where(type => typeof(Controller).IsAssignableFrom(type)))
+                var assembly = typeof(CompositionRoot).GetTypeInfo().Assembly;
+                var types = assembly.GetTypes();
+                foreach (var type in types
+                    .Where(type => typeof(ControllerBase).IsAssignableFrom(type)))
                 {
                     builder.RegisterType(type);
                 }
