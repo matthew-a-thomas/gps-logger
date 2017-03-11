@@ -10,7 +10,8 @@ namespace GPS_Logger.Controllers
     /// Controller for the HMAC key, which is stored in persisted storage
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    public class HMACKeyController : Controller
+    [Route("api/[controller]")]
+    public class HMACKeyController : ControllerBase
     {
         public class PostParameters
         {
@@ -37,6 +38,7 @@ namespace GPS_Logger.Controllers
         /// Returns a boolean indicating whether the HMAC key has been set
         /// </summary>
         /// <returns></returns>
+        [HttpGet]
         public bool Get() => _persistentStoreManager.IsSet(HMACKeyName);
         
         /// <summary>
@@ -50,6 +52,7 @@ namespace GPS_Logger.Controllers
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
         /// <param name="parameters"></param>
+        [HttpPost]
         public void Post(PostParameters parameters)
         {
             if (Get())

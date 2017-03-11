@@ -40,8 +40,8 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
 
                     return response;
                 },
-                response => JsonConvert.DeserializeObject<SignedMessage<bool>>(response),
-                response => Helpers.AssertNoPropertiesAreNull(response) // Assert that none of the returned properties are null
+                JsonConvert.DeserializeObject<SignedMessage<bool>>,
+                Helpers.AssertNoPropertiesAreNull // Assert that none of the returned properties are null
                 );
         }
 
@@ -50,19 +50,21 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
         public void ReturnsJSON() => Helpers.AssertReturnsJSON(_server, Root);
 
         [TestMethod]
+        // ReSharper disable once InconsistentNaming
         public void ReturnsEmptyArrayForAbsentID()
         {
             var response = Helpers.Get(_server, Root);
             var enumerable = JsonConvert.DeserializeObject<IEnumerable<object>>(response);
-            Assert.IsTrue(enumerable.Count() == 0);
+            Assert.IsTrue(!enumerable.Any());
         }
 
         [TestMethod]
+        // ReSharper disable once InconsistentNaming
         public void ReturnsEmptyArrayForRandomID()
         {
             var response = Helpers.Get(_server, Root + "?id=" + Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString());
             var enumerable = JsonConvert.DeserializeObject<IEnumerable<object>>(response);
-            Assert.IsTrue(enumerable.Count() == 0);
+            Assert.IsTrue(!enumerable.Any());
         }
     }
 }

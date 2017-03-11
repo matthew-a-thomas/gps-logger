@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GPS_Logger.Controllers
 {
-    public class CredentialController : Controller
+    [Route("api/[controller]")]
+    public class CredentialController : ControllerBase
     {
         /// <summary>
         /// The number of bytes in a Credential's ID
@@ -36,6 +37,7 @@ namespace GPS_Logger.Controllers
         /// If you want to hide the response, then make sure you're using encryption
         /// </summary>
         /// <returns></returns>
+        [HttpGet]
         public SignedMessage<Credential<string>> Get(SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => _generateCredential(_generateSalt()).Convert(bytes => ByteArrayExtensions.ToHexString(bytes)));
     }
 }
