@@ -36,7 +36,7 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
                 locationSerializer,
                 (request, server) =>
                 {
-                    var response = Helpers.Post(server, Root, Helpers.CreateUrlParametersFrom(request).ToArray());
+                    var response = Helpers.Post(server, Root, request);
 
                     return response;
                 },

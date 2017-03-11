@@ -56,7 +56,7 @@ namespace GPS_Logger.Controllers
         /// <param name="posted"></param>
         /// <returns></returns>
         [HttpPost]
-        public SignedMessage<bool> Post(SignedMessage<Location> posted) => _messageHandler.CreateResponse(
+        public SignedMessage<bool> Post([FromBody] SignedMessage<Location> posted) => _messageHandler.CreateResponse(
             posted,
             valid =>
             {

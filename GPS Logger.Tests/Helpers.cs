@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using Common.Security.Signing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text;
+using System.Net.Http.Headers;
 
 namespace GPS_Logger.Tests
 {
@@ -79,14 +81,14 @@ namespace GPS_Logger.Tests
             }
         }
 
-        public static string Post(TestServer server, string url, params string[] contentParts)
+        public static string Post(TestServer server, string url, object contents)
         {
-            var contents = new MultipartContent();
-            foreach (var content in contentParts.Select(x => new StringContent(x)))
-                contents.Add(content);
             using (var client = server.CreateClient())
             {
-                var postTask = client.PostAsync(url, contents);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var json = JsonConvert.SerializeObject(contents);
+                var encodedContent = new StringContent(json, Encoding.UTF8, "application/json");
+                var postTask = client.PostAsync(url, encodedContent);
                 postTask.Wait();
                 var response = postTask.Result;
                 response.EnsureSuccessStatusCode();
