@@ -17,7 +17,7 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
         {
             var parameters = new PostParameters
             {
-                NewKey = Encoding.ASCII.GetBytes("Hello world").ToHexString()
+                NewKey = Encoding.ASCII.GetBytes("Hello world, this is your new key").ToHexString()
             };
             var server = Helpers.CreateServer();
             var response = Helpers.Post(server, Root, parameters);
