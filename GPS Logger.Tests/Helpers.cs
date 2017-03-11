@@ -46,11 +46,13 @@ namespace GPS_Logger.Tests
         /// <returns></returns>
         public static TestServer CreateServer()
         {
-            const string contentRootBase = "../../../../GPS Logger/";
+            // Figure out where the GPS Logger directory is
+            var startingLocation = new DirectoryInfo(Path.GetDirectoryName(typeof(Helpers).GetTypeInfo().Assembly.Location));
+            var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, "GPS Logger");
 
             // Create a temp directory for this server to run from
-            var temp = "tests/" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
-            var contentRoot = contentRootBase + temp;
+            var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
+            var contentRoot = Path.Combine(baseDirectory, "tests", temp);
             Directory.CreateDirectory(contentRoot);
 
             // Copy over needed files
@@ -58,7 +60,7 @@ namespace GPS_Logger.Tests
             {
                 "appsettings.json"
             })
-                File.Copy(Path.Combine(contentRootBase, file), Path.Combine(contentRoot, file));
+                File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
 
             // Spin up the server
             return new TestServer(

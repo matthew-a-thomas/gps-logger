@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.TestHost;
+﻿using Common.Extensions;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static GPS_Logger.Controllers.HMACKeyController;
 
 namespace GPS_Logger.Tests.IntegrationTests.Controllers
 {
@@ -10,13 +12,41 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
     public class HMACKeyControllerClass
     {
         private const string Root = "/api/hmackey";
-        private readonly TestServer _server = Helpers.CreateServer();
+
+        private static TestServer PostKeyAndReturnServer()
+        {
+            var parameters = new PostParameters
+            {
+                NewKey = Encoding.ASCII.GetBytes("Hello world").ToHexString()
+            };
+            var server = Helpers.CreateServer();
+            var response = Helpers.Post(server, Root, parameters);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(response));
+            return server;
+        }
 
         [TestMethod]
-        public void ReturnsBoolean()
+        public void CanPostKey()
         {
-            var response = Helpers.Get(_server, Root);
-            bool.Parse(response);
+            PostKeyAndReturnServer();
+        }
+        
+        [TestMethod]
+        public void ReturnsFalseAtFirst()
+        {
+            var server = Helpers.CreateServer();
+            var response = Helpers.Get(server, Root);
+            var boolean = bool.Parse(response);
+            Assert.IsFalse(boolean);
+        }
+
+        [TestMethod]
+        public void ReturnsTrueAfterPostingKey()
+        {
+            var server = PostKeyAndReturnServer();
+            var response = Helpers.Get(server, Root);
+            var boolean = bool.Parse(response);
+            Assert.IsTrue(boolean);
         }
     }
 }
