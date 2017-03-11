@@ -11,7 +11,8 @@ namespace GPS_Logger.Controllers
     /// <summary>
     /// Handles saving and storing Locations
     /// </summary>
-    public class LocationController : Controller
+    [Route("api/[controller]")]
+    public class LocationController : ControllerBase
     {
         private readonly LocationProvider _locationProvider;
         private readonly HandleLocationPost _handleLocationPost;
@@ -46,14 +47,16 @@ namespace GPS_Logger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IEnumerable<Location> Get(string id) => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : _locationProvider(ByteArrayExtensions.FromHexString(id));
+        [HttpGet]
+        public IEnumerable<Location> Get(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : _locationProvider(ByteArrayExtensions.FromHexString(id));
 
         /// <summary>
         /// Posts a new location
         /// </summary>
         /// <param name="posted"></param>
         /// <returns></returns>
-        public SignedMessage<bool> Post(SignedMessage<Location> posted) => _messageHandler.CreateResponse(
+        [HttpPost]
+        public SignedMessage<bool> Post([FromBody] SignedMessage<Location> posted) => _messageHandler.CreateResponse(
             posted,
             valid =>
             {

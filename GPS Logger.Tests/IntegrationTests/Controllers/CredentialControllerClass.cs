@@ -20,6 +20,77 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
         private const string Root = "/api/credential";
         private readonly TestServer _server = Helpers.CreateServer();
 
+        public static void DoWithSignedGet<TRequest, TResponse>(
+            TestServer server,
+            string requestRoot,
+            TRequest requestContents,
+            ISerializer<TRequest> serializer,
+            Func<string, TResponse> deserializeResponse,
+            Action<TResponse> handleResponse)
+            => DoWithSignedRequest(
+                server,
+                requestRoot,
+                requestContents,
+                serializer,
+                (request, _server) =>
+                {
+                    // Create URL parameters from the signed request
+                    var parameters = Helpers.CreateUrlParametersFrom(request);
+
+                    // Ask the server for another set of credentials
+                    var response = Helpers.Get(_server, requestRoot + "?" + string.Join("&", parameters));
+                    return response;
+                },
+                deserializeResponse,
+                handleResponse);
+
+        /// <summary>
+        /// Performs an action on a signed response from 
+        /// </summary>
+        /// <typeparam name="TRequest"></typeparam>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="server"></param>
+        /// <param name="requestRoot"></param>
+        /// <param name="serializer"></param>
+        /// <param name="handleResponse"></param>
+        public static void DoWithSignedRequest<TRequest, TResponse>(
+            TestServer server,
+            string requestRoot,
+            TRequest requestContents,
+            ISerializer<TRequest> serializer,
+            Func<SignedMessage<TRequest>, TestServer, string> performRequest,
+            Func<string, TResponse> deserializeResponse,
+            Action<TResponse> handleResponse)
+        {
+            // Get some credentials from the server
+            var signedCredential = GetSignedCredential(server);
+            var credentialAsStrings = signedCredential.Contents;
+            var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
+
+            // Create a request that has been signed with those credentials
+            var messageSerializer = new MessageSerializer<TRequest>(serializer);
+            var signer = new Signer<SignedMessage<TRequest>, Message<TRequest>>(
+                new HMACProvider(() => new byte[0]),
+                messageSerializer,
+                new MapperTranslator<Message<TRequest>, SignedMessage<TRequest>>()
+                );
+            var request = signer.Sign(
+                new Message<TRequest>
+                {
+                    Contents = requestContents,
+                    ID = credentialAsStrings.ID,
+                    Salt = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString(),
+                    UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                },
+                credentialAsBytes.Secret);
+
+            var responseString = performRequest(request, server);
+            var deserializedResponse = deserializeResponse(responseString);
+
+            // Perform the given action on the deserializedResponse
+            handleResponse(deserializedResponse);
+        }
+
         /// <summary>
         /// Parses a returned JSON credential from the given server
         /// </summary>
@@ -40,7 +111,7 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
         public void ReturnsCredential() => GetSignedCredential(_server);
 
         [TestMethod]
-        public void SignsResponseWhenSendingSignedRequest()
+        public void DoesNotSignResponseWhenSendingUnsignedRequest()
         {
             // Get some credentials from the server
             var signedCredential = GetSignedCredential(_server);
@@ -48,20 +119,13 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
             var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
 
             // Create a request that has been signed with those credentials
-            var messageSerializer = new MessageSerializer<bool>(Serializer<bool>.CreatePassthroughSerializer());
-            var signer = new Signer<SignedMessage<bool>, Message<bool>>(
-                new HMACProvider(() => new byte[0]),
-                messageSerializer,
-                new MapperTranslator<Message<bool>, SignedMessage<bool>>()
-                );
-            var request = signer.Sign(
+            var request =
                 new Message<bool>
                 {
                     ID = credentialAsStrings.ID,
                     Salt = "aabbcc",
                     UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
-                },
-                credentialAsBytes.Secret);
+                };
 
             // Create URL parameters from the signed request
             var parameters = Helpers.CreateUrlParametersFrom(request);
@@ -70,11 +134,23 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
             var response = Helpers.Get(_server, Root + "?" + string.Join("&", parameters));
             var secondSignedCredential = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response);
 
+            // Assert that the relevant fields are null
+            Assert.IsNull(secondSignedCredential.HMAC);
+            Assert.IsNull(secondSignedCredential.ID);
+            Assert.IsNull(secondSignedCredential.Salt);
+        }
+
+        [TestMethod]
+        public void SignsResponseWhenSendingSignedRequest()
+        {
             // Assert that none of the returned fields are empty
-            Assert.IsTrue(
-                Helpers.ReflectPropertiesOf<string>(secondSignedCredential)
-                    .All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2)),
-                "At least some of the returned signed message's properties are null or empty");
+            DoWithSignedGet(
+                _server,
+                Root,
+                true,
+                Serializer<bool>.CreatePassthroughSerializer(),
+                response => JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response),
+                signedResponse => Helpers.AssertNoPropertiesAreNull(signedResponse));
         }
     }
 }

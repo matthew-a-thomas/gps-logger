@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Routing;
 
 namespace GPS_Logger
 {
@@ -93,16 +94,7 @@ namespace GPS_Logger
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "api/{controller}/{id?}",
-                    defaults: new
-                    {
-                        action = "Get"
-                    });
-            });
+            app.UseMvc();
         }
     }
 }
