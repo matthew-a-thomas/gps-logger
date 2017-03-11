@@ -108,7 +108,12 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
         public void ReturnsJSON() => Helpers.AssertReturnsJSON(_server, Root);
 
         [TestMethod]
-        public void ReturnsCredential() => GetSignedCredential(_server);
+        public void ReturnsValidCredential()
+        {
+            var credential = GetSignedCredential(_server);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(credential.Contents.ID));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(credential.Contents.Secret));
+        }
 
         [TestMethod]
         public void DoesNotSignResponseWhenSendingUnsignedRequest()

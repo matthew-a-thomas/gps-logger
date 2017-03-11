@@ -51,10 +51,12 @@ namespace GPS_Logger.Controllers
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
-        /// <param name="parameters"></param>
+        /// <param name="newKey"></param>
         [HttpPost]
-        public void Post(PostParameters parameters)
+        public void Post([FromBody] PostParameters parameters)
         {
+            if (ReferenceEquals(parameters, null) || string.IsNullOrWhiteSpace(parameters.NewKey))
+                throw new Exception("Please provide a new key");
             if (Get())
                 throw new Exception("The HMAC key has already been set");
             

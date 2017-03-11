@@ -11,6 +11,7 @@ using Common.Security.Signing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.Net.Http.Headers;
+using System.IO;
 
 namespace GPS_Logger.Tests
 {
@@ -45,9 +46,26 @@ namespace GPS_Logger.Tests
         /// <returns></returns>
         public static TestServer CreateServer()
         {
+            // Figure out where the GPS Logger directory is
+            var startingLocation = new DirectoryInfo(Path.GetDirectoryName(typeof(Helpers).GetTypeInfo().Assembly.Location));
+            var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, "GPS Logger");
+
+            // Create a temp directory for this server to run from
+            var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
+            var contentRoot = Path.Combine(baseDirectory, "tests", temp);
+            Directory.CreateDirectory(contentRoot);
+
+            // Copy over needed files
+            foreach (var file in new[]
+            {
+                "appsettings.json"
+            })
+                File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
+
+            // Spin up the server
             return new TestServer(
                 new WebHostBuilder()
-                .UseContentRoot("../../../../GPS Logger")
+                .UseContentRoot(contentRoot)
                 .UseStartup<Startup>()
                 );
         }
