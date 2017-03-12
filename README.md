@@ -110,6 +110,31 @@ Note that eavesdroppers will be able to plainly read the response, so if you wan
 
 **Returns**: `bool`; `true` if the request was valid, `false` otherwise
 
+**Example** - (C#)
+```c-sharp
+HttpClient client; // Assuming you've got an HttpClient already instantiated
+var request = new
+{
+  Contents = new
+  {
+    Latitude = /* Your latitude here */,
+    Longitude = /* Your longitude here */
+  },
+  ID = "your ID here",
+  Salt = "a random hex string here",
+  UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
+  HMAC = ""
+};
+request.HMAC = /* Calculate the MD5 HMAC of "request". The HMAC key will be the secret that corresponds to your ID */;
+client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+var json = JsonConvert.SerializeObject(request);
+var encodedContent = new StringContent(json, Encoding.UTF8, "application/json");
+var response = await client.PostAsync("/api/location", encodedContent);
+response.EnsureSuccessStatusCode();
+var responseString = await response.Content.ReadAsStringAsync();
+var deserializedResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(responseString);
+```
+
 ## Retrieve logged locations
 
 `GET /api/location/{id}`
