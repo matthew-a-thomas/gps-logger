@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Utilities;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -12,18 +13,21 @@ namespace Common.Security.Signing
         private readonly Delegates.GenerateCredentialDelegate _generateCredentials;
         private readonly Func<TSigned, bool> _passesDomainSpecificValidation;
         private readonly Signer<TSigned, TUnsigned> _signer;
+        private readonly ReplayDetector<TSigned> _replayDetector;
 
         public Validator(
             Delegates.GenerateCredentialDelegate generateCredentials,
             Signer<TSigned, TUnsigned> signer,
             Func<TSigned, bool> passesDomainSpecificValidation,
             // ReSharper disable once InconsistentNaming
-            Func<TSigned, byte[]> deriveIDFromThing
+            Func<TSigned, byte[]> deriveIDFromThing,
+            ReplayDetector<TSigned> replayDetector
             )
         {
             _deriveIDFromThing = deriveIDFromThing;
             _generateCredentials = generateCredentials;
             _passesDomainSpecificValidation = passesDomainSpecificValidation;
+            _replayDetector = replayDetector;
             _signer = signer;
         }
 
@@ -42,6 +46,10 @@ namespace Common.Security.Signing
                 // Make sure it's a full (non-null) message
                 if (typeof(TSigned).GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(property => ReferenceEquals(property.GetValue(thing), null)))
                     return false; // One of the properties is null
+
+                // Make sure we haven't seen this thing before
+                if (!_replayDetector.IsNew(thing))
+                    return false;
 
                 // See if it fails domain-specific validation
                 if (!_passesDomainSpecificValidation(thing))
