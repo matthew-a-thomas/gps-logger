@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common.Serialization;
-using System.Linq;
 using Newtonsoft.Json;
 using Common.Security.Signing;
 

@@ -1,8 +1,6 @@
 ﻿using Common.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 using System.Text;
 using static GPS_Logger.Controllers.HMACKeyController;
 
