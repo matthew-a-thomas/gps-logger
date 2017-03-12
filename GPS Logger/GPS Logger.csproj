@@ -6,9 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="tests\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="tests\**" />
     <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="tests\**" />
     <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="tests\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
