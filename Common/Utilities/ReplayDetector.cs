@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
 
@@ -15,7 +16,7 @@ namespace Common.Utilities
         /// </summary>
         private readonly TimeSpan _window;
 
-        private readonly ConcurrentDictionary<T, Wrapper<int>> _counts;
+        private readonly ConcurrentDictionary<string, Wrapper<int>> _counts;
 
         /// <summary>
         /// Creates a new replay detector, which can tell if an instance of T has been seen by the "InNew" function within the past "window" timeframe
@@ -24,7 +25,7 @@ namespace Common.Utilities
         public ReplayDetector(TimeSpan window)
         {
             _window = window;
-            _counts = new ConcurrentDictionary<T, Wrapper<int>>();
+            _counts = new ConcurrentDictionary<string, Wrapper<int>>();
         }
 
         /// <summary>
@@ -36,16 +37,17 @@ namespace Common.Utilities
         public bool IsNew(T thing)
         {
             var result = false;
+            var serialized = JsonConvert.SerializeObject(thing); // Serializing something ensures that .Equals doesn't have to be implemented correctly on T
             RaceConditionBreaker.BreakRaceCondition(() =>
             {
                 // ReSharper disable once InconsistentlySynchronizedField
-                var count = _counts.GetOrAdd(thing, new Wrapper<int>());
+                var count = _counts.GetOrAdd(serialized, new Wrapper<int>());
                 lock (count)
                 {
                     // It's a race condition between grabbing the thing out of the dictionary and acquiring a lock on it.
                     // In that time someone could have removed it from the dictionary (meaning the count went down to zero for them)
                     // so we need to double-check that this exact thing is still in the dictionary
-                    if (!_counts.TryGetValue(thing, out Wrapper<int> check) || !ReferenceEquals(check, count))
+                    if (!_counts.TryGetValue(serialized, out Wrapper<int> check) || !ReferenceEquals(check, count))
                     {
                         return true; // Try again
                     }
@@ -68,7 +70,7 @@ namespace Common.Utilities
                                 {
                                     // This count is through... we can remove it from memory
                                     // Note that this is where the race condition above came from
-                                    _counts.TryRemove(thing, out Wrapper<int> o);
+                                    _counts.TryRemove(serialized, out Wrapper<int> o);
                                 }
                             }
                         }
