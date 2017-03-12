@@ -21,10 +21,9 @@ namespace Common.Tests.Utilities
             [TestMethod]
             public void SaysOldThingIsOld()
             {
-                const string value = "value";
-                var detector = new ReplayDetector<string>(TimeSpan.FromMilliseconds(10));
-                detector.IsNew(value);
-                Assert.IsFalse(detector.IsNew(value));
+                var detector = new ReplayDetector<object>(TimeSpan.FromMilliseconds(10));
+                detector.IsNew(new object());
+                Assert.IsFalse(detector.IsNew(new object()));
             }
 
             [TestMethod]

@@ -1,4 +1,8 @@
-﻿namespace Common.Messages
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Common.Messages
 {
     public class Message<T>
     {

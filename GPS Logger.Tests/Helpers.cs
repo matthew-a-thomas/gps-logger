@@ -33,6 +33,20 @@ namespace GPS_Logger.Tests
             JsonConvert.DeserializeObject(Get(server, url));
         }
 
+        public static void AssertIsNotSigned<T>(SignedMessage<T> signedMessage)
+        {
+            var threw = false;
+            try
+            {
+                AssertSigningFieldsAreNonNull(signedMessage);
+            }
+            catch
+            {
+                threw = true;
+            }
+            Assert.IsTrue(threw);
+        }
+
         public static void AssertSigningFieldsAreNonNull<T>(SignedMessage<T> signedMessage)
         {
             Assert.IsNotNull(signedMessage.HMAC);

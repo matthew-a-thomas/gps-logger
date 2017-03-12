@@ -9,21 +9,68 @@ using Common.Extensions;
 using GPS_Logger.Models;
 using Common.Serialization;
 using Common.Security.Signing;
+using Common.Extensions.Security;
+using Common.Security;
+using Common.Messages;
 
 namespace GPS_Logger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
     public class LocationControllerClass
     {
+        private static readonly ISerializer<Location> LocationSerializer = new Func<Serializer<Location>>(() =>
+        {
+            var result = new Serializer<Location>();
+            result.EnqueueStep(x => x.Latitude);
+            result.EnqueueStep(x => x.Longitude);
+            return result;
+        })();
         private const string Root = "/api/location";
         private readonly TestServer _server = Helpers.CreateServer();
 
         [TestMethod]
+        public void CannotReplayPost()
+        {
+            var signedResponse = CredentialControllerClass.GetSignedCredential(_server);
+            var credentialAsStrings = signedResponse.Contents;
+            var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
+            var messageSerializer = new MessageSerializer<Location>(LocationSerializer);
+
+            var requestContents = new Location
+            {
+                Latitude = 0,
+                Longitude = 0
+            };
+            var signer = new Signer<SignedMessage<Location>, Message<Location>>(
+                new HMACProvider(() => new byte[0]),
+                messageSerializer,
+                new MapperTranslator<Message<Location>, SignedMessage<Location>>()
+                );
+            var request = signer.Sign(
+                new Message<Location>
+                {
+                    Contents = requestContents,
+                    ID = credentialAsStrings.ID,
+                    Salt = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString(),
+                    UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                },
+                credentialAsBytes.Secret);
+
+            // Make the request twice
+            SignedMessage<bool> deserializedResponse = null;
+            for (var iteration = 0; iteration < 2; ++iteration)
+            {
+                var response = Helpers.Post(_server, Root, request);
+                deserializedResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(response);
+            }
+
+            // Assert that the result is not signed
+            Helpers.AssertIsNotSigned(deserializedResponse);
+        }
+
+        [TestMethod]
         public void CanPost()
         {
-            var locationSerializer = new Serializer<Location>();
-            locationSerializer.EnqueueStep(x => x.Latitude);
-            locationSerializer.EnqueueStep(x => x.Longitude);
             CredentialControllerClass
                 .DoWithSignedRequest(
                 _server,
@@ -33,7 +80,7 @@ namespace GPS_Logger.Tests.IntegrationTests.Controllers
                     Latitude = -9,
                     Longitude = 10
                 },
-                locationSerializer,
+                LocationSerializer,
                 (request, server) =>
                 {
                     var response = Helpers.Post(server, Root, request);

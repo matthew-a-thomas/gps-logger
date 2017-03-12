@@ -15,6 +15,7 @@ using GPS_Logger.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Common.Utilities;
 
 namespace GPS_Logger
 {
@@ -151,13 +152,15 @@ namespace GPS_Logger
             builder.RegisterType<MapperTranslator<Message<TResponse>, SignedMessage<TResponse>>>().As<ITranslator<Message<TResponse>, SignedMessage<TResponse>>>();
             builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
+            var slidingWindow = TimeSpan.FromMinutes(1);
+            builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(slidingWindow)).SingleInstance();
             builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
 
                 // It isn't valid if the timestamps are too different
                 var minutesOff = (DateTimeOffset.Now - DateTimeOffset.FromUnixTimeSeconds(message.UnixTime)).TotalMinutes;
-                if (Math.Abs(minutesOff) > 1.0)
+                if (Math.Abs(minutesOff) >= slidingWindow.TotalMinutes)
                     return false;
 
                 // It isn't valid if the hex string fields aren't valid hex strings
