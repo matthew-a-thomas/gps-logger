@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.Net.Http.Headers;
 using System.IO;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace GPS_Logger.Tests
 {
@@ -67,7 +69,28 @@ namespace GPS_Logger.Tests
             // Create a temp directory for this server to run from
             var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
             var contentRoot = Path.Combine(baseDirectory, "tests", temp);
-            Directory.CreateDirectory(contentRoot);
+            var contentRootDirectory = Directory.CreateDirectory(contentRoot);
+
+            // Clean up older files on a background thread
+            var pattern = new Regex(@"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2} - [a-f0-9\-]+$");
+            Assert.IsTrue(pattern.IsMatch(contentRootDirectory.Name));
+            var maxAge = TimeSpan.FromDays(1);
+            Task.Run(() =>
+            {
+                foreach (var directory in
+                    contentRootDirectory
+                    .Parent
+                    .EnumerateDirectories()
+                    .Where(directory => pattern.IsMatch(directory.Name))
+                    .Where(directory => DateTimeOffset.Now - directory.CreationTimeUtc > maxAge))
+                {
+                    try
+                    {
+                        directory.Delete(true);
+                    }
+                    catch { }
+                }
+            });
 
             // Copy over needed files
             foreach (var file in new[]
