@@ -153,7 +153,7 @@ namespace GPS_Logger
             builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
-            builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(slidingWindow)).SingleInstance();
+            builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
             builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
