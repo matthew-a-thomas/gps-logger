@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>    
-    <TargetFramework>netcoreapp1.1</TargetFramework>    
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <RootNamespace>GPS_Logger.Tests</RootNamespace>
+    <PackageTargetFallback>portable-net45+win8+wp8+wpa81</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
