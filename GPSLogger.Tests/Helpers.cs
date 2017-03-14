@@ -64,7 +64,7 @@ namespace GPSLogger.Tests
         {
             // Figure out where the GPS Logger directory is
             var startingLocation = new DirectoryInfo(Path.GetDirectoryName(typeof(Helpers).GetTypeInfo().Assembly.Location));
-            var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, "GPS Logger");
+            var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, typeof(Startup).Namespace);
 
             // Create a temp directory for this server to run from
             var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
