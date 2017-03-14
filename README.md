@@ -4,7 +4,7 @@ GPS logging website
  - ASP.Net Core 1.1
  - Autofac
 
-See it in action here: https://switchigan.azurewebsites.net/ (note this website is lagging behind until [issue 23](https://github.com/matthew-a-thomas/gps-logger/issues/23) is resolved).
+See it in action here: https://switchigan.azurewebsites.net/.
 
 [Skip down to the good stuff](#generate-new-client-credentials).
 
