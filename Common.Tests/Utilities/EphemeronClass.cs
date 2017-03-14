@@ -26,8 +26,7 @@ namespace Common.Tests.Utilities
             var ephemeron = new Ephemeron(() => invoked = true);
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            Assert.IsFalse(invoked);
-            ephemeron = null;
+            Assert.IsFalse(invoked, $"{nameof(invoked)} is supposed to be false, but was {invoked} instead. Here's the ephemeron: {ephemeron}");
         }
     }
 }
