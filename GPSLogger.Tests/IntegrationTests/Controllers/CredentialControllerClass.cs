@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace GPS_Logger.Tests.IntegrationTests.Controllers
+namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
     public class CredentialControllerClass

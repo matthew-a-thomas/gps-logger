@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace GPS_Logger
+namespace GPSLogger
 {
     public class Program
     {

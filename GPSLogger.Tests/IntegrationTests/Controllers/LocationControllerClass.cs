@@ -6,14 +6,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Linq;
 using Common.Extensions;
-using GPS_Logger.Models;
+using GPSLogger.Models;
 using Common.Serialization;
 using Common.Security.Signing;
 using Common.Extensions.Security;
 using Common.Security;
 using Common.Messages;
 
-namespace GPS_Logger.Tests.IntegrationTests.Controllers
+namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
     public class LocationControllerClass

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <None Remove=".gitignore" />
+    <None Remove="jtdsnv4e.ls5~" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.4.0" />
