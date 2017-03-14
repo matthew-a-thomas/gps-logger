@@ -5,7 +5,7 @@ using Common.Serialization;
 using Newtonsoft.Json;
 using Common.Security.Signing;
 
-namespace GPS_Logger.Tests.IntegrationTests.Controllers
+namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
     public class TimeControllerClass

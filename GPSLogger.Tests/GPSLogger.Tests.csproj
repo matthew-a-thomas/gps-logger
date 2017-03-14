@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <RootNamespace>GPS_Logger.Tests</RootNamespace>
+    <RootNamespace>GPSLogger.Tests</RootNamespace>
     <PackageTargetFallback>portable-net45+win8+wp8+wpa81</PackageTargetFallback>
   </PropertyGroup>
 
@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\GPS Logger\GPS Logger.csproj" />
+    <ProjectReference Include="..\GPSLogger\GPSLogger.csproj" />
   </ItemGroup>
 
   <ItemGroup>

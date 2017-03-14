@@ -15,7 +15,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace GPS_Logger.Tests
+namespace GPSLogger.Tests
 {
     public static class Helpers
     {

@@ -10,14 +10,14 @@ using Common.Messages;
 using Common.Security;
 using Common.Security.Signing;
 using Common.Serialization;
-using GPS_Logger.Controllers;
-using GPS_Logger.Models;
+using GPSLogger.Controllers;
+using GPSLogger.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Common.Utilities;
 
-namespace GPS_Logger
+namespace GPSLogger
 {
     public class CompositionRoot : Autofac.Module
     {

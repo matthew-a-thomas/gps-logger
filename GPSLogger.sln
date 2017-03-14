@@ -5,11 +5,11 @@ VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{E9F57F32-5A67-4FF7-91B0-03720E30F3F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPS Logger", "GPS Logger\GPS Logger.csproj", "{2F256617-80F9-41AB-BC07-B6E55F4F5C4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPSLogger", "GPSLogger\GPSLogger.csproj", "{2F256617-80F9-41AB-BC07-B6E55F4F5C4A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Common.Tests\Common.Tests.csproj", "{C4746CD5-54E2-4966-A949-5C0E3BBC41DE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPS Logger.Tests", "GPS Logger.Tests\GPS Logger.Tests.csproj", "{ECB5F583-C91F-4455-BBF8-484A292312ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPSLogger.Tests", "GPSLogger.Tests\GPSLogger.Tests.csproj", "{ECB5F583-C91F-4455-BBF8-484A292312ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

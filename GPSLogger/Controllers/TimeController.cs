@@ -3,7 +3,7 @@ using Common.Messages;
 using Common.Security.Signing;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Controllers
+namespace GPSLogger.Controllers
 {
     [Route("api/[controller]")]
     public class TimeController : ControllerBase

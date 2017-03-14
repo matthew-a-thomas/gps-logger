@@ -3,10 +3,10 @@ using System.Linq;
 using Common.Extensions;
 using Common.Messages;
 using Common.Security.Signing;
-using GPS_Logger.Models;
+using GPSLogger.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GPS_Logger.Controllers
+namespace GPSLogger.Controllers
 {
     /// <summary>
     /// Handles saving and storing Locations

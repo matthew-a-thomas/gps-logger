@@ -1,4 +1,4 @@
-﻿namespace GPS_Logger.Models
+﻿namespace GPSLogger.Models
 {
     /// <summary>
     /// A location

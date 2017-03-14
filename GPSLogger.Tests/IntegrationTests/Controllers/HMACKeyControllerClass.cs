@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
-using static GPS_Logger.Controllers.HMACKeyController;
+using static GPSLogger.Controllers.HMACKeyController;
 
-namespace GPS_Logger.Tests.IntegrationTests.Controllers
+namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
     public class HMACKeyControllerClass
