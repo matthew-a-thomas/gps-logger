@@ -1,5 +1,7 @@
 # gps-logger
 
+![Build status](https://switchigan.visualstudio.com/_apis/public/build/definitions/b9ab85f0-68c5-423a-ac34-feeb8afba200/5/badge "Build status")
+
 GPS logging website
  - ASP.Net Core 1.1
  - Autofac
