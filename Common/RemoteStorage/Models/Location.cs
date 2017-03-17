@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Common.RemoteStorage.Models
+﻿namespace Common.RemoteStorage.Models
 {
+    /// <summary>
+    /// A location
+    /// </summary>
     public class Location
     {
-        public Identifier Identifier { get; set; }
-
-        public DateTime Timestamp { get; set; }
-
+        /// <summary>
+        /// The latitude
+        /// </summary>
         public double Latitude { get; set; }
 
+        /// <summary>
+        /// The longitude
+        /// </summary>
         public double Longitude { get; set; }
     }
 }
