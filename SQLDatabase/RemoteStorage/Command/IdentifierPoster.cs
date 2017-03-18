@@ -31,21 +31,25 @@ from
 where
 	identifiers.id is null
 
+declare @id int
+
 if @@rowcount = 1
 begin
     -- Return the generated ID, if a record was inserted
-	select scope_identity()
+	set @id = scope_identity()
 end
 else
 begin
     -- else return the ID that matches the given @hex
 	select
-		id
+		@id = id
 	from
 		identifiers
 	where
 		identifiers.hex = @hex
 end
+
+select @id
 
 -- Note that while it would be faster to select to see if an ID already exists, I can't think of a quick way to do that without introducing a race condition
 ",
