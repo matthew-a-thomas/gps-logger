@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests
 {
@@ -24,7 +25,7 @@ namespace SQLDatabase.Tests
             }
 
             [TestMethod]
-            public async void ReturnsConnectionThatCanSelectFromLocations()
+            public async Task ReturnsConnectionThatCanSelectFromLocations()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection))
@@ -32,7 +33,7 @@ namespace SQLDatabase.Tests
             }
 
             [TestMethod]
-            public async void ReturnsConnectionThatCanSelectFromIdentifiers()
+            public async Task ReturnsConnectionThatCanSelectFromIdentifiers()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection))
@@ -40,7 +41,7 @@ namespace SQLDatabase.Tests
             }
 
             [TestMethod]
-            public async void ReturnsConnectionThatCanInsertIdentifier()
+            public async Task ReturnsConnectionThatCanInsertIdentifier()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
@@ -51,7 +52,7 @@ namespace SQLDatabase.Tests
             }
 
             [TestMethod]
-            public async void ReturnsConnectionThatCanInsertLocation()
+            public async Task ReturnsConnectionThatCanInsertLocation()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
