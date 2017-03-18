@@ -14,7 +14,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
     public class LocationPosterClass
     {
         [TestClass]
-        public class PostLocationMethod
+        public class PostLocationAsyncMethod
         {
             [TestMethod]
             public async Task AllowsPostingForRandomID()
