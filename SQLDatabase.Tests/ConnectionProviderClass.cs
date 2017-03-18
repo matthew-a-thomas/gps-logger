@@ -1,16 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SQLDatabase.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests
 {
     [TestClass]
-    public class HelperClass
+    public class ConnectionProviderClass
     {
         [TestClass]
         public class CreateConnectionMethod
@@ -18,7 +15,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public void ReturnsAnOpenConnection()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 {
                     Assert.IsTrue(connection.State == ConnectionState.Open);
                 }
@@ -27,7 +25,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public async Task ReturnsConnectionThatCanSelectFromLocations()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection))
                     await transaction.GetAsync<int>("select count(*) from locations");
             }
@@ -35,7 +34,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public async Task ReturnsConnectionThatCanSelectFromIdentifiers()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection))
                     await transaction.GetAsync<int>("select count(*) from identifiers");
             }
@@ -43,7 +43,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public async Task ReturnsConnectionThatCanInsertIdentifier()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
                 {
                     var numAffected = await transaction.ExecuteAsync("insert into identifiers(hex) values (0x0000)");
@@ -54,7 +55,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public async Task ReturnsConnectionThatCanInsertLocation()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
                 {
                     var id = await transaction.GetAsync<int>("insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id");

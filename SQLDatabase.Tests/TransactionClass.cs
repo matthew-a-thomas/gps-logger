@@ -14,7 +14,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public void CreatesCommand()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection))
                 using (var command = transaction.CreateCommand())
                     Assert.IsNotNull(command);
@@ -23,7 +24,8 @@ namespace SQLDatabase.Tests
             [TestMethod]
             public void CreatesCommandThatIsInATransaction()
             {
-                using (var connection = Helper.CreateConnection())
+                var provider = new ConnectionProvider(Helper.GetConnectionString());
+                using (var connection = provider.CreateConnection())
                 using (var transaction = new Transaction(connection))
                 using (var command = transaction.CreateCommand())
                     Assert.IsNotNull(command?.Transaction);
