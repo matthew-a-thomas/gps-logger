@@ -12,7 +12,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
     public class LocationProviderClass
     {
         [TestClass]
-        public class GetAllLocationsMethod
+        public class GetAllLocationsAsyncMethod
         {
             [TestMethod]
             public void ReturnsNoLocationsForRandomID()

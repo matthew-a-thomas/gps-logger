@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Common.RemoteStorage.Models;
+using System.Threading.Tasks;
 
 namespace SQLDatabase.RemoteStorage.Query
 {
     internal class LocationProvider : ILocationProvider
     {
-        public IEnumerable<IdentifiedLocation> GetAllLocations(byte[] forIdentifier)
+        public async Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
             throw new NotImplementedException();
         }
