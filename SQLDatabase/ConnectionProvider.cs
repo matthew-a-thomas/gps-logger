@@ -8,7 +8,7 @@ namespace SQLDatabase
     /// <summary>
     /// Opens SQL connections
     /// </summary>
-    public class ConnectionProvider
+    internal class ConnectionProvider
     {
         private readonly string _connectionString;
 
