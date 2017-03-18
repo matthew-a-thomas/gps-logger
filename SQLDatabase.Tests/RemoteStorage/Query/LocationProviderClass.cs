@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests.RemoteStorage.Query
 {
@@ -15,14 +16,14 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
         public class GetAllLocationsAsyncMethod
         {
             [TestMethod]
-            public void ReturnsNoLocationsForRandomID()
+            public async Task ReturnsNoLocationsForRandomID()
             {
                 var provider = new LocationProvider();
                 using (var rng = RandomNumberGenerator.Create())
                 {
                     var id = new byte[16];
                     rng.GetBytes(id);
-                    var locations = provider.GetAllLocations(id);
+                    var locations = await provider.GetAllLocationsAsync(id);
                     Assert.IsTrue(!locations.Any());
                 }
             }
