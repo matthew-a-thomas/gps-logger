@@ -36,7 +36,7 @@ namespace SQLDatabase.Tests
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection))
-                    await transaction.GetAsync<int>("select count(*) from identifiers";
+                    await transaction.GetAsync<int>("select count(*) from identifiers");
             }
 
             [TestMethod]
