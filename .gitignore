@@ -2,3 +2,4 @@
 /packages/
 /TestResults/
 *.user
+*.secret
