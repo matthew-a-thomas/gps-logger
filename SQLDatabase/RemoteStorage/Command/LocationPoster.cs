@@ -3,14 +3,46 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Common.RemoteStorage.Models;
+using System.Threading.Tasks;
+using SQLDatabase.Extensions;
+using System.Data.SqlClient;
 
 namespace SQLDatabase.RemoteStorage.Command
 {
-    public class LocationPoster : ILocationPoster
+    internal class LocationPoster : ILocationPoster
     {
-        public void PostLocation(byte[] identifier, Location location)
+        private readonly IdentifierPoster _identifierPoster;
+        private readonly Transaction _transaction;
+
+        public LocationPoster(
+            IdentifierPoster identifierPoster,
+            Transaction transaction
+            )
         {
-            throw new NotImplementedException();
+            _identifierPoster = identifierPoster;
+            _transaction = transaction;
+        }
+
+        public async Task PostLocationAsync(byte[] identifier, Location location)
+        {
+            var id = await _identifierPoster.PostOrGetIdentifierAsync(_transaction, identifier);
+            await _transaction.ExecuteAsync(@"
+insert into
+    locations (
+        id,
+        latitude,
+        longitude
+    )
+values (
+    @id,
+    @latitude,
+    @longitude
+)
+",
+                new SqlParameter("@id", id),
+                new SqlParameter("@latitude", location.Latitude),
+                new SqlParameter("@longitude", location.Longitude)
+                );
         }
     }
 }

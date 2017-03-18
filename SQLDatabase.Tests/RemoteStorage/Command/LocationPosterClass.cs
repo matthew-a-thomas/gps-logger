@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests.RemoteStorage.Command
 {
@@ -16,16 +17,20 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
         public class PostLocationMethod
         {
             [TestMethod]
-            public void AllowsPostingForRandomID()
+            public async Task AllowsPostingForRandomID()
             {
-                var poster = new LocationPoster();
-                var id = new byte[16];
-                using (var rng = RandomNumberGenerator.Create())
-                    rng.GetBytes(id);
-                poster.PostLocation(id, new Location
+                await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    Latitude = 0,
-                    Longitude = 0
+                    var identifierPoster = new IdentifierPoster();
+                    var poster = new LocationPoster(identifierPoster, transaction);
+                    var id = new byte[16];
+                    using (var rng = RandomNumberGenerator.Create())
+                        rng.GetBytes(id);
+                    await poster.PostLocationAsync(id, new Location
+                    {
+                        Latitude = 0,
+                        Longitude = 0
+                    });
                 });
             }
         }

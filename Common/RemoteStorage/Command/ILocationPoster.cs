@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Common.RemoteStorage.Command
 {
     public interface ILocationPoster
     {
-        void PostLocation(byte[] identifier, Location location);
+        Task PostLocationAsync(byte[] identifier, Location location);
     }
 }
