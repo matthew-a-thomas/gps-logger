@@ -12,16 +12,13 @@ namespace SQLDatabase
     {
         private readonly SqlTransaction _transaction;
         private readonly SqlConnection _connection;
-        private readonly bool _allowCommits;
 
         /// <summary>
         /// Creates a new factory for commands that are within transactions and executed against this SqlConnection
         /// </summary>
         /// <param name="sqlConnection"></param>
-        /// <param name="allowCommits"></param>
-        public Transaction(SqlConnection sqlConnection, bool allowCommits = true)
+        public Transaction(SqlConnection sqlConnection)
         {
-            _allowCommits = allowCommits;
             _connection = sqlConnection;
             _transaction = sqlConnection.BeginTransaction();
         }
@@ -29,11 +26,7 @@ namespace SQLDatabase
         /// <summary>
         /// Commits this transaction, if commits are allowed
         /// </summary>
-        public void Commit()
-        {
-            if (_allowCommits)
-                _transaction.Commit();
-        }
+        public void Commit() => _transaction.Commit();
 
         /// <summary>
         /// Creates a new SqlCommand that is within this transaction
