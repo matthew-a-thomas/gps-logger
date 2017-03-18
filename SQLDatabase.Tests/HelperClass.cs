@@ -1,7 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SQLDatabase.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 namespace SQLDatabase.Tests
@@ -22,61 +24,41 @@ namespace SQLDatabase.Tests
             }
 
             [TestMethod]
-            public void ReturnsConnectionThatCanSelectFromLocations()
+            public async void ReturnsConnectionThatCanSelectFromLocations()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection))
-                using (var command = transaction.CreateCommand())
-                {
-                    command.CommandText = "select count(*) from locations";
-                    command.ExecuteScalar();
-                }
+                    await transaction.GetAsync<int>("select count(*) from locations");
             }
 
             [TestMethod]
-            public void ReturnsConnectionThatCanSelectFromIdentifiers()
+            public async void ReturnsConnectionThatCanSelectFromIdentifiers()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection))
-                using (var command = transaction.CreateCommand())
-                {
-                    command.CommandText = "select count(*) from identifiers";
-                    command.ExecuteScalar();
-                }
+                    await transaction.GetAsync<int>("select count(*) from identifiers";
             }
 
             [TestMethod]
-            public void ReturnsConnectionThatCanInsertIdentifier()
+            public async void ReturnsConnectionThatCanInsertIdentifier()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
-                using (var command = transaction.CreateCommand())
                 {
-                    command.CommandText = "insert into identifiers(hex) values (0x0000)";
-                    var numAffected = command.ExecuteNonQuery();
+                    var numAffected = await transaction.ExecuteAsync("insert into identifiers(hex) values (0x0000)");
                     Assert.AreEqual(1, numAffected);
                 }
             }
 
             [TestMethod]
-            public void ReturnsConnectionThatCanInsertLocation()
+            public async void ReturnsConnectionThatCanInsertLocation()
             {
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
                 {
-                    int id;
-                    using (var command = transaction.CreateCommand())
-                    {
-                        command.CommandText = "insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id";
-                        id = (int)command.ExecuteScalar();
-                    }
-                    using (var command = transaction.CreateCommand())
-                    {
-                        command.CommandText = "insert into locations(id, latitude, longitude) values (@id, 0, 0)";
-                        command.Parameters.AddWithValue("@id", id);
-                        var numAffected = command.ExecuteNonQuery();
-                        Assert.AreEqual(1, numAffected);
-                    }
+                    var id = transaction.GetAsync<int>("insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id");
+                    var numAffected = await transaction.ExecuteAsync("insert into locations(id, latitude, longitude) values (@id, 0, 0)", new SqlParameter("@id", id));
+                    Assert.AreEqual(1, numAffected);
                 }
             }
         }
