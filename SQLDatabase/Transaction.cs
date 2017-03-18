@@ -12,15 +12,27 @@ namespace SQLDatabase
     {
         private readonly SqlTransaction _transaction;
         private readonly SqlConnection _connection;
+        private readonly bool _allowCommits;
 
         /// <summary>
         /// Creates a new factory for commands that are within transactions and executed against this SqlConnection
         /// </summary>
         /// <param name="sqlConnection"></param>
-        public Transaction(SqlConnection sqlConnection)
+        /// <param name="allowCommits"></param>
+        public Transaction(SqlConnection sqlConnection, bool allowCommits = true)
         {
+            _allowCommits = allowCommits;
             _connection = sqlConnection;
             _transaction = sqlConnection.BeginTransaction();
+        }
+
+        /// <summary>
+        /// Commits this transaction, if commits are allowed
+        /// </summary>
+        public void Commit()
+        {
+            if (_allowCommits)
+                _transaction.Commit();
         }
 
         /// <summary>
@@ -35,7 +47,7 @@ namespace SQLDatabase
         }
 
         /// <summary>
-        /// Disposes the transaction, rolling it back
+        /// Rolls back this transaction
         /// </summary>
         public void Dispose() => _transaction.Dispose();
     }
