@@ -15,7 +15,7 @@ namespace SQLDatabase.Tests
         /// <returns></returns>
         private static string GetConnectionString()
         {
-            using (var reader = File.OpenText(@"\connection string.txt")) // TODO: Change this to a location that your build server is able to access, but that is kept secret from 
+            using (var reader = File.OpenText(@"C:\connection string.txt")) // TODO: Change this to a location that your build server is able to access, but that is kept secret from 
             {
                 return reader.ReadToEnd();
             }
