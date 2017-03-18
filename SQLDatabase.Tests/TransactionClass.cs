@@ -39,7 +39,7 @@ namespace SQLDatabase.Tests
                         // The transaction has not yet been committed
                         await DoWithTransactionAsync(async transaction2 =>
                         {
-                            var count = await transaction2.GetAsync<int>("select count(*) from identifiers where hex = @hex", new SqlParameter("@hex", identifier));
+                            var count = await transaction2.GetAsync<int>("select count(*) from identifiers with (readpast) where hex = @hex", new SqlParameter("@hex", identifier));
                             Assert.AreEqual(0, count);
                         });
                     }
