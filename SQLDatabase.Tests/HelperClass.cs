@@ -57,7 +57,7 @@ namespace SQLDatabase.Tests
                 using (var connection = Helper.CreateConnection())
                 using (var transaction = new Transaction(connection)) // Is automatically rolled back
                 {
-                    var id = transaction.GetAsync<int>("insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id");
+                    var id = await transaction.GetAsync<int>("insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id");
                     var numAffected = await transaction.ExecuteAsync("insert into locations(id, latitude, longitude) values (@id, 0, 0)", new SqlParameter("@id", id));
                     Assert.AreEqual(1, numAffected);
                 }
