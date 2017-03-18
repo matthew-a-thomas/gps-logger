@@ -6,7 +6,7 @@ using Common.RemoteStorage.Models;
 
 namespace SQLDatabase.RemoteStorage.Query
 {
-    public class LocationProvider : ILocationProvider
+    internal class LocationProvider : ILocationProvider
     {
         public IEnumerable<IdentifiedLocation> GetAllLocations(byte[] forIdentifier)
         {
