@@ -11,6 +11,7 @@ namespace SQLDatabase.RemoteStorage.Query
     {
         public async Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
+            await Task.Run(() => { });
             throw new NotImplementedException();
         }
     }
