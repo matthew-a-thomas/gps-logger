@@ -33,6 +33,7 @@ MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note tha
  - Autofac is used for Dependency Injection
  - Resource-constrained clients
  - Private logging, public reading
+ - Abstracted data access layer (currently SQL Server, but will be easy to replace that with a document store)
 
 ## Message protocol
 
