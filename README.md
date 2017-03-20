@@ -28,6 +28,14 @@ Timestamps are included in messages so that replay attacks can be limited. The s
 
 MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). Still, [options will be explored for the upcoming v2.0 release](https://github.com/matthew-a-thomas/gps-logger/issues/48).
 
+## Testing
+
+A variety of tests are included in the solution, ranging from unit tests to integration tests.
+
+Most of the integration tests are automatic and you won't need to provide any magic strings or config values. For example, Reflection is used to determine where to create an `App_Data` folder in relation to the `GPSLogger` assembly. Also, test files are automatically retained for a day and then cleaned up after a subsequent test run.
+
+However, the `SQLDatabase.Tests` do require a magic string: they require a connection string to a dev/test SQL Server database against which to run integration tests. I'm doing my best to only run tests within transactions that are rolled back, but since there's no way to embed SQL Server then you'll need to provide a connection string. That connection string needs to live within a file on your hard drive called `C:\connection string.txt`. If you have ideas for how I can keep connection strings secret (AKA separate from this GitHub project), then please [submit an issue](https://github.com/matthew-a-thomas/gps-logger/issues/new).
+
 ## Design choices
 
  - Autofac is used for Dependency Injection
