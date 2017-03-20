@@ -24,7 +24,7 @@ In a similar way, clients can verify responses from the server by HMAC'ing them 
 
 Therefore, clients can only post locations for themselves. The server can tell if a client (or middle man) sends a request with an ID that it doesn't have the secret for.
 
-Timestamps are included in messages so that replay attacks can be limited. The server checks to make sure the request timestamp is within +/- 1 minute of the server's current time, and that it hasn't seen the given request recently. This isn't perfect, though; [issue 31](https://github.com/matthew-a-thomas/gps-logger/issues/31) is open to fix a bug with the current implementation, and [issue 30](https://github.com/matthew-a-thomas/gps-logger/issues/30) is open to expand this functionality beyond just the Location controller.
+Timestamps are included in messages so that replay attacks can be limited. The server checks to make sure the request timestamp is within +/- 1 minute of the server's current time, and that it hasn't seen the given request recently. Note that [issue 30](https://github.com/matthew-a-thomas/gps-logger/issues/30) is open to expand this functionality beyond just the Location controller.
 
 MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). Still, [options will be explored for the upcoming v2.0 release](https://github.com/matthew-a-thomas/gps-logger/issues/48).
 
