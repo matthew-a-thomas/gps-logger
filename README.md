@@ -34,7 +34,7 @@ A variety of tests are included in the solution, ranging from unit tests to inte
 
 Most of the integration tests are automatic and you won't need to provide any magic strings or config values. For example, Reflection is used to determine where to create an `App_Data` folder in relation to the `GPSLogger` assembly. Also, test files are automatically retained for a day and then cleaned up after a subsequent test run.
 
-However, the `SQLDatabase.Tests` do require a magic string: they require a connection string to a dev/test SQL Server database against which to run integration tests. I'm doing my best to only run tests within transactions that are rolled back, but since there's no way to embed SQL Server then you'll need to provide a connection string. That connection string needs to live within a file on your hard drive called `C:\connection string.txt`. If you have ideas for how I can keep connection strings secret (AKA separate from this GitHub project), then please [submit an issue](https://github.com/matthew-a-thomas/gps-logger/issues/new).
+However, the `SQLDatabase.Tests` do require a magic string: they require a connection string to a dev/test SQL Server database against which to run integration tests. I'm doing my best to only run tests within transactions that are rolled back, but since there's no way to embed SQL Server then you'll need to provide a connection string. That connection string needs to live within a file on your hard drive called `C:\connection string.txt`. If you have other ideas for how I can keep connection strings secret (AKA separate from this GitHub project), then please [comment on this thread](https://github.com/matthew-a-thomas/gps-logger/issues/49).
 
 ## Design choices
 
