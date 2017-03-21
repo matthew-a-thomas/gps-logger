@@ -80,40 +80,41 @@ namespace SQLDatabase.Extensions
         public static async Task ProcessResultsAsync(this Transaction transaction, string commandText, Action<IReadOnlyDictionary<string, object>> fieldsHandler, params SqlParameter[] parameters)
         {
             // Get a SqlDataReader from the given command and parameters
-            var reader = await Do(
+            using (var reader = await Do(
                 transaction,
                 async command => await command.ExecuteReaderAsync(),
                 commandText,
                 parameters
-            );
-
-            // Set up async functions from the reader
-            var shouldLoopAsync = (Func<Task<bool>>)reader.ReadAsync;
-            var getAsync = new Func<SqlDataReader, Func<Task<IReadOnlyDictionary<string, object>>>>(_reader =>
+            ))
             {
-                return () => Task.Run(() =>
+                // Set up async functions from the reader
+                var shouldLoopAsync = (Func<Task<bool>>)reader.ReadAsync;
+                var getAsync = new Func<SqlDataReader, Func<Task<IReadOnlyDictionary<string, object>>>>(_reader =>
                 {
-                    var record = new Dictionary<string, object>();
-                    for (var i = 0; i < _reader.FieldCount; ++i)
+                    return () => Task.Run(() =>
                     {
-                        var name = _reader.GetName(i);
-                        var value = _reader.GetValue(i);
-                    }
-                    return (IReadOnlyDictionary<string, object>)record;
-                });
-            })(reader);
+                        var record = new Dictionary<string, object>();
+                        for (var i = 0; i < _reader.FieldCount; ++i)
+                        {
+                            var name = _reader.GetName(i);
+                            var value = _reader.GetValue(i);
+                        }
+                        return (IReadOnlyDictionary<string, object>)record;
+                    });
+                })(reader);
 
-            // Turn the async functions into an IObservable
-            var observable = getAsync.ToObservable(shouldLoopAsync);
+                // Turn the async functions into an IObservable
+                var observable = getAsync.ToObservable(shouldLoopAsync);
 
-            // Process the fields as they become available
-            var finished = new ManualResetEventSlim(); // This will be our signal for when the observable completes
-            using (observable.Subscribe(
-                onNext: fieldsHandler, // Invoke the handler for each set of fields
-                onCompleted: finished.Set // Set the gate when the observable completes
-            )) // Don't forget best practice of disposing IDisposables
-               // Asynchronously wait for the gate to be set
-                await Task.Run((Action)finished.Wait);
+                // Process the fields as they become available
+                var finished = new ManualResetEventSlim(); // This will be our signal for when the observable completes
+                using (observable.Subscribe(
+                    onNext: fieldsHandler, // Invoke the handler for each set of fields
+                    onCompleted: finished.Set // Set the gate when the observable completes
+                )) // Don't forget best practice of disposing IDisposables
+                   // Asynchronously wait for the gate to be set
+                    await Task.Run((Action)finished.Wait);
+            }
         }
     }
 }
