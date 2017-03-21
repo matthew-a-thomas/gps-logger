@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Common.Messages;
-using System.Linq;
+﻿using Common.Messages;
 
 namespace Common.Security.Signing
 {
