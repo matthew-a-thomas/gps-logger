@@ -9,16 +9,22 @@ namespace SQLDatabase.RemoteStorage.Command
 {
     internal class IdentifierPoster
     {
+        private readonly Transaction _transaction;
+
+        public IdentifierPoster(Transaction transaction)
+        {
+            _transaction = transaction;
+        }
+
         /// <summary>
         /// Creates a new record in the identifiers table and returns the generated ID,
         /// or selects the ID that already exists
         /// </summary>
-        /// <param name="transaction"></param>
         /// <param name="identifier"></param>
         /// <returns></returns>
-        public async Task<int> PostOrGetIdentifierAsync(Transaction transaction, byte[] identifier)
+        public async Task<int> PostOrGetIdentifierAsync(byte[] identifier)
         {
-            return await transaction.GetAsync<int>(@"
+            return await _transaction.GetAsync<int>(@"
 -- Insert the given @hex into [identifiers] if it isn't already there
 insert
 	identifiers (hex)

@@ -18,9 +18,9 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var poster = new IdentifierPoster();
+                    var poster = new IdentifierPoster(transaction);
                     var identifier = Guid.NewGuid().ToByteArray();
-                    var id = await poster.PostOrGetIdentifierAsync(transaction, identifier);
+                    var id = await poster.PostOrGetIdentifierAsync(identifier);
                 });
             }
 
@@ -29,10 +29,10 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var poster = new IdentifierPoster();
+                    var poster = new IdentifierPoster(transaction);
                     var identifier = Guid.NewGuid().ToByteArray();
-                    var id = await poster.PostOrGetIdentifierAsync(transaction, identifier);
-                    var secondID = await poster.PostOrGetIdentifierAsync(transaction, identifier);
+                    var id = await poster.PostOrGetIdentifierAsync(identifier);
+                    var secondID = await poster.PostOrGetIdentifierAsync(identifier);
                     Assert.AreEqual(id, secondID);
                 });
             }
