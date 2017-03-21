@@ -3,12 +3,12 @@
 ![Build status](https://switchigan.visualstudio.com/_apis/public/build/definitions/b9ab85f0-68c5-423a-ac34-feeb8afba200/5/badge "Build status")
 
 GPS logging website
- - ASP.Net Core 1.1
- - Autofac
-
-See it in action here: https://switchigan.azurewebsites.net/.
 
 [Skip down to the good stuff](#generate-new-client-credentials).
+
+Try out the API here:
+ - HTTPS: https://switchigan.azurewebsites.net/api/credential
+ - Non-HTTPS: http://switchigan.azurewebsites.net/api/credential
 
 # Documentation
 
