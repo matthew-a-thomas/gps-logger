@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SQLDatabase.Extensions
 {
-    public static class TransactionExtensions
+    internal static class TransactionExtensions
     {
         /// <summary>
         /// Performs the given action against a command created with the other parameters, returning the result of your function

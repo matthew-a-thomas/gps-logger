@@ -8,7 +8,7 @@ namespace SQLDatabase
     /// <summary>
     /// Factory for commands that are within transactions
     /// </summary>
-    public class Transaction : IDisposable
+    internal class Transaction : IDisposable
     {
         private readonly SqlTransaction _transaction;
         private readonly SqlConnection _connection;
