@@ -18,14 +18,17 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
             [TestMethod]
             public async Task ReturnsNoLocationsForRandomID()
             {
-                var provider = new LocationProvider();
-                using (var rng = RandomNumberGenerator.Create())
+                await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var id = new byte[16];
-                    rng.GetBytes(id);
-                    var locations = await provider.GetAllLocationsAsync(id);
-                    Assert.IsTrue(!locations.Any());
-                }
+                    var provider = new LocationProvider(transaction);
+                    using (var rng = RandomNumberGenerator.Create())
+                    {
+                        var id = new byte[16];
+                        rng.GetBytes(id);
+                        var locations = await provider.GetAllLocationsAsync(id);
+                        Assert.IsTrue(!locations.Any());
+                    }
+                });
             }
         }
     }
