@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="4.4.0" />
     <PackageReference Include="System.Composition.AttributedModel" Version="1.0.31" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
