@@ -14,7 +14,6 @@ namespace SQLDatabase
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
-            builder.RegisterType<IdentifierPoster>().As<IIdentifierPoster>();
             builder.RegisterType<LocationPoster>().As<ILocationPoster>();
         }
     }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SQLDatabase.RemoteStorage.Command
 {
-    internal class IdentifierPoster : IIdentifierPoster
+    internal class IdentifierPoster
     {
         private readonly Transaction _transaction;
 
