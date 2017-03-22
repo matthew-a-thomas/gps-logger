@@ -1,21 +1,22 @@
 ﻿using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Common.Security
 {
     // ReSharper disable once InconsistentNaming
     public class HMACProvider : IHMACProvider
     {
-        private readonly Delegates.HMACKeyProvider _hmacKeyProvider;
+        private readonly Delegates.HMACKeyProviderAsync _hmacKeyProviderAsync;
 
         public HMACProvider(
-            Delegates.HMACKeyProvider hmacKeyProvider
+            Delegates.HMACKeyProviderAsync hmacKeyProviderAsync
             )
         {
-            _hmacKeyProvider = hmacKeyProvider;
+            _hmacKeyProviderAsync = hmacKeyProviderAsync;
         }
 
-        public HMAC Get() => Get(_hmacKeyProvider());
+        public async Task<HMAC> GetAsync() => await GetAsync(await _hmacKeyProviderAsync());
 
-        public HMAC Get(byte[] key) => new HMACMD5(key);
+        public async Task<HMAC> GetAsync(byte[] key) => await Task.Run(() => new HMACMD5(key));
     }
 }

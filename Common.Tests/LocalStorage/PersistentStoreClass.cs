@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Common.LocalStorage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,13 +19,13 @@ namespace Common.Tests.LocalStorage
             return directoryInfo;
         }
 
-        internal static void DoWithTempPersistentStore(Action<PersistentStore> action)
+        internal static async Task DoWithTempPersistentStoreAsync(Func<PersistentStore, Task> actionAsync)
         {
             var directory = CreateTempDirectory();
             var store = new PersistentStore(directory);
             try
             {
-                action(store);
+                await actionAsync(store);
             }
             finally
             {
@@ -36,36 +37,36 @@ namespace Common.Tests.LocalStorage
         public class ExistsMethod
         {
             [TestMethod]
-            public void DoesNotBreakWithFunnyNames()
+            public async Task DoesNotBreakWithFunnyNames()
             {
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    store.Exists("../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
-                    store.Exists("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                    await store.ExistsAsync("../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
+                    await store.ExistsAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
                 });
             }
 
             [TestMethod]
-            public void ReturnsFalseForDummyDirectory()
+            public async Task ReturnsFalseForDummyDirectory()
             {
                 var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()));
-                Assert.IsFalse(store.Exists(Guid.NewGuid().ToString()));
+                Assert.IsFalse(await store.ExistsAsync(Guid.NewGuid().ToString()));
             }
 
             [TestMethod]
-            public void ReturnsTrueForSomethingThatExists()
+            public async Task ReturnsTrueForSomethingThatExists()
             {
                 var keyName = Guid.NewGuid().ToString();
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (store.Open(keyName, new Options
+                    using (await store.OpenAsync(keyName, new Options
                     {
                         FileAccess = FileAccess.ReadWrite,
                         FileMode = FileMode.OpenOrCreate,
                         FileShare = FileShare.None
                     }))
                     {
-                        Assert.IsTrue(store.Exists(keyName));
+                        Assert.IsTrue(await store.ExistsAsync(keyName));
                     }
                 });
             }
@@ -75,11 +76,11 @@ namespace Common.Tests.LocalStorage
         public class OpenMethod
         {
             [TestMethod]
-            public void CanCreateRandomKey()
+            public async Task CanCreateRandomKey()
             {
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (store.Open(Guid.NewGuid().ToString(), new Options
+                    using (await store.OpenAsync(Guid.NewGuid().ToString(), new Options
                     {
                         FileAccess = FileAccess.ReadWrite,
                         FileMode = FileMode.OpenOrCreate,
@@ -92,11 +93,11 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
-            public void CanWriteToStreamOpenedAsWrite()
+            public async Task CanWriteToStreamOpenedAsWrite()
             {
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
+                    using (var stream = await store.OpenAsync(Guid.NewGuid().ToString(), new Options
                     {
                         FileAccess = FileAccess.Write,
                         FileMode = FileMode.CreateNew,
@@ -109,7 +110,7 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
-            public void CannotOpenNonSharedKeyTwice()
+            public async Task CannotOpenNonSharedKeyTwice()
             {
                 var failed = false;
                 var keyName = Guid.NewGuid().ToString();
@@ -119,13 +120,13 @@ namespace Common.Tests.LocalStorage
                     FileMode = FileMode.OpenOrCreate,
                     FileShare = FileShare.None
                 };
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (store.Open(keyName, options))
+                    using (await store.OpenAsync(keyName, options))
                     {
                         try
                         {
-                            using (store.Open(keyName, options))
+                            using (await store.OpenAsync(keyName, options))
                             { }
                         }
                         catch
@@ -138,12 +139,12 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
-            public void CannotWriteToStreamOpenedAsRead()
+            public async Task CannotWriteToStreamOpenedAsRead()
             {
                 var failed = false;
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (var stream = store.Open(Guid.NewGuid().ToString(), new Options
+                    using (var stream = await store.OpenAsync(Guid.NewGuid().ToString(), new Options
                     {
                         FileAccess = FileAccess.Read,
                         FileMode = FileMode.OpenOrCreate,
@@ -164,12 +165,12 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
-            public void DoesNotBreakWithFunnyNames()
+            public async Task DoesNotBreakWithFunnyNames()
             {
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
                     using (
-                        store.Open(
+                        await store.OpenAsync(
                             "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../",
                             new Options
                             {
@@ -180,7 +181,7 @@ namespace Common.Tests.LocalStorage
                     {
                     }
                     using (
-                        store.Open("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|",
+                        await store.OpenAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|",
                             new Options
                             {
                                 FileAccess = FileAccess.ReadWrite,
@@ -193,14 +194,14 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
-            public void FailsToOpenNewKey()
+            public async Task FailsToOpenNewKey()
             {
                 var failed = false;
-                DoWithTempPersistentStore(store =>
+                await DoWithTempPersistentStoreAsync(async store =>
                 {
                     try
                     {
-                        using (store.Open(Guid.NewGuid().ToString(), new Options
+                        using (await store.OpenAsync(Guid.NewGuid().ToString(), new Options
                         {
                             FileAccess = FileAccess.Read,
                             FileMode = FileMode.Open,

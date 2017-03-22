@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common.Serialization;
@@ -11,16 +12,23 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
     public class TimeControllerClass
     {
         private const string Root = "/api/time";
-        private readonly TestServer _server = Helpers.CreateServer();
+        private readonly TestServer _server;
+
+        public TimeControllerClass()
+        {
+            var task = Helpers.CreateServerAsync();
+            task.Wait();
+            _server = task.Result;
+        }
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void ReturnsJSON() => Helpers.AssertReturnsJSON(_server, Root);
+        public async Task ReturnsJSON() => await Helpers.AssertReturnsJSONAsync(_server, Root);
 
         [TestMethod]
-        public void DoesNotSignResponseToUnsignedRequest()
+        public async Task DoesNotSignResponseToUnsignedRequest()
         {
-            var response = Helpers.Get(_server, Root);
+            var response = await Helpers.GetAsync(_server, Root);
             var deserialized = JsonConvert.DeserializeObject<SignedMessage<long>>(response);
             Assert.IsNull(deserialized.HMAC);
             Assert.IsNull(deserialized.ID);
@@ -28,9 +36,9 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         }
 
         [TestMethod]
-        public void ReturnsCloseToCurrentTime()
+        public async Task ReturnsCloseToCurrentTime()
         {
-            var response = Helpers.Get(_server, Root);
+            var response = await Helpers.GetAsync(_server, Root);
             var deserialized = JsonConvert.DeserializeObject<SignedMessage<long>>(response);
             var now = DateTimeOffset.Now.ToUnixTimeSeconds();
             var absDifference = Math.Abs(deserialized.Contents - now);
@@ -38,14 +46,14 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         }
 
         [TestMethod]
-        public void SignsResponseToSignedRequest() =>
-            CredentialControllerClass.DoWithSignedGet(
+        public async Task SignsResponseToSignedRequest() =>
+            await CredentialControllerClass.DoWithSignedGetAsync(
                 _server,
                 Root,
                 true,
                 Serializer<bool>.CreatePassthroughSerializer(),
-                response => JsonConvert.DeserializeObject<SignedMessage<long>>(response),
-                signedResponse => Helpers.AssertNoPropertiesAreNull(signedResponse)
+                response => Task.Run(() => JsonConvert.DeserializeObject<SignedMessage<long>>(response)),
+                Helpers.AssertNoPropertiesAreNullAsync
                 );
     }
 }

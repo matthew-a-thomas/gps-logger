@@ -1,5 +1,6 @@
 ﻿using Common.Utilities;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
@@ -12,22 +13,22 @@ namespace Common.LocalStorage
             _storageDirectory = storageDirectory;
         }
 
-        public bool Exists(string key)
+        public async Task<bool> ExistsAsync(string key)
         {
             if (key == null)
                 return false;
-            FileSystemPathSanitizer.Sanitize(ref key);
-            return File.Exists(GetPath(key));
+            key = await FileSystemPathSanitizer.SanitizeAsync(key);
+            return await Task.Run(() => File.Exists(GetPath(key)));
         } 
 
         private string GetPath(string sanitizedKey) => sanitizedKey == null ? null : Path.Combine(_storageDirectory.FullName, Path.GetFileName(sanitizedKey));
 
-        public Stream Open(string key, Options options)
+        public async Task<Stream> OpenAsync(string key, Options options)
         {
             if (key == null)
                 return null;
-            FileSystemPathSanitizer.Sanitize(ref key);
-            return File.Open(GetPath(key), options.FileMode, options.FileAccess, options.FileShare);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key);
+            return await Task.Run(() => File.Open(GetPath(key), options.FileMode, options.FileAccess, options.FileShare));
         }
     }
 }

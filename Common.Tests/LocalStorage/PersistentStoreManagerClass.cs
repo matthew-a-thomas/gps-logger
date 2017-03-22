@@ -3,6 +3,7 @@ using System.Text;
 using Common.LocalStorage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Common.Tests.LocalStorage
 {
@@ -13,34 +14,34 @@ namespace Common.Tests.LocalStorage
         public class IsSetMethod
         {
             [TestMethod]
-            public void ReturnsFalseForRandomKey()
+            public async Task ReturnsFalseForRandomKey()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
                     var key = Guid.NewGuid().ToString();
-                    Assert.IsFalse(manager.IsSet(key), "It said " + key + " existed even though it's completely random");
+                    Assert.IsFalse(await manager.IsSetAsync(key), "It said " + key + " existed even though it's completely random");
                 });
             }
 
             [TestMethod]
-            public void ReturnsFalseForNull()
+            public async Task ReturnsFalseForNull()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    Assert.IsFalse(manager.IsSet(null), "It said null existed even though it's completely random");
+                    Assert.IsFalse(await manager.IsSetAsync(null), "It said null existed even though it's completely random");
                 });
             }
 
             [TestMethod]
-            public void DoesNotBreakWithFunnyNames()
+            public async Task DoesNotBreakWithFunnyNames()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.IsSet("../../..");
-                    manager.IsSet("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                    await manager.IsSetAsync("../../..");
+                    await manager.IsSetAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
                 });
             }
         }
@@ -49,34 +50,34 @@ namespace Common.Tests.LocalStorage
         public class GetMethod
         {
             [TestMethod]
-            public void DoesNotBreakWithFunnyNames()
+            public async Task DoesNotBreakWithFunnyNames()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.Get("../../..");
-                    manager.Get("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
+                    await manager.GetAsync("../../..");
+                    await manager.GetAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
                 });
             }
 
             [TestMethod]
-            public void ReturnsNullForNull()
+            public async Task ReturnsNullForNull()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    Assert.IsNull(manager.Get(null));
+                    Assert.IsNull(await manager.GetAsync(null));
                 });
             }
 
             [TestMethod]
-            public void ReturnsNullForRandomKey()
+            public async Task ReturnsNullForRandomKey()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
                     var key = Guid.NewGuid().ToString();
-                    Assert.IsNull(manager.Get(key), "It said " + key + " existed even though it's completely random");
+                    Assert.IsNull(await manager.GetAsync(key), "It said " + key + " existed even though it's completely random");
                 });
             }
         }
@@ -85,66 +86,66 @@ namespace Common.Tests.LocalStorage
         public class SetMethod
         {
             [TestMethod]
-            public void AcceptsNullKey()
+            public async Task AcceptsNullKey()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.Set(null, new byte[0]);
+                    await manager.SetAsync(null, new byte[0]);
                 });
             }
 
             [TestMethod]
-            public void AcceptsNullData()
+            public async Task AcceptsNullData()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.Set(Guid.NewGuid().ToString(), null);
+                    await manager.SetAsync(Guid.NewGuid().ToString(), null);
                 });
             }
 
             [TestMethod]
-            public void AcceptsNullKeyAndValue()
+            public async Task AcceptsNullKeyAndValue()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.Set(null, null);
+                    await manager.SetAsync(null, null);
                 });
             }
 
             [TestMethod]
-            public void DoesNotBreakWithFunnyNames()
+            public async Task DoesNotBreakWithFunnyNames()
             {
-                PersistentStoreClass.DoWithTempPersistentStore(store =>
+                await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
                 {
                     var manager = new PersistentStoreManager(store);
-                    manager.Set("../../..", new byte[0]);
-                    manager.Set("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|", new byte[0]);
+                    await manager.SetAsync("../../..", new byte[0]);
+                    await manager.SetAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|", new byte[0]);
                 });
             }
         }
 
         [TestMethod]
-        public void CanGetBackSameDataAsWasSet()
+        public async Task CanGetBackSameDataAsWasSet()
         {
-            PersistentStoreClass.DoWithTempPersistentStore(store =>
+            await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
             {
                 var manager = new PersistentStoreManager(store);
                 var data = Encoding.ASCII.GetBytes("Hello world!");
                 var key = Guid.NewGuid().ToString();
-                manager.Set(key, data);
-                var retrieved = manager.Get(key);
+                await manager.SetAsync(key, data);
+                var retrieved = await manager.GetAsync(key);
                 Assert.IsNotNull(retrieved);
                 Assert.IsTrue(retrieved.SequenceEqual(data));
             });
         }
 
         [TestMethod]
-        public void CanGetBackSameDataAsWasSetWithDifferentCasedKey()
+        public async Task CanGetBackSameDataAsWasSetWithDifferentCasedKey()
         {
-            PersistentStoreClass.DoWithTempPersistentStore(store =>
+            await PersistentStoreClass.DoWithTempPersistentStoreAsync(async store =>
             {
                 var manager = new PersistentStoreManager(store);
                 var data = Encoding.ASCII.GetBytes("Hello world!");
@@ -152,8 +153,8 @@ namespace Common.Tests.LocalStorage
                 var uppercased = key.ToUpper();
                 var lowercased = key.ToLower();
                 Assert.AreNotEqual(uppercased, lowercased);
-                manager.Set(uppercased, data);
-                var retrieved = manager.Get(lowercased);
+                await manager.SetAsync(uppercased, data);
+                var retrieved = await manager.GetAsync(lowercased);
                 Assert.IsNotNull(retrieved);
                 Assert.IsTrue(retrieved.SequenceEqual(data));
             });

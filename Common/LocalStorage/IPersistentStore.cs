@@ -1,11 +1,12 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
     public interface IPersistentStore
     {
-        bool Exists(string key);
+        Task<bool> ExistsAsync(string key);
 
-        Stream Open(string key, Options options);
+        Task<Stream> OpenAsync(string key, Options options);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Common.Security;
 using Common.Security.Signing;
 using Common.Serialization;
@@ -11,51 +12,51 @@ namespace Common.Messages
     public class MessageHandler<TRequest, TResponse>
     {
         private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
-        private readonly Delegates.GenerateCredentialDelegate _generateCredential;
+        private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
         private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
-        private readonly Func<SignedMessage<TRequest>, byte[]> _idExtractor;
+        private readonly Func<SignedMessage<TRequest>, Task<byte[]>> _idExtractorAsync;
         private readonly ITranslator<Message<TResponse>, SignedMessage<TResponse>> _messageTranslator;
 
         public MessageHandler(
             Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
-            Delegates.GenerateCredentialDelegate generateCredential,
+            Delegates.GenerateCredentialDelegateAsync generateCredentialAsync,
             Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
-            Func<SignedMessage<TRequest>, byte[]> idExtractor,
+            Func<SignedMessage<TRequest>, Task<byte[]>> idExtractorAsync,
             ITranslator<Message<TResponse>, SignedMessage<TResponse>> messageTranslator
             )
         {
             _validator = validator;
-            _generateCredential = generateCredential;
+            _generateCredentialAsync = generateCredentialAsync;
             _signer = signer;
-            _idExtractor = idExtractor;
+            _idExtractorAsync = idExtractorAsync;
             _messageTranslator = messageTranslator;
         }
         
-        public SignedMessage<TResponse> CreateResponse(
+        public async Task<SignedMessage<TResponse>> CreateResponseAsync(
             SignedMessage<TRequest> request,
-            Func<bool, TResponse> contentGenerator
+            Func<bool, Task<TResponse>> contentGeneratorAsync
             )
         {
             // Figure out if the request is valid
-            var isValid = request != null && _validator.IsValid(request);
+            var isValid = request != null && await _validator.IsValidAsync(request);
 
             // Generate a response based on that
             var response = new Message<TResponse>
             {
-                Contents = contentGenerator(isValid),
+                Contents = await contentGeneratorAsync(isValid),
                 ID = isValid ? request?.ID : null,
                 Salt = isValid ? request?.Salt : null,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 
             if (!isValid)
-                return _messageTranslator.Translate(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
+                return await _messageTranslator.TranslateAsync(response); // The request wasn't valid, so what would be HMAC our response with? There's no client that would be able to verify it because our HMAC key is supposed to be a secret
 
             // Derive the client's secret
-            var derivedCredential = _generateCredential(_idExtractor(request));
+            var derivedCredential = await _generateCredentialAsync(await _idExtractorAsync(request));
 
             // Sign the response with the client's secret
-            var signedResponse = _signer.Sign(response, derivedCredential.Secret);
+            var signedResponse = await _signer.SignAsync(response, derivedCredential.Secret);
 
             return signedResponse;
         }

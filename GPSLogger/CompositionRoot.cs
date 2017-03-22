@@ -14,6 +14,7 @@ using GPSLogger.Controllers;
 using GPSLogger.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Common.Utilities;
 using Common.RemoteStorage.Command;
@@ -29,12 +30,12 @@ namespace GPSLogger
               // GenerateSaltDelegate
                 builder.Register(c =>
                 {
-                    var rngFactory = c.Resolve<Delegates.RNGFactory>();
-                    return new Delegates.GenerateSaltDelegate(() =>
+                    var rngFactoryAsync = c.Resolve<Delegates.RNGFactoryAsync>();
+                    return new Delegates.GenerateSaltDelegateAsync(async () =>
                     {
-                        using (var rng = rngFactory())
+                        using (var rng = await rngFactoryAsync())
                         {
-                            return rng.GetBytes(CredentialController.IDSize);
+                            return await Task.Run(() => rng.GetBytes(CredentialController.IDSize));
                         }
                     });
                 });
@@ -43,10 +44,10 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var hmacProvider = c.Resolve<IHMACProvider>();
-                    return new Delegates.GenerateCredentialDelegate(id =>
+                    return new Delegates.GenerateCredentialDelegateAsync(async id =>
                     {
                         id = id ?? new byte[0];
-                        using (var hmac = hmacProvider.Get())
+                        using (var hmac = await hmacProvider.GetAsync())
                         {
                             var secret = hmac.ComputeHash(id);
                             return new Credential<byte[]> { ID = id.CreateClone(), Secret = secret };
@@ -58,14 +59,14 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var controller = c.Resolve<HMACKeyController>();
-                    return new Delegates.HMACKeyProvider(controller.GetCurrent);
+                    return new Delegates.HMACKeyProviderAsync(controller.GetCurrentAsync);
                 });
 
                 // IHMACProvider
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
 
                 // RNG factory
-                builder.RegisterInstance(new Delegates.RNGFactory(RandomNumberGenerator.Create)); // Not single instance, since we need a new RNG each time
+                builder.RegisterInstance(new Delegates.RNGFactoryAsync(async () => await Task.Run(() => RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
             // IPersistentStore
@@ -84,22 +85,22 @@ namespace GPSLogger
                 {
                     var locationPoster = c.Resolve<ILocationPoster>();
 
-                    return new LocationController.HandleLocationPost((id, location) =>
+                    return new LocationController.HandleLocationPostAsync(async (id, location) =>
                     {
-                        locationPoster.PostLocationAsync(id, new Common.RemoteStorage.Models.Location
+                        await locationPoster.PostLocationAsync(id, new Common.RemoteStorage.Models.Location
                         {
                             Latitude = location.Latitude,
                             Longitude = location.Longitude
-                        }).Wait();
+                        });
                     });
                 });
                 builder.Register(c =>
                 {
                     var locationProvider = c.Resolve<ILocationProvider>();
 
-                    return new LocationController.LocationProvider(id =>
+                    return new LocationController.LocationProviderAsync(async id =>
                     {
-                        var identifiedLocations = locationProvider.GetAllLocationsAsync(id).WaitAndGet();
+                        var identifiedLocations = await locationProvider.GetAllLocationsAsync(id);
                         var locations = identifiedLocations.Select(x => new Location { Latitude = x.Latitude, Longitude = x.Longitude });
                         return locations;
                     });

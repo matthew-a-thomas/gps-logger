@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Common.Utilities;
 
 namespace Common.LocalStorage
@@ -22,20 +23,23 @@ namespace Common.LocalStorage
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public byte[] Get(string key)
+        public async Task<byte[]> GetAsync(string key)
         {
             if (key == null) return null;
-            FileSystemPathSanitizer.Sanitize(ref key);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key);
             byte[] buffer = null;
             _locker.DoLocked(key, () =>
             {
-                if (!IsSetInternal(key))
-                    return; // We won't be able to open the stream for reading
-                using (var stream = _persistentStore.Open(key, new Options { FileAccess = FileAccess.Read, FileMode = FileMode.Open, FileShare = FileShare.Read }))
+                Task.Run(async () =>
                 {
-                    buffer = new byte[stream.Length];
-                    stream.Read(buffer, 0, buffer.Length);
-                }
+                    if (!await IsSetInternalAsync(key))
+                        return; // We won't be able to open the stream for reading
+                    using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Read, FileMode = FileMode.Open, FileShare = FileShare.Read }))
+                    {
+                        buffer = new byte[stream.Length];
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                    }
+                }).Wait();
             });
             return buffer;
         }
@@ -45,10 +49,10 @@ namespace Common.LocalStorage
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool IsSet(string key)
+        public async Task<bool> IsSetAsync(string key)
         {
-            FileSystemPathSanitizer.Sanitize(ref key);
-            return IsSetInternal(key);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key);
+            return await IsSetInternalAsync(key);
         }
 
         /// <summary>
@@ -56,21 +60,24 @@ namespace Common.LocalStorage
         /// </summary>
         /// <param name="sanitizedKey"></param>
         /// <returns></returns>
-        private bool IsSetInternal(string sanitizedKey) => _persistentStore.Exists(sanitizedKey);
+        private async Task<bool> IsSetInternalAsync(string sanitizedKey) => await _persistentStore.ExistsAsync(sanitizedKey);
         
         /// <summary>
         /// Assigns the value to the given key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void Set(string key, byte[] value)
+        public async Task SetAsync(string key, byte[] value)
         {
             if (key == null || value == null) return;
-            FileSystemPathSanitizer.Sanitize(ref key);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key);
             _locker.DoLocked(key.ToLower(), () =>
             {
-                using (var stream = _persistentStore.Open(key, new Options { FileAccess = FileAccess.Write, FileMode = FileMode.Create, FileShare = FileShare.None }))
-                    stream.Write(value, 0, value.Length);
+                Task.Run(async () =>
+                {
+                    using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Write, FileMode = FileMode.Create, FileShare = FileShare.None }))
+                        await stream.WriteAsync(value, 0, value.Length);
+                }).Wait();
             });
         }
     }

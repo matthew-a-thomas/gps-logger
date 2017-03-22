@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Common.Security
 {
@@ -9,20 +10,20 @@ namespace Common.Security
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Credential<byte[]> GenerateCredentialDelegate(byte[] id);
+        public delegate Task<Credential<byte[]>> GenerateCredentialDelegateAsync(byte[] id);
 
         /// <summary>
         /// Delegate that generates a random salt
         /// </summary>
         /// <returns></returns>
-        public delegate byte[] GenerateSaltDelegate();
+        public delegate Task<byte[]> GenerateSaltDelegateAsync();
         
         /// <summary>
         /// Returns a copy of this server's HMAC key
         /// </summary>
         /// <returns></returns>
         // ReSharper disable once InconsistentNaming
-        public delegate byte[] HMACKeyProvider();
+        public delegate Task<byte[]> HMACKeyProviderAsync();
         
         /// <summary>
         /// Delegate that generates a new RandomNumberGenerator.
@@ -30,6 +31,6 @@ namespace Common.Security
         /// </summary>
         /// <returns></returns>
         // ReSharper disable once InconsistentNaming
-        public delegate RandomNumberGenerator RNGFactory();
+        public delegate Task<RandomNumberGenerator> RNGFactoryAsync();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Common.Messages;
 using Common.Security.Signing;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,6 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public SignedMessage<long> Get(SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => DateTimeOffset.Now.ToUnixTimeSeconds());
+        public async Task<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => Task.Run(() => DateTimeOffset.Now.ToUnixTimeSeconds()));
     }
 }

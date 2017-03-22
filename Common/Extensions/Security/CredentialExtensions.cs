@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Common.Security;
 
 namespace Common.Extensions.Security
@@ -11,13 +12,13 @@ namespace Common.Extensions.Security
         /// <typeparam name="TFrom"></typeparam>
         /// <typeparam name="TTo"></typeparam>
         /// <param name="from"></param>
-        /// <param name="conversionFunction"></param>
+        /// <param name="conversionFunctionAsync"></param>
         /// <returns></returns>
-        public static Credential<TTo> Convert<TFrom, TTo>(this Credential<TFrom> from,
-            Func<TFrom, TTo> conversionFunction) => new Credential<TTo>
+        public static async Task<Credential<TTo>> ConvertAsync<TFrom, TTo>(this Credential<TFrom> from,
+            Func<TFrom, Task<TTo>> conversionFunctionAsync) => new Credential<TTo>
         {
-                ID = conversionFunction(from.ID),
-                Secret = conversionFunction(from.Secret)
+                ID = await conversionFunctionAsync(from.ID),
+                Secret = await conversionFunctionAsync(from.Secret)
         };
     }
 }

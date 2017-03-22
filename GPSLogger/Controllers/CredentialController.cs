@@ -1,4 +1,5 @@
-﻿using Common.Extensions;
+﻿using System.Threading.Tasks;
+using Common.Extensions;
 using Common.Extensions.Security;
 using Common.Messages;
 using Common.Security;
@@ -16,18 +17,18 @@ namespace GPSLogger.Controllers
         // ReSharper disable once InconsistentNaming
         public const int IDSize = 16;
         
-        private readonly Delegates.GenerateSaltDelegate _generateSalt;
-        private readonly Delegates.GenerateCredentialDelegate _generateCredential;
+        private readonly Delegates.GenerateSaltDelegateAsync _generateSaltAsync;
+        private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
         private readonly MessageHandler<bool, Credential<string>> _messageHandler;
 
         public CredentialController(
-            Delegates.GenerateSaltDelegate generateSalt,
-            Delegates.GenerateCredentialDelegate generateCredential,
+            Delegates.GenerateSaltDelegateAsync generateSaltAsync,
+            Delegates.GenerateCredentialDelegateAsync generateCredentialAsync,
             MessageHandler<bool, Credential<string>> messageHandler
             )
         {
-            _generateSalt = generateSalt;
-            _generateCredential = generateCredential;
+            _generateSaltAsync = generateSaltAsync;
+            _generateCredentialAsync = generateCredentialAsync;
             _messageHandler = messageHandler;
         }
 
@@ -38,6 +39,6 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public SignedMessage<Credential<string>> Get(SignedMessage<bool> request) => _messageHandler.CreateResponse(request, valid => _generateCredential(_generateSalt()).Convert(bytes => ByteArrayExtensions.ToHexString(bytes)));
+        public async Task<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, async valid => await (await _generateCredentialAsync(await _generateSaltAsync())).ConvertAsync(bytes => Task.Run(() => ByteArrayExtensions.ToHexString(bytes))));
     }
 }

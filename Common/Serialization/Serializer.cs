@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Common.Serialization
 {
@@ -68,21 +69,24 @@ namespace Common.Serialization
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        public byte[] Serialize(T thing)
+        public async Task<byte[]> SerializeAsync(T thing)
         {
-            using (var stream = new MemoryStream())
+            return await Task.Run(() =>
             {
-                using (var writer = new BinaryWriter(stream))
+                using (var stream = new MemoryStream())
                 {
-                    foreach (var step in _serializationSteps)
+                    using (var writer = new BinaryWriter(stream))
                     {
-                        step(thing, writer);
+                        foreach (var step in _serializationSteps)
+                        {
+                            step(thing, writer);
+                        }
+                        writer.Flush();
+                        var serialized = stream.ToArray();
+                        return serialized;
                     }
-                    writer.Flush();
-                    var serialized = stream.ToArray();
-                    return serialized;
                 }
-            }
+            });
         }
     }
 }

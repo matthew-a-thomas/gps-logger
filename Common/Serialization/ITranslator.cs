@@ -1,4 +1,6 @@
-﻿namespace Common.Serialization
+﻿using System.Threading.Tasks;
+
+namespace Common.Serialization
 {
     /// <summary>
     /// Copies fields from one thing to another
@@ -13,6 +15,6 @@
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        TTo Translate(TFrom thing);
+        Task<TTo> TranslateAsync(TFrom thing);
     }
 }

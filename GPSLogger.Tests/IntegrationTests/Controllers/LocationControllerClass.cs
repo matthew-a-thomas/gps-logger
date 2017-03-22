@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Extensions;
 using GPSLogger.Models;
 using Common.Serialization;
@@ -26,14 +27,21 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             return result;
         })();
         private const string Root = "/api/location";
-        private readonly TestServer _server = Helpers.CreateServer();
+        private readonly TestServer _server;
+
+        public LocationControllerClass()
+        {
+            var task = Helpers.CreateServerAsync();
+            task.Wait();
+            _server = task.Result;
+        }
 
         [TestMethod]
-        public void CannotReplayPost()
+        public async Task CannotReplayPost()
         {
-            var signedResponse = CredentialControllerClass.GetSignedCredential(_server);
+            var signedResponse = await CredentialControllerClass.GetSignedCredentialAsync(_server);
             var credentialAsStrings = signedResponse.Contents;
-            var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
+            var credentialAsBytes = await credentialAsStrings.ConvertAsync(_ => Task.Run(() => ByteArrayExtensions.FromHexString(_)));
             var messageSerializer = new MessageSerializer<Location>(LocationSerializer);
 
             var requestContents = new Location
@@ -42,11 +50,11 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 Longitude = 0
             };
             var signer = new Signer<SignedMessage<Location>, Message<Location>>(
-                new HMACProvider(() => new byte[0]),
+                new HMACProvider(() => Task.Run(() => new byte[0])),
                 messageSerializer,
                 new MapperTranslator<Message<Location>, SignedMessage<Location>>()
                 );
-            var request = signer.Sign(
+            var request = await signer.SignAsync(
                 new Message<Location>
                 {
                     Contents = requestContents,
@@ -60,56 +68,56 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             SignedMessage<bool> deserializedResponse = null;
             for (var iteration = 0; iteration < 2; ++iteration)
             {
-                var response = Helpers.Post(_server, Root, request);
+                var response = await Helpers.PostAsync(_server, Root, request);
                 deserializedResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(response);
             }
 
             // Assert that the result is not signed
-            Helpers.AssertIsNotSigned(deserializedResponse);
+            await Helpers.AssertIsNotSignedAsync(deserializedResponse);
         }
 
         [TestMethod]
-        public void CanPost()
+        public async Task CanPost()
         {
-            CredentialControllerClass
-                .DoWithSignedRequest(
-                _server,
-                Root,
-                new Location
-                {
-                    Latitude = -9,
-                    Longitude = 10
-                },
-                LocationSerializer,
-                (request, server) =>
-                {
-                    var response = Helpers.Post(server, Root, request);
+            await CredentialControllerClass
+                .DoWithSignedRequestAsync(
+                    _server,
+                    Root,
+                    new Location
+                    {
+                        Latitude = -9,
+                        Longitude = 10
+                    },
+                    LocationSerializer,
+                    async (request, server) =>
+                    {
+                        var response = await Helpers.PostAsync(server, Root, request);
 
-                    return response;
-                },
-                JsonConvert.DeserializeObject<SignedMessage<bool>>,
-                Helpers.AssertNoPropertiesAreNull // Assert that none of the returned properties are null
+                        return response;
+                    },
+                    _ => Task.Run(() => JsonConvert.DeserializeObject<SignedMessage<bool>>(_)),
+                    Helpers.AssertNoPropertiesAreNullAsync // Assert that none of the returned properties are null
                 );
         }
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void ReturnsJSON() => Helpers.AssertReturnsJSON(_server, Root);
+        public async Task ReturnsJSON() => await Helpers.AssertReturnsJSONAsync(_server, Root);
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void ReturnsEmptyArrayForAbsentID()
+        public async Task ReturnsEmptyArrayForAbsentID()
         {
-            var response = Helpers.Get(_server, Root);
+            var response = await Helpers.GetAsync(_server, Root);
             var enumerable = JsonConvert.DeserializeObject<IEnumerable<object>>(response);
             Assert.IsTrue(!enumerable.Any());
         }
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void ReturnsEmptyArrayForRandomID()
+        public async Task ReturnsEmptyArrayForRandomID()
         {
-            var response = Helpers.Get(_server, Root + "?id=" + Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString());
+            var response = await Helpers.GetAsync(_server, Root + "?id=" + Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString());
             var enumerable = JsonConvert.DeserializeObject<IEnumerable<object>>(response);
             Assert.IsTrue(!enumerable.Any());
         }
