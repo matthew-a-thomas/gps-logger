@@ -1,10 +1,11 @@
-﻿using SQLDatabase.Extensions;
+﻿using Common.RemoteStorage.Command;
+using SQLDatabase.Extensions;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace SQLDatabase.RemoteStorage.Command
 {
-    internal class IdentifierPoster
+    internal class IdentifierPoster : IIdentifierPoster
     {
         private readonly Transaction _transaction;
 

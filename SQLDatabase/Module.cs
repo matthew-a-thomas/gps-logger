@@ -4,12 +4,12 @@ using Common.RemoteStorage.Query;
 using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
 using System.Composition;
-using Common.RemoteStorage;
+using Autofac.Core;
 
 namespace SQLDatabase
 {
-    [Export(typeof(IRemoteStorageModule))]
-    public class Module : Autofac.Module, IRemoteStorageModule
+    [Export(typeof(IModule))]
+    public class Module : Autofac.Module, IModule
     {
         protected override void Load(ContainerBuilder builder)
         {
