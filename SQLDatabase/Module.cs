@@ -23,6 +23,7 @@ namespace SQLDatabase
                 return connection;
             });
             builder.RegisterType<Transaction>();
+            builder.RegisterType<IdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
             builder.RegisterType<LocationPoster>().As<ILocationPoster>();
         }
