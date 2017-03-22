@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Hosting;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Common.Utilities;
+using Common.RemoteStorage.Command;
+using Common.RemoteStorage.Query;
 
 namespace GPSLogger
 {
@@ -77,12 +79,32 @@ namespace GPSLogger
             builder.RegisterType<PersistentStoreManager>().SingleInstance();
             
             { // Controllers
-                // Location storage
-                var locations = new ConcurrentDictionary<string, ConcurrentQueue<Location>>();
-                var listGetter = new Func<string, ConcurrentQueue<Location>>(id => locations.GetOrAdd(id, x => new ConcurrentQueue<Location>()));
-                builder.RegisterInstance(new LocationController.HandleLocationPost((id, location) => listGetter(id.ToHexString()).Enqueue(location))).SingleInstance();
-                builder.RegisterInstance(new LocationController.LocationProvider(id => listGetter(id.ToHexString()))).SingleInstance();
+                // Location storage and retrieval
+                builder.Register(c =>
+                {
+                    var locationPoster = c.Resolve<ILocationPoster>();
 
+                    return new LocationController.HandleLocationPost((id, location) =>
+                    {
+                        locationPoster.PostLocationAsync(id, new Common.RemoteStorage.Models.Location
+                        {
+                            Latitude = location.Latitude,
+                            Longitude = location.Longitude
+                        }).Wait();
+                    });
+                });
+                builder.Register(c =>
+                {
+                    var locationProvider = c.Resolve<ILocationProvider>();
+
+                    return new LocationController.LocationProvider(id =>
+                    {
+                        var identifiedLocations = locationProvider.GetAllLocationsAsync(id).WaitAndGet();
+                        var locations = identifiedLocations.Select(x => new Location { Latitude = x.Latitude, Longitude = x.Longitude });
+                        return locations;
+                    });
+                });
+                
                 // Location serializer
                 builder.Register(c =>
                 {
