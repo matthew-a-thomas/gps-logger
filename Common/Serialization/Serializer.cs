@@ -34,7 +34,7 @@ namespace Common.Serialization
         {
             // Find the write method that will handle TMember
             var writeMethodInfo = typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(TMember) });
-            if (writeMethodInfo == null) throw new Exception("Cannot serialized type " + typeof(TMember).Name + ". Please try a type that you can write to a BinaryWriter");
+            if (writeMethodInfo == null) throw new Exception("Cannot serialize type " + typeof(TMember).Name + ". Please try a type that you can write to a BinaryWriter");
             var writeMethod = new Action<TMember, BinaryWriter>((member, writer) =>
             {
                 try
