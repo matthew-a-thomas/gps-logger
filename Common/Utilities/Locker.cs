@@ -44,71 +44,74 @@ namespace Common.Utilities
         /// Using a null key will not lock against any other calls with with a null key--in other words null keys are considered distinct
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="action"></param>
-        public void DoLocked(TKey key, Action action)
+        /// <param name="actionAsync"></param>
+        public async Task DoLockedAsync(TKey key, Func<Task> actionAsync)
         {
-            if (action == null) return;
+            if (actionAsync == null) return;
             if (ReferenceEquals(key, null))
             {
-                action();
+                await actionAsync();
                 return;
             }
 
-            var roomToUse = Math.Abs(key.GetHashCode() * _salt) % NumRooms;
-
-            ConcurrentBag<object> ring;
-
-            // Grab a hat from the hat rack
-            if (!_hatRack.TryTake(out object aHat))
-                aHat = new object(); // (or create a new one)
-
-            lock (_rooms[roomToUse])
+            await Task.Run(() =>
             {
-                // Find a ring that's in use for the given key
-                if (!_rooms[roomToUse].TryGetValue(key, out ring))
-                {
-                    // No rings are yet in use, so let's grab an unused one
-                    if (!_unusedRings.TryTake(out ring))
-                        ring = new ConcurrentBag<object>(); // All the rings are used, so let's create a new one
-                    // Mark this ring as being in use for this key
-                    _rooms[roomToUse][key] = ring;
-                }
+                var roomToUse = Math.Abs(key.GetHashCode() * _salt) % NumRooms;
 
-                // Toss our hat into the ring
-                ring.Add(aHat);
-            }
+                ConcurrentBag<object> ring;
 
-            try
-            {
+                // Grab a hat from the hat rack
+                if (!_hatRack.TryTake(out object aHat))
+                    aHat = new object(); // (or create a new one)
 
-                lock (ring)
-                {
-                    // Do our stuff
-                    action();
-                }
-            }
-            finally
-            {
-                // Take out a hat from the ring
-                ring.TryTake(out aHat);
-                // Put that hat back on the hat rack
-                _hatRack.Add(aHat);
-
-                // See if we're the last one to pull our hat out of the ring
                 lock (_rooms[roomToUse])
                 {
-                    if (!ring.TryPeek(out aHat))
+                    // Find a ring that's in use for the given key
+                    if (!_rooms[roomToUse].TryGetValue(key, out ring))
                     {
-                        // We're the last one to use this ring.
+                        // No rings are yet in use, so let's grab an unused one
+                        if (!_unusedRings.TryTake(out ring))
+                            ring = new ConcurrentBag<object>(); // All the rings are used, so let's create a new one
+                                                                // Mark this ring as being in use for this key
+                        _rooms[roomToUse][key] = ring;
+                    }
 
-                        // So let's unmark it from being in use for this key
-                        if (!_rooms[roomToUse].Remove(key))
-                            throw new Exception("Someone else already took our ring out");
-                        // ...and put it back into the set of unused rings
-                        _unusedRings.Add(ring);
+                    // Toss our hat into the ring
+                    ring.Add(aHat);
+                }
+
+                try
+                {
+
+                    lock (ring)
+                    {
+                        // Do our stuff
+                        actionAsync().Wait();
                     }
                 }
-            }
+                finally
+                {
+                    // Take out a hat from the ring
+                    ring.TryTake(out aHat);
+                    // Put that hat back on the hat rack
+                    _hatRack.Add(aHat);
+
+                    // See if we're the last one to pull our hat out of the ring
+                    lock (_rooms[roomToUse])
+                    {
+                        if (!ring.TryPeek(out aHat))
+                        {
+                            // We're the last one to use this ring.
+
+                            // So let's unmark it from being in use for this key
+                            if (!_rooms[roomToUse].Remove(key))
+                                throw new Exception("Someone else already took our ring out");
+                            // ...and put it back into the set of unused rings
+                            _unusedRings.Add(ring);
+                        }
+                    }
+                }
+            });
         }
     }
 }

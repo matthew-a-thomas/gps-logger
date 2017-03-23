@@ -14,7 +14,7 @@ namespace Common.Extensions
             Func<Task<bool>> shouldLoopAsync)
         {
             return Observable.Create<T>(
-                observer => Task.Run(async () =>
+                async observer =>
                 {
                     while (await shouldLoopAsync())
                     {
@@ -22,7 +22,7 @@ namespace Common.Extensions
                         observer.OnNext(value);
                     }
                     observer.OnCompleted();
-                })
+                }
             );
         }
     }

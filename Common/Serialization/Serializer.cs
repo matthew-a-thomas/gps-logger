@@ -15,14 +15,14 @@ namespace Common.Serialization
         /// <summary>
         /// The serialization steps to follow
         /// </summary>
-        private readonly LinkedList<Func<T, BinaryWriter, Task>> _serializationSteps;
+        private readonly LinkedList<Func<T, BinaryWriter, Task>> _asyncSerializationSteps;
 
         /// <summary>
         /// Sets up a new serializer, which follows a series of steps to serialize an instance of T
         /// </summary>
         public Serializer()
         {
-            _serializationSteps = new LinkedList<Func<T, BinaryWriter, Task>>();
+            _asyncSerializationSteps = new LinkedList<Func<T, BinaryWriter, Task>>();
         }
         
         /// <summary>
@@ -46,7 +46,7 @@ namespace Common.Serialization
             });
             
             // Add a serialization step to write the converted thing into the binary writer
-            _serializationSteps.AddLast(async (thing, writer) =>
+            _asyncSerializationSteps.AddLast(async (thing, writer) =>
             {
                 var converted = await converterAsync(thing);
                 writeMethod(converted, writer);
@@ -60,7 +60,7 @@ namespace Common.Serialization
         public static ISerializer<T> CreatePassthroughSerializer()
         {
             var serializer = new Serializer<T>();
-            serializer.EnqueueStepAsync(x => Task.Run(() => x));
+            serializer.EnqueueStepAsync(Task.FromResult);
             return serializer;
         }
 
@@ -71,15 +71,15 @@ namespace Common.Serialization
         /// <returns></returns>
         public async Task<byte[]> SerializeAsync(T thing)
         {
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
                 using (var stream = new MemoryStream())
                 {
                     using (var writer = new BinaryWriter(stream))
                     {
-                        foreach (var step in _serializationSteps)
+                        foreach (var stepAsync in _asyncSerializationSteps)
                         {
-                            step(thing, writer);
+                            await stepAsync(thing, writer);
                         }
                         writer.Flush();
                         var serialized = stream.ToArray();

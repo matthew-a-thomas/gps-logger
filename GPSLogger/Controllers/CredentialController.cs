@@ -39,6 +39,6 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, async valid => await (await _generateCredentialAsync(await _generateSaltAsync())).ConvertAsync(bytes => Task.Run(() => ByteArrayExtensions.ToHexString(bytes))));
+        public async Task<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, async valid => await (await _generateCredentialAsync(await _generateSaltAsync())).ConvertAsync(bytes => Task.FromResult(bytes.ToHexString())));
     }
 }

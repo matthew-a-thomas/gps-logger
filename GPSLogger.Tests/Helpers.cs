@@ -21,7 +21,7 @@ namespace GPSLogger.Tests
     {
         public static async Task AssertNoPropertiesAreNullAsync(object o)
         {
-            await Task.Run(() => Assert.IsTrue(Helpers.ReflectPropertiesOf<string>(o).All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2))));
+            await Task.Run(() => Assert.IsTrue(ReflectPropertiesOf<string>(o).All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2))));
         }
 
         /// <summary>
@@ -35,12 +35,12 @@ namespace GPSLogger.Tests
             JsonConvert.DeserializeObject(await GetAsync(server, url));
         }
 
-        public static async Task AssertIsNotSignedAsync<T>(SignedMessage<T> signedMessage)
+        public static void AssertIsNotSigned<T>(SignedMessage<T> signedMessage)
         {
             var threw = false;
             try
             {
-                await AssertSigningFieldsAreNonNullAsync(signedMessage);
+                AssertSigningFieldsAreNonNull(signedMessage);
             }
             catch
             {
@@ -49,14 +49,11 @@ namespace GPSLogger.Tests
             Assert.IsTrue(threw);
         }
 
-        public static async Task AssertSigningFieldsAreNonNullAsync<T>(SignedMessage<T> signedMessage)
+        public static void AssertSigningFieldsAreNonNull<T>(SignedMessage<T> signedMessage)
         {
-            await Task.Run(() =>
-            {
-                Assert.IsNotNull(signedMessage.HMAC);
-                Assert.IsNotNull(signedMessage.ID);
-                Assert.IsNotNull(signedMessage.Salt);
-            });
+            Assert.IsNotNull(signedMessage.HMAC);
+            Assert.IsNotNull(signedMessage.ID);
+            Assert.IsNotNull(signedMessage.Salt);
         }
     
         /// <summary>
@@ -102,8 +99,8 @@ namespace GPSLogger.Tests
                 // Copy over needed files
                 foreach (var file in new[]
                 {
-                "appsettings.json"
-            })
+                    "appsettings.json"
+                })
                     File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
 
                 // Spin up the server

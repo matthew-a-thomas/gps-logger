@@ -28,7 +28,7 @@ namespace Common.LocalStorage
             if (key == null) return null;
             key = await FileSystemPathSanitizer.SanitizeAsync(key);
             byte[] buffer = null;
-            _locker.DoLocked(key, () =>
+            _locker.DoLockedAsync(key, () =>
             {
                 Task.Run(async () =>
                 {
@@ -71,14 +71,11 @@ namespace Common.LocalStorage
         {
             if (key == null || value == null) return;
             key = await FileSystemPathSanitizer.SanitizeAsync(key);
-            _locker.DoLocked(key.ToLower(), () =>
-            {
-                Task.Run(async () =>
+            _locker.DoLockedAsync(key.ToLower(), async () =>
                 {
                     using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Write, FileMode = FileMode.Create, FileShare = FileShare.None }))
                         await stream.WriteAsync(value, 0, value.Length);
-                }).Wait();
-            });
+                });
         }
     }
 }

@@ -13,105 +13,105 @@ namespace Common.Tests.Utilities
         public class DoLockedMethod
         {
             [TestMethod]
-            public void BlocksMultipleCallsWithSameKey()
+            public async Task BlocksMultipleCallsWithSameKey()
             {
                 var locker = new Locker<string>();
                 var key = Guid.NewGuid().ToString();
-                locker.DoLocked(key, () =>
+                await locker.DoLockedAsync(key, () => Task.Run(() =>
                 {
                     var startingGate = new ManualResetEventSlim();
                     var endingGate = new ManualResetEventSlim();
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         startingGate.Set();
-                        locker.DoLocked(key, () =>
+                        await locker.DoLockedAsync(key, () => Task.Run(() =>
                         {
                             endingGate.Set();
-                        });
+                        }));
                     });
                     startingGate.Wait();
                     endingGate.Wait(TimeSpan.FromMilliseconds(100));
                     Assert.IsFalse(endingGate.IsSet);
-                });
+                }));
             }
 
             [TestMethod]
-            public void DoesNotBlockMultipleCallsWithDifferentKeys()
+            public async Task DoesNotBlockMultipleCallsWithDifferentKeys()
             {
                 var locker = new Locker<string>();
                 var key1 = Guid.NewGuid().ToString();
                 var key2 = Guid.NewGuid().ToString();
-                locker.DoLocked(key1, () =>
+                await locker.DoLockedAsync(key1, () => Task.Run(() =>
                 {
                     var startingGate = new ManualResetEventSlim();
                     var endingGate = new ManualResetEventSlim();
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         startingGate.Set();
-                        locker.DoLocked(key2, () =>
+                        await locker.DoLockedAsync(key2, () => Task.Run(() =>
                         {
                             endingGate.Set();
-                        });
+                        }));
                     });
                     startingGate.Wait();
                     endingGate.Wait(TimeSpan.FromMilliseconds(100));
                     Assert.IsTrue(endingGate.IsSet);
-                });
+                }));
             }
 
             [TestMethod]
-            public void DoesNotBlockMultipleCallsWithNullKey()
+            public async Task DoesNotBlockMultipleCallsWithNullKey()
             {
                 var locker = new Locker<string>();
-                locker.DoLocked(null, () =>
+                await locker.DoLockedAsync(null, () => Task.Run(() =>
                 {
                     var startingGate = new ManualResetEventSlim();
                     var endingGate = new ManualResetEventSlim();
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         startingGate.Set();
-                        locker.DoLocked(null, () =>
+                        await locker.DoLockedAsync(null, () => Task.Run(() =>
                         {
                             endingGate.Set();
-                        });
+                        }));
                     });
                     startingGate.Wait();
                     endingGate.Wait(TimeSpan.FromMilliseconds(100));
                     Assert.IsTrue(endingGate.IsSet);
-                });
+                }));
             }
 
             [TestMethod]
             public void DoesNothingWithNullAction()
             {
                 var locker = new Locker<string>();
-                locker.DoLocked("", null);
+                locker.DoLockedAsync("", null);
             }
 
             [TestMethod]
-            public void DoesNotBlockWithKeysOfDifferentCase()
+            public async Task DoesNotBlockWithKeysOfDifferentCase()
             {
                 var locker = new Locker<string>();
                 var key = Guid.NewGuid().ToString();
                 var key1 = key.ToUpper();
                 var key2 = key.ToLower();
                 Assert.AreNotEqual(key1, key2);
-                locker.DoLocked(key1, () =>
+                await locker.DoLockedAsync(key1, () => Task.Run(() =>
                 {
                     var startingGate = new ManualResetEventSlim();
                     var endingGate = new ManualResetEventSlim();
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         startingGate.Set();
-                        locker.DoLocked(key2, () =>
+                        await locker.DoLockedAsync(key2, () => Task.Run(() =>
                         {
                             endingGate.Set();
-                        });
+                        }));
                     });
                     startingGate.Wait();
                     endingGate.Wait(TimeSpan.FromMilliseconds(100));
                     Assert.IsTrue(endingGate.IsSet);
-                });
+                }));
             }
         }
     }

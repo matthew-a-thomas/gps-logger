@@ -67,12 +67,12 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             // Get some credentials from the server
             var signedCredential = await GetSignedCredentialAsync(server);
             var credentialAsStrings = signedCredential.Contents;
-            var credentialAsBytes = await credentialAsStrings.ConvertAsync(_ => Task.Run(() => ByteArrayExtensions.FromHexString(_)));
+            var credentialAsBytes = await credentialAsStrings.ConvertAsync(ByteArrayExtensions.FromHexStringAsync);
 
             // Create a request that has been signed with those credentials
             var messageSerializer = new MessageSerializer<TRequest>(serializer);
             var signer = new Signer<SignedMessage<TRequest>, Message<TRequest>>(
-                new HMACProvider(() => Task.Run(() => new byte[0])),
+                new HMACProvider(() => Task.FromResult(new byte[0])),
                 messageSerializer,
                 new MapperTranslator<Message<TRequest>, SignedMessage<TRequest>>()
                 );
@@ -123,7 +123,6 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             // Get some credentials from the server
             var signedCredential = await GetSignedCredentialAsync(_server);
             var credentialAsStrings = signedCredential.Contents;
-            var credentialAsBytes = await credentialAsStrings.ConvertAsync(_ => Task.Run(() => ByteArrayExtensions.FromHexString(_)));
 
             // Create a request that has been signed with those credentials
             var request =
@@ -157,7 +156,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 true,
                 Serializer<bool>.CreatePassthroughSerializer(),
                 response => Task.Run(() => JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response)),
-                signedResponse => Task.Run(() => Helpers.AssertNoPropertiesAreNullAsync(signedResponse)));
+                Helpers.AssertNoPropertiesAreNullAsync);
         }
     }
 }

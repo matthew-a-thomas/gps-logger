@@ -22,8 +22,8 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         private static readonly ISerializer<Location> LocationSerializer = new Func<Serializer<Location>>(() =>
         {
             var result = new Serializer<Location>();
-            result.EnqueueStepAsync(x => Task.Run(() => x.Latitude));
-            result.EnqueueStepAsync(x => Task.Run(() => x.Longitude));
+            result.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
+            result.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
             return result;
         })();
         private const string Root = "/api/location";
@@ -41,7 +41,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         {
             var signedResponse = await CredentialControllerClass.GetSignedCredentialAsync(_server);
             var credentialAsStrings = signedResponse.Contents;
-            var credentialAsBytes = await credentialAsStrings.ConvertAsync(_ => Task.Run(() => ByteArrayExtensions.FromHexString(_)));
+            var credentialAsBytes = await credentialAsStrings.ConvertAsync(ByteArrayExtensions.FromHexStringAsync);
             var messageSerializer = new MessageSerializer<Location>(LocationSerializer);
 
             var requestContents = new Location
@@ -50,7 +50,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 Longitude = 0
             };
             var signer = new Signer<SignedMessage<Location>, Message<Location>>(
-                new HMACProvider(() => Task.Run(() => new byte[0])),
+                new HMACProvider(() => Task.FromResult(new byte[0])),
                 messageSerializer,
                 new MapperTranslator<Message<Location>, SignedMessage<Location>>()
                 );
@@ -73,7 +73,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             }
 
             // Assert that the result is not signed
-            await Helpers.AssertIsNotSignedAsync(deserializedResponse);
+            await Helpers.AssertIsNotSigned(deserializedResponse);
         }
 
         [TestMethod]

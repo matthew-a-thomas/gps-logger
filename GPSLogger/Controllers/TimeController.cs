@@ -22,6 +22,6 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => Task.Run(() => DateTimeOffset.Now.ToUnixTimeSeconds()));
+        public async Task<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => Task.FromResult(DateTimeOffset.Now.ToUnixTimeSeconds()));
     }
 }

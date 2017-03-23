@@ -60,7 +60,7 @@ namespace GPSLogger.Controllers
             if (await GetAsync())
                 throw new Exception("The HMAC key has already been set");
             
-            var hmacKeyBytes = ByteArrayExtensions.FromHexString(parameters.NewKey);
+            var hmacKeyBytes = await ByteArrayExtensions.FromHexStringAsync(parameters.NewKey);
             if (hmacKeyBytes.Length < MinKeySize)
                 throw new Exception("Please provide at least " + MinKeySize + " bytes");
 

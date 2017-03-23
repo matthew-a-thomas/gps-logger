@@ -49,7 +49,7 @@ namespace GPSLogger.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IEnumerable<Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : await _locationProviderAsync(ByteArrayExtensions.FromHexString(id));
+        public async Task<IEnumerable<Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : await _locationProviderAsync(await ByteArrayExtensions.FromHexStringAsync(id));
 
         /// <summary>
         /// Posts a new location
@@ -62,7 +62,7 @@ namespace GPSLogger.Controllers
             async valid =>
             {
                 if (valid)
-                    await _handleLocationPostAsync(ByteArrayExtensions.FromHexString(posted.ID), posted.Contents);
+                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.ID), posted.Contents);
 
                 return valid;
             });
