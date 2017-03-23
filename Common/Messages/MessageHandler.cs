@@ -14,14 +14,14 @@ namespace Common.Messages
         private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
         private readonly Signer<SignedMessage<TResponse>, Message<TResponse>> _signer;
-        private readonly Func<SignedMessage<TRequest>, Task<byte[]>> _idExtractorAsync;
+        private readonly Validator<SignedMessage<TRequest>, Message<TRequest>>.DeriveIDFromThingDelegateAsync _idExtractorAsync;
         private readonly ITranslator<Message<TResponse>, SignedMessage<TResponse>> _messageTranslator;
 
         public MessageHandler(
             Validator<SignedMessage<TRequest>, Message<TRequest>> validator,
             Delegates.GenerateCredentialDelegateAsync generateCredentialAsync,
             Signer<SignedMessage<TResponse>, Message<TResponse>> signer,
-            Func<SignedMessage<TRequest>, Task<byte[]>> idExtractorAsync,
+            Validator<SignedMessage<TRequest>, Message<TRequest>>.DeriveIDFromThingDelegateAsync idExtractorAsync,
             ITranslator<Message<TResponse>, SignedMessage<TResponse>> messageTranslator
             )
         {

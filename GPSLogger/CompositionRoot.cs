@@ -177,7 +177,7 @@ namespace GPSLogger
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
             builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
-            builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
+            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.PassesDomainSpecificValidationDelegateAsync(message => Task.Run(() =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
 
@@ -199,8 +199,8 @@ namespace GPSLogger
                         return false;
                     }
                 });
-            })).SingleInstance();
-            builder.RegisterInstance(new Func<SignedMessage<TRequest>, byte[]>(message => ByteArrayExtensions.FromHexString(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
+            }))).SingleInstance();
+            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.DeriveIDFromThingDelegateAsync(message => Task.Run(() => ByteArrayExtensions.FromHexString(message?.ID)))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
 
             RegisterSignerAndSerializers(builder, requestContentSerializer);
             RegisterSignerAndSerializers(builder, responseContentSerializer);

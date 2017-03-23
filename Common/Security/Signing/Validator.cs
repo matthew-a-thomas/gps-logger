@@ -9,19 +9,21 @@ namespace Common.Security.Signing
     public class Validator<TSigned, TUnsigned>
         where TSigned : TUnsigned, ISignable, new()
     {
+        public delegate Task<byte[]> DeriveIDFromThingDelegateAsync(TSigned thing);
+        public delegate Task<bool> PassesDomainSpecificValidationDelegateAsync(TSigned thing);
+
         // ReSharper disable once InconsistentNaming
-        private readonly Func<TSigned, Task<byte[]>> _deriveIdFromThingAsync;
+        private readonly DeriveIDFromThingDelegateAsync _deriveIdFromThingAsync;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialsAsync;
-        private readonly Func<TSigned, Task<bool>> _passesDomainSpecificValidationAsync;
+        private readonly PassesDomainSpecificValidationDelegateAsync _passesDomainSpecificValidationAsync;
         private readonly Signer<TSigned, TUnsigned> _signer;
         private readonly ReplayDetector<TSigned> _replayDetector;
 
         public Validator(
             Delegates.GenerateCredentialDelegateAsync generateCredentialsAsync,
             Signer<TSigned, TUnsigned> signer,
-            Func<TSigned, Task<bool>> passesDomainSpecificValidationAsync,
-            // ReSharper disable once InconsistentNaming
-            Func<TSigned, Task<byte[]>> deriveIDFromThingAsync,
+            PassesDomainSpecificValidationDelegateAsync passesDomainSpecificValidationAsync,
+            DeriveIDFromThingDelegateAsync deriveIDFromThingAsync,
             ReplayDetector<TSigned> replayDetector
             )
         {
