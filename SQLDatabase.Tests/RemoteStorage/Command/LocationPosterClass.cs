@@ -13,6 +13,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
         public class PostLocationAsyncMethod
         {
             [TestMethod]
+            // ReSharper disable once InconsistentNaming
             public async Task AllowsPostingForRandomID()
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>

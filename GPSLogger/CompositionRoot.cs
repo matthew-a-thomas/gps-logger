@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -35,7 +34,7 @@ namespace GPSLogger
                     {
                         using (var rng = await rngFactoryAsync())
                         {
-                            return await Task.Run(() => rng.GetBytes(CredentialController.IDSize));
+                            return await rng.GetBytesAsync(CredentialController.IDSize);
                         }
                     });
                 });

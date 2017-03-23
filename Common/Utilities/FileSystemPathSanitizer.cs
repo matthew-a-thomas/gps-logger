@@ -17,7 +17,7 @@ namespace Common.Utilities
             new HashSet<char>(
                 Path.GetInvalidFileNameChars().Concat(
                 Path.GetInvalidPathChars()).Concat(
-                new char[] { Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar })
+                new [] { Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar })
                 );
 
         /// <summary>

@@ -90,6 +90,7 @@ namespace GPSLogger.Tests
                     {
                         directory.Delete(true);
                     }
+                    // ReSharper disable once EmptyGeneralCatchClause
                     catch { }
                 }
             });

@@ -13,6 +13,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
         public class GetAllLocationsAsyncMethod
         {
             [TestMethod]
+            // ReSharper disable once InconsistentNaming
             public async Task ReturnsNoLocationsForRandomID()
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>

@@ -81,7 +81,7 @@ namespace Common.Tests.Extensions
                     for (var i = 0; i < 1000; ++i)
                     {
                         var bytes = rng.GetBytes(16);
-                        var s = bytes.ToHexString();
+                        bytes.ToHexString();
                     }
                 }
             }

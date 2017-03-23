@@ -38,6 +38,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 requestRoot,
                 requestContents,
                 serializer,
+                // ReSharper disable once InconsistentNaming
                 async (request, _server) =>
                 {
                     // Create URL parameters from the signed request

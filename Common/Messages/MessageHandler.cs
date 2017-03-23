@@ -44,8 +44,8 @@ namespace Common.Messages
             var response = new Message<TResponse>
             {
                 Contents = await contentGeneratorAsync(isValid),
-                ID = isValid ? request?.ID : null,
-                Salt = isValid ? request?.Salt : null,
+                ID = isValid ? request.ID : null,
+                Salt = isValid ? request.Salt : null,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
             };
 

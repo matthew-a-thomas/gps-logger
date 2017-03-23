@@ -88,6 +88,7 @@ namespace SQLDatabase.Extensions
             {
                 // Set up async functions from the reader
                 var shouldLoopAsync = (Func<Task<bool>>)reader.ReadAsync;
+                // ReSharper disable once InconsistentNaming
                 var getAsync = new Func<SqlDataReader, Func<Task<IReadOnlyDictionary<string, object>>>>(_reader =>
                 {
                     return () => Task.Run(() =>

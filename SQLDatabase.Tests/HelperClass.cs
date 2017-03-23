@@ -20,7 +20,8 @@ namespace SQLDatabase.Tests
             public void ReturnsSyntacticallyCorrectString()
             {
                 var connectionString = Helper.GetConnectionString();
-                var builder = new SqlConnectionStringBuilder(connectionString);
+                // ReSharper disable once UnusedVariable
+                var a = new SqlConnectionStringBuilder(connectionString);
             }
         }
     }

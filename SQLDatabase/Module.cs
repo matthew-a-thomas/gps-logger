@@ -11,7 +11,7 @@ using System.IO;
 namespace SQLDatabase
 {
     [Export(typeof(IModule))]
-    public class Module : Autofac.Module, IModule
+    public class Module : Autofac.Module
     {
         protected override void Load(ContainerBuilder builder)
         {

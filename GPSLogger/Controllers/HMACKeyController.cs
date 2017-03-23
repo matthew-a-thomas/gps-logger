@@ -10,8 +10,8 @@ namespace GPSLogger.Controllers
     /// <summary>
     /// Controller for the HMAC key, which is stored in persisted storage
     /// </summary>
-    // ReSharper disable once InconsistentNaming
     [Route("api/[controller]")]
+    // ReSharper disable once InconsistentNaming
     public class HMACKeyController : ControllerBase
     {
         public class PostParameters

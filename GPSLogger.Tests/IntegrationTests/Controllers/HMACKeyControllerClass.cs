@@ -8,6 +8,7 @@ using static GPSLogger.Controllers.HMACKeyController;
 namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
+    // ReSharper disable once InconsistentNaming
     public class HMACKeyControllerClass
     {
         private const string Root = "/api/hmackey";

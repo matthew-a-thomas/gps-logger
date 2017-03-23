@@ -1,14 +1,15 @@
 ﻿using Common.Utilities;
-using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Common.Security.Signing
 {
     public class Validator<TSigned, TUnsigned>
         where TSigned : TUnsigned, ISignable, new()
     {
+        // ReSharper disable once InconsistentNaming
         public delegate Task<byte[]> DeriveIDFromThingDelegateAsync(TSigned thing);
         public delegate Task<bool> PassesDomainSpecificValidationDelegateAsync(TSigned thing);
 
@@ -23,6 +24,7 @@ namespace Common.Security.Signing
             Delegates.GenerateCredentialDelegateAsync generateCredentialsAsync,
             Signer<TSigned, TUnsigned> signer,
             PassesDomainSpecificValidationDelegateAsync passesDomainSpecificValidationAsync,
+            // ReSharper disable once InconsistentNaming
             DeriveIDFromThingDelegateAsync deriveIDFromThingAsync,
             ReplayDetector<TSigned> replayDetector
             )
