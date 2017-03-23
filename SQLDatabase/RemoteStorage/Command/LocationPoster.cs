@@ -22,7 +22,7 @@ namespace SQLDatabase.RemoteStorage.Command
 
         public async Task PostLocationAsync(byte[] identifier, Location location)
         {
-            var id = await _identifierPoster.PostOrGetIdentifierAsync(identifier);
+            var id = await _identifierPoster.PostOrGetIdentifierAsync(_transaction, identifier);
             await _transaction.ExecuteAsync(@"
 insert into
     locations (

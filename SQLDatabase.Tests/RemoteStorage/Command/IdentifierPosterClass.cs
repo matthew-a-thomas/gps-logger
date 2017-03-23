@@ -16,9 +16,9 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var poster = new IdentifierPoster(transaction);
+                    var poster = new IdentifierPoster();
                     var identifier = Guid.NewGuid().ToByteArray();
-                    await poster.PostOrGetIdentifierAsync(identifier);
+                    await poster.PostOrGetIdentifierAsync(transaction, identifier);
                 });
             }
 
@@ -28,11 +28,11 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var poster = new IdentifierPoster(transaction);
+                    var poster = new IdentifierPoster();
                     var identifier = Guid.NewGuid().ToByteArray();
-                    var id = await poster.PostOrGetIdentifierAsync(identifier);
+                    var id = await poster.PostOrGetIdentifierAsync(transaction, identifier);
                     // ReSharper disable once InconsistentNaming
-                    var secondID = await poster.PostOrGetIdentifierAsync(identifier);
+                    var secondID = await poster.PostOrGetIdentifierAsync(transaction, identifier);
                     Assert.AreEqual(id, secondID);
                 });
             }
