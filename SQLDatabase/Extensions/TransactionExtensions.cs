@@ -97,6 +97,7 @@ namespace SQLDatabase.Extensions
                         {
                             var name = _reader.GetName(i);
                             var value = _reader.GetValue(i);
+                            record[name] = value;
                         }
                         return (IReadOnlyDictionary<string, object>)record;
                     });
