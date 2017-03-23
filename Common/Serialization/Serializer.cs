@@ -25,6 +25,11 @@ namespace Common.Serialization
             _serializationSteps = new LinkedList<Action<T, BinaryWriter>>();
         }
         
+        public void EnqueueAsyncStep<TMember>(Func<T, Task<TMember>> converterAsync)
+        {
+             // TODO: Pick up here with adding async steps to serializer
+        }
+
         /// <summary>
         /// Enqueues a serialization step
         /// </summary>
