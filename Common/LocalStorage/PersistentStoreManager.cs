@@ -28,18 +28,15 @@ namespace Common.LocalStorage
             if (key == null) return null;
             key = await FileSystemPathSanitizer.SanitizeAsync(key);
             byte[] buffer = null;
-            _locker.DoLockedAsync(key, () =>
+            await _locker.DoLockedAsync(key, async () =>
             {
-                Task.Run(async () =>
+                if (!await IsSetInternalAsync(key))
+                    return; // We won't be able to open the stream for reading
+                using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Read, FileMode = FileMode.Open, FileShare = FileShare.Read }))
                 {
-                    if (!await IsSetInternalAsync(key))
-                        return; // We won't be able to open the stream for reading
-                    using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Read, FileMode = FileMode.Open, FileShare = FileShare.Read }))
-                    {
-                        buffer = new byte[stream.Length];
-                        await stream.ReadAsync(buffer, 0, buffer.Length);
-                    }
-                }).Wait();
+                    buffer = new byte[stream.Length];
+                    await stream.ReadAsync(buffer, 0, buffer.Length);
+                }
             });
             return buffer;
         }
@@ -71,7 +68,7 @@ namespace Common.LocalStorage
         {
             if (key == null || value == null) return;
             key = await FileSystemPathSanitizer.SanitizeAsync(key);
-            _locker.DoLockedAsync(key.ToLower(), async () =>
+            await _locker.DoLockedAsync(key.ToLower(), async () =>
                 {
                     using (var stream = await _persistentStore.OpenAsync(key, new Options { FileAccess = FileAccess.Write, FileMode = FileMode.Create, FileShare = FileShare.None }))
                         await stream.WriteAsync(value, 0, value.Length);

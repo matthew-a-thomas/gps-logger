@@ -73,7 +73,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             }
 
             // Assert that the result is not signed
-            await Helpers.AssertIsNotSigned(deserializedResponse);
+            Helpers.AssertIsNotSigned(deserializedResponse);
         }
 
         [TestMethod]

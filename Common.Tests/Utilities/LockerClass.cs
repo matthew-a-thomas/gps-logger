@@ -82,10 +82,10 @@ namespace Common.Tests.Utilities
             }
 
             [TestMethod]
-            public void DoesNothingWithNullAction()
+            public async Task DoesNothingWithNullAction()
             {
                 var locker = new Locker<string>();
-                locker.DoLockedAsync("", null);
+                await locker.DoLockedAsync("", null);
             }
 
             [TestMethod]
