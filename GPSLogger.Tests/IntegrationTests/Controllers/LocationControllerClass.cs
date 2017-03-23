@@ -22,8 +22,8 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         private static readonly ISerializer<Location> LocationSerializer = new Func<Serializer<Location>>(() =>
         {
             var result = new Serializer<Location>();
-            result.EnqueueStep(x => x.Latitude);
-            result.EnqueueStep(x => x.Longitude);
+            result.EnqueueStepAsync(x => Task.Run(() => x.Latitude));
+            result.EnqueueStepAsync(x => Task.Run(() => x.Longitude));
             return result;
         })();
         private const string Root = "/api/location";

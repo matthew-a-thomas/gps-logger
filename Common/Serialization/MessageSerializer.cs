@@ -25,10 +25,10 @@ namespace Common.Serialization
             // Set up a new serializer to handle messages
             var serializer = new Serializer<Message<T>>();
 
-            serializer.EnqueueStep(x => await contentsSerializer.SerializeAsync(x.Contents)); // Delegate serialization of the contents to the provided contentsSerializer
-            serializer.EnqueueStep(x => x.ID);
-            serializer.EnqueueStep(x => x.Salt);
-            serializer.EnqueueStep(x => x.UnixTime);
+            serializer.EnqueueStepAsync(async x => await contentsSerializer.SerializeAsync(x.Contents));
+            serializer.EnqueueStepAsync(x => Task.Run(() => x.ID));
+            serializer.EnqueueStepAsync(x => Task.Run(() => x.Salt));
+            serializer.EnqueueStepAsync(x => Task.Run(() => x.UnixTime));
 
             _serializer = serializer;
         }

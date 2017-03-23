@@ -15,27 +15,22 @@ namespace Common.Serialization
         /// <summary>
         /// The serialization steps to follow
         /// </summary>
-        private readonly LinkedList<Action<T, BinaryWriter>> _serializationSteps;
+        private readonly LinkedList<Func<T, BinaryWriter, Task>> _serializationSteps;
 
         /// <summary>
         /// Sets up a new serializer, which follows a series of steps to serialize an instance of T
         /// </summary>
         public Serializer()
         {
-            _serializationSteps = new LinkedList<Action<T, BinaryWriter>>();
+            _serializationSteps = new LinkedList<Func<T, BinaryWriter, Task>>();
         }
         
-        public void EnqueueAsyncStep<TMember>(Func<T, Task<TMember>> converterAsync)
-        {
-             // TODO: Pick up here with adding async steps to serializer
-        }
-
         /// <summary>
         /// Enqueues a serialization step
         /// </summary>
         /// <typeparam name="TMember"></typeparam>
-        /// <param name="converter"></param>
-        public void EnqueueStep<TMember>(Func<T, TMember> converter)
+        /// <param name="converterAsync"></param>
+        public void EnqueueStepAsync<TMember>(Func<T, Task<TMember>> converterAsync)
         {
             // Find the write method that will handle TMember
             var writeMethodInfo = typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(TMember) });
@@ -51,9 +46,9 @@ namespace Common.Serialization
             });
             
             // Add a serialization step to write the converted thing into the binary writer
-            _serializationSteps.AddLast((thing, writer) =>
+            _serializationSteps.AddLast(async (thing, writer) =>
             {
-                var converted = converter(thing);
+                var converted = await converterAsync(thing);
                 writeMethod(converted, writer);
             });
         }
@@ -65,7 +60,7 @@ namespace Common.Serialization
         public static ISerializer<T> CreatePassthroughSerializer()
         {
             var serializer = new Serializer<T>();
-            serializer.EnqueueStep(x => x);
+            serializer.EnqueueStepAsync(x => Task.Run(() => x));
             return serializer;
         }
 

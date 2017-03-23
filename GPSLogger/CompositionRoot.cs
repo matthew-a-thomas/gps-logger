@@ -110,8 +110,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Location>();
-                    serializer.EnqueueStep(x => x.Latitude);
-                    serializer.EnqueueStep(x => x.Longitude);
+                    serializer.EnqueueStepAsync(x => Task.Run(() => x.Latitude));
+                    serializer.EnqueueStepAsync(x => Task.Run(() => x.Longitude));
                     return (ISerializer<Location>)serializer;
                 }).SingleInstance();
 
@@ -119,8 +119,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Credential<byte[]>>();
-                    serializer.EnqueueStep(x => x.ID);
-                    serializer.EnqueueStep(x => x.Secret);
+                    serializer.EnqueueStepAsync(x => Task.Run(() => x.ID));
+                    serializer.EnqueueStepAsync(x => Task.Run(() => x.Secret));
                     return (ISerializer<Credential<byte[]>>)serializer;
                 });
 
@@ -135,8 +135,8 @@ namespace GPSLogger
 
                     // "Location" requests leading to "bool" responses
                     var locationSerializer = new Serializer<Location>();
-                    locationSerializer.EnqueueStep(x => x.Latitude);
-                    locationSerializer.EnqueueStep(x => x.Longitude);
+                    locationSerializer.EnqueueStepAsync(x => Task.Run(() => x.Latitude));
+                    locationSerializer.EnqueueStepAsync(x => Task.Run(() => x.Longitude));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         locationSerializer,
@@ -145,10 +145,10 @@ namespace GPSLogger
 
                     // "bool" requests leading to "Credential" responses
                     var credentialSerializer = new Serializer<Credential<string>>();
-                    credentialSerializer.EnqueueStep(x => x.ID?.Length ?? 0);
-                    credentialSerializer.EnqueueStep(x => x.ID);
-                    credentialSerializer.EnqueueStep(x => x.Secret?.Length ?? 0);
-                    credentialSerializer.EnqueueStep(x => x.Secret);
+                    credentialSerializer.EnqueueStepAsync(x => Task.Run(() => x.ID?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => Task.Run(() => x.ID));
+                    credentialSerializer.EnqueueStepAsync(x => Task.Run(() => x.Secret?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => Task.Run(() => x.Secret));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         Serializer<bool>.CreatePassthroughSerializer(),
