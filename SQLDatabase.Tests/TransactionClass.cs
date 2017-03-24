@@ -13,7 +13,7 @@ namespace SQLDatabase.Tests
         {
             await ConnectionProviderClass.DoWithConnectionAsync(async connection =>
             {
-                using (var transaction = new Transaction(connection))
+                using (var transaction = new Transaction(ConnectionProviderClass.CreateConnectionProvider()))
                     await action(transaction);
             });
         }

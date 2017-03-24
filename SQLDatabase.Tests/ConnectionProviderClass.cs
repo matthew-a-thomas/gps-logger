@@ -4,6 +4,8 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 
 namespace SQLDatabase.Tests
 {
@@ -12,9 +14,18 @@ namespace SQLDatabase.Tests
     {
         internal static async Task DoWithConnectionAsync(Func<SqlConnection, Task> action)
         {
-            var provider = new ConnectionProvider(Helper.GetConnectionString());
+            var provider = CreateConnectionProvider();
             using (var connection = provider.CreateConnection())
                 await action(connection);
+        }
+
+        internal static ConnectionProvider CreateConnectionProvider()
+        {
+            var config = new ConfigurationBuilder()
+                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = true })
+                .Build();
+            var provider = new ConnectionProvider(config);
+            return provider;
         }
 
         [TestClass]
@@ -34,7 +45,7 @@ namespace SQLDatabase.Tests
             {
                 await DoWithConnectionAsync(async connection =>
                 {
-                    using (var transaction = new Transaction(connection))
+                    using (var transaction = new Transaction(CreateConnectionProvider()))
                         await transaction.GetAsync<int>("select count(*) from locations");
                 });
             }
@@ -44,7 +55,7 @@ namespace SQLDatabase.Tests
             {
                 await DoWithConnectionAsync(async connection =>
                 {
-                    using (var transaction = new Transaction(connection))
+                    using (var transaction = new Transaction(CreateConnectionProvider()))
                         await transaction.GetAsync<int>("select count(*) from identifiers");
                 });
             }
@@ -54,7 +65,7 @@ namespace SQLDatabase.Tests
             {
                 await DoWithConnectionAsync(async connection =>
                 {
-                    using (var transaction = new Transaction(connection)) // Is automatically rolled back
+                    using (var transaction = new Transaction(CreateConnectionProvider())) // Is automatically rolled back
                     {
                         var numAffected = await transaction.ExecuteAsync("insert into identifiers(hex) values (0x0000)");
                         Assert.AreEqual(1, numAffected);
@@ -67,7 +78,7 @@ namespace SQLDatabase.Tests
             {
                 await DoWithConnectionAsync(async connection =>
                 {
-                    using (var transaction = new Transaction(connection)) // Is automatically rolled back
+                    using (var transaction = new Transaction(CreateConnectionProvider())) // Is automatically rolled back
                     {
                         var id = await transaction.GetAsync<int>("insert into identifiers(hex) values (0x0000); select cast(SCOPE_IDENTITY() as int) as id");
                         var numAffected = await transaction.ExecuteAsync("insert into locations(id, latitude, longitude) values (@id, 0, 0)", new SqlParameter("@id", id));

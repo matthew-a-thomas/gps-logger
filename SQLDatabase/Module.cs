@@ -5,8 +5,8 @@ using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
 using System.Composition;
 using Autofac.Core;
-using System.Data.SqlClient;
-using System.IO;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 
 namespace SQLDatabase
 {
@@ -15,13 +15,12 @@ namespace SQLDatabase
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(c =>
-            {
-                var connectionString = File.ReadAllText(@"C:\connection string.txt");
-                var connection = new SqlConnection(connectionString);
-                connection.Open();
-                return connection;
-            });
+            IConfiguration config = new ConfigurationBuilder()
+                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = false })
+                .Build();
+            builder.RegisterInstance(config);
+
+            builder.RegisterType<ConnectionProvider>();
             builder.RegisterType<Transaction>();
             builder.RegisterType<IdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();

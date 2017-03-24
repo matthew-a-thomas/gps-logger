@@ -139,10 +139,10 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
             var deserializedResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(response);
             await Helpers.AssertNoPropertiesAreNullAsync(deserializedResponse);
 
-            var locations = await GetLocationsAsync(_server, credentialAsBytes.ID);
+            var locations = (await GetLocationsAsync(_server, credentialAsBytes.ID)).ToArray();
 
             Assert.IsNotNull(locations);
-            Assert.IsTrue(locations.Count() == 1);
+            Assert.IsTrue(locations.Length == 1);
             var first = locations.First();
             Assert.AreEqual(requestContents.Latitude, first.Latitude);
             Assert.AreEqual(requestContents.Longitude, first.Longitude);

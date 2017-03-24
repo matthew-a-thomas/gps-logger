@@ -14,11 +14,10 @@ namespace SQLDatabase
         /// <summary>
         /// Creates a new factory for commands that are within transactions and executed against this SqlConnection
         /// </summary>
-        /// <param name="sqlConnection"></param>
-        public Transaction(SqlConnection sqlConnection)
+        public Transaction(ConnectionProvider connectionProvider)
         {
-            _connection = sqlConnection;
-            _transaction = sqlConnection.BeginTransaction();
+            _connection = connectionProvider.CreateConnection();
+            _transaction = _connection.BeginTransaction();
         }
 
         /// <summary>
@@ -40,6 +39,10 @@ namespace SQLDatabase
         /// <summary>
         /// Rolls back this transaction
         /// </summary>
-        public void Dispose() => _transaction.Dispose();
+        public void Dispose()
+        {
+            _transaction.Dispose();
+            _connection.Dispose();
+        }
     }
 }

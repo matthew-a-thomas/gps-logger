@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace SQLDatabase
 {
@@ -12,10 +13,16 @@ namespace SQLDatabase
         /// <summary>
         /// Creates a new provider which opens SQL connections using the given connection string
         /// </summary>
-        /// <param name="connectionString"></param>
-        public ConnectionProvider(string connectionString)
+        public ConnectionProvider(IConfiguration config)
         {
-            _connectionString = connectionString;
+            _connectionString = new SqlConnectionStringBuilder
+            {
+                UserID = config["user"],
+                Password = config["password"],
+                DataSource = config["server"],
+                IntegratedSecurity = false,
+                InitialCatalog = config["database"]
+            }.ToString();
         }
 
         /// <summary>
