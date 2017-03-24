@@ -11,7 +11,7 @@ namespace SQLDatabase
         public IConfiguration CreateConfiguration()
         {
             var config = new ConfigurationBuilder()
-                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = true })
+                .Add(new JsonConfigurationSource { Path = @"\sql.json", Optional = true })
                 .Add(new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" })
                 .Build();
             return config;
