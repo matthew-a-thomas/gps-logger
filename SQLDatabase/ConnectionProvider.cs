@@ -1,5 +1,5 @@
 ﻿using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+using Common.Utilities;
 
 namespace SQLDatabase
 {
@@ -8,32 +8,22 @@ namespace SQLDatabase
     /// </summary>
     internal class ConnectionProvider
     {
+        private readonly IFactory<string, SqlConnection> _connectionFactory;
         private readonly string _connectionString;
 
         /// <summary>
         /// Creates a new provider which opens SQL connections using the given connection string
         /// </summary>
-        public ConnectionProvider(IConfiguration config)
+        public ConnectionProvider(ConnectionOptions connectionOptions, IFactory<ConnectionOptions, string> connectionStringFactory, IFactory<string, SqlConnection> connectionFactory)
         {
-            _connectionString = new SqlConnectionStringBuilder
-            {
-                UserID = config["user"],
-                Password = config["password"],
-                DataSource = config["server"],
-                IntegratedSecurity = false,
-                InitialCatalog = config["database"]
-            }.ToString();
+            _connectionFactory = connectionFactory;
+            _connectionString = connectionStringFactory.Create(connectionOptions);
         }
 
         /// <summary>
         /// Opens a new SQL connection
         /// </summary>
         /// <returns></returns>
-        public SqlConnection CreateConnection()
-        {
-            var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            return connection;
-        }
+        public SqlConnection CreateConnection() => _connectionFactory.Create(_connectionString);
     }
 }

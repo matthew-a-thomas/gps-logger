@@ -1,18 +1,17 @@
-using System;
-using Newtonsoft.Json;
+﻿using System;
 
-namespace GPSLogger.Integration
+namespace SQLDatabase.Integration
 {
-    // ReSharper disable once UnusedMember.Global
     // ReSharper disable once ArrangeTypeModifiers
+    // ReSharper disable once UnusedMember.Global
     class Program
     {
         // ReSharper disable once UnusedMember.Local
         // ReSharper disable once ArrangeTypeMemberModifiers
-        // ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(args));
+            Console.WriteLine("Hello World!");
         }
     }
 }

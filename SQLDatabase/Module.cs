@@ -4,7 +4,16 @@ using Common.RemoteStorage.Query;
 using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
 using System.Composition;
+using System.Data.SqlClient;
+using System.IO;
+using System.Reflection;
 using Autofac.Core;
+using Common.Utilities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.CommandLine;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.FileProviders;
 
 namespace SQLDatabase
 {
@@ -13,12 +22,57 @@ namespace SQLDatabase
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<ConfigurationFactory>().SingleInstance();
+            builder.RegisterType<CommandLineArgumentsProvider>().As<IArgumentsProvider>().SingleInstance();
+            builder.Register(c =>
+            {
+                var thisAssemblyLocation = GetType().GetTypeInfo().Assembly.Location;
+                var root = new FileInfo(thisAssemblyLocation).Directory.Root.FullName;
+                const string sqlJsonName = "sql.json";
+
+                var argumentsProvider = c.Resolve<IArgumentsProvider>();
+                var arguments = argumentsProvider.GetArguments();
+
+                var configSources = new IConfigurationSource[]
+                {
+                    // Try loading config values from a "sql.json" file located at the root directory above wherever this assembly is
+                    new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = new PhysicalFileProvider(root) },
+                    // Try loading config values from command line arguments
+                    new CommandLineConfigurationSource { Args = arguments },
+                    // Try loading config values from environment variables
+                    new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" }
+                };
+
+                var factory = new ConfigurationFactory(configSources);
+
+                return factory;
+            }).SingleInstance();
             builder.Register(c =>
             {
                 var factory = c.Resolve<ConfigurationFactory>();
                 var configuration = factory.CreateConfiguration();
                 return configuration;
+            }).SingleInstance();
+            builder.Register(c =>
+            {
+                IFactory<ConnectionOptions, string> connectionStringFactory = new Factory<ConnectionOptions, string>(options => new SqlConnectionStringBuilder
+                {
+                    UserID = options.User,
+                    Password = options.Password,
+                    DataSource = options.Server,
+                    IntegratedSecurity = false,
+                    InitialCatalog = options.Database
+                }.ToString());
+                return connectionStringFactory;
+            }).SingleInstance();
+            builder.Register(c =>
+            {
+                IFactory<string, SqlConnection> connectionFactory = new Factory<string, SqlConnection>(connectionString =>
+                {
+                    var connection = new SqlConnection(connectionString);
+                    connection.Open();
+                    return connection;
+                });
+                return connectionFactory;
             }).SingleInstance();
             builder.RegisterType<ConnectionProvider>();
             builder.RegisterType<Transaction>();
