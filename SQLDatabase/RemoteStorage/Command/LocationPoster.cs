@@ -1,4 +1,5 @@
-﻿using Common.RemoteStorage.Command;
+﻿using System;
+using Common.RemoteStorage.Command;
 using Common.RemoteStorage.Models;
 using System.Threading.Tasks;
 using SQLDatabase.Extensions;
@@ -9,21 +10,23 @@ namespace SQLDatabase.RemoteStorage.Command
     internal class LocationPoster : ILocationPoster
     {
         private readonly IdentifierPoster _identifierPoster;
-        private readonly Transaction _transaction;
+        private readonly Func<Transaction> _transactionFactory;
 
         public LocationPoster(
             IdentifierPoster identifierPoster,
-            Transaction transaction
+            Func<Transaction> transactionFactory
             )
         {
             _identifierPoster = identifierPoster;
-            _transaction = transaction;
+            _transactionFactory = transactionFactory;
         }
 
         public async Task PostLocationAsync(byte[] identifier, Location location)
         {
-            var id = await _identifierPoster.PostOrGetIdentifierAsync(_transaction, identifier);
-            await _transaction.ExecuteAsync(@"
+            using (var transaction = _transactionFactory())
+            {
+                var id = await _identifierPoster.PostOrGetIdentifierAsync(transaction, identifier);
+                await transaction.ExecuteAsync(@"
 insert into
     locations (
         id,
@@ -36,10 +39,12 @@ values (
     @longitude
 )
 ",
-                new SqlParameter("@id", id),
-                new SqlParameter("@latitude", location.Latitude),
-                new SqlParameter("@longitude", location.Longitude)
+                    new SqlParameter("@id", id),
+                    new SqlParameter("@latitude", location.Latitude),
+                    new SqlParameter("@longitude", location.Longitude)
                 );
+                transaction.Commit();
+            }
         }
     }
 }

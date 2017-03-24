@@ -19,7 +19,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
                     var identifierPoster = new IdentifierPoster();
-                    var poster = new LocationPoster(identifierPoster, transaction);
+                    var poster = new LocationPoster(identifierPoster, () => transaction);
                     var id = new byte[16];
                     using (var rng = RandomNumberGenerator.Create())
                         rng.GetBytes(id);

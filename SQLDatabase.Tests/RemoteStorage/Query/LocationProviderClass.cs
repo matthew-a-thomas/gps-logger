@@ -18,7 +18,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
             {
                 await TransactionClass.DoWithTransactionAsync(async transaction =>
                 {
-                    var provider = new LocationProvider(transaction);
+                    var provider = new LocationProvider(() => transaction);
                     using (var rng = RandomNumberGenerator.Create())
                     {
                         var id = new byte[16];

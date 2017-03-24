@@ -10,17 +10,19 @@ namespace SQLDatabase.RemoteStorage.Query
 {
     internal class LocationProvider : ILocationProvider
     {
-        private readonly Transaction _transaction;
+        private readonly Func<Transaction> _transactionFactory;
 
-        public LocationProvider(Transaction transaction)
+        public LocationProvider(Func<Transaction> transactionFactory)
         {
-            _transaction = transaction;
+            _transactionFactory = transactionFactory;
         }
 
         public async Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
             var result = new LinkedList<IdentifiedLocation>();
-            await _transaction.ProcessResultsAsync(@"
+            using (var transaction = _transactionFactory())
+            {
+                await transaction.ProcessResultsAsync(@"
 select
     locations.*
 from
@@ -30,19 +32,20 @@ from
 where
     identifiers.hex = @hex
 ",
-                record =>
-                {
-                    var location = new IdentifiedLocation
+                    record =>
                     {
-                        Identifier = forIdentifier,
-                        Latitude = (double)record["latitude"],
-                        Longitude = (double)record["longitude"],
-                        Timestamp = (DateTime)record["timestamp"]
-                    };
-                    result.AddLast(location);
-                },
-                new SqlParameter("@hex", forIdentifier)
-            );
+                        var location = new IdentifiedLocation
+                        {
+                            Identifier = forIdentifier,
+                            Latitude = (double) record["latitude"],
+                            Longitude = (double) record["longitude"],
+                            Timestamp = (DateTime) record["timestamp"]
+                        };
+                        result.AddLast(location);
+                    },
+                    new SqlParameter("@hex", forIdentifier)
+                );
+            }
             return result;
         }
     }
