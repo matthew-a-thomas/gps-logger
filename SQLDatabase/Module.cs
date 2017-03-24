@@ -5,8 +5,6 @@ using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
 using System.Composition;
 using Autofac.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 
 namespace SQLDatabase
 {
