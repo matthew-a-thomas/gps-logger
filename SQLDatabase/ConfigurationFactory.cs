@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration.Json;
 namespace SQLDatabase
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class ConfigurationFactory
+    internal class ConfigurationFactory
     {
         // ReSharper disable once MemberCanBeMadeStatic.Global
         public IConfiguration CreateConfiguration()
