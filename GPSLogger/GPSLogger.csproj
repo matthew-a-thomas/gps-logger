@@ -43,10 +43,5 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\SQLDatabase\SQLDatabase.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Update="sql.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 
 </Project>
