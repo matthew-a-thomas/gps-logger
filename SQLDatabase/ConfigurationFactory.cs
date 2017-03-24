@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
@@ -20,11 +21,19 @@ namespace SQLDatabase
             var root = new FileInfo(thisAssemblyLocation).Directory.Root.FullName;
             const string sqlJsonName = "sql.json";
 
+            throw new Exception("Cannot yet load command line arguments for unit tests: http://stackoverflow.com/q/42992148/3063273");
+
             var config = new ConfigurationBuilder()
-                .Add(new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = new PhysicalFileProvider(root) })
+                //.Add(new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = new PhysicalFileProvider(root) })
                 .Add(new CommandLineConfigurationSource { Args = Environment.GetCommandLineArgs().Skip(1) })
-                .Add(new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" })
+                //.Add(new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" })
                 .Build();
+
+            foreach (var kvp in config.AsEnumerable())
+            {
+                Console.WriteLine($"{kvp.Key}={kvp.Value}");
+            }
+
             return config;
         }
     }
