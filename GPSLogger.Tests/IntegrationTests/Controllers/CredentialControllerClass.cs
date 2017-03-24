@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Common.Extensions;
 using Common.Extensions.Security;
 using Common.Messages;
@@ -16,27 +17,35 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
     public class CredentialControllerClass
     {
         private const string Root = "/api/credential";
-        private readonly TestServer _server = Helpers.CreateServer();
+        private readonly TestServer _server;
 
-        public static void DoWithSignedGet<TRequest, TResponse>(
+        public CredentialControllerClass()
+        {
+            var task = Helpers.CreateServerAsync();
+            task.Wait();
+            _server = task.Result;
+        }
+
+        public static async Task DoWithSignedGetAsync<TRequest, TResponse>(
             TestServer server,
             string requestRoot,
             TRequest requestContents,
             ISerializer<TRequest> serializer,
-            Func<string, TResponse> deserializeResponse,
-            Action<TResponse> handleResponse)
-            => DoWithSignedRequest(
+            Func<string, Task<TResponse>> deserializeResponse,
+            Func<TResponse, Task> handleResponse)
+            => await DoWithSignedRequestAsync(
                 server,
                 requestRoot,
                 requestContents,
                 serializer,
-                (request, _server) =>
+                // ReSharper disable once InconsistentNaming
+                async (request, _server) =>
                 {
                     // Create URL parameters from the signed request
-                    var parameters = Helpers.CreateUrlParametersFrom(request);
+                    var parameters = await Helpers.CreateUrlParametersFromAsync(request);
 
                     // Ask the server for another set of credentials
-                    var response = Helpers.Get(_server, requestRoot + "?" + string.Join("&", parameters));
+                    var response = await Helpers.GetAsync(_server, requestRoot + "?" + string.Join("&", parameters));
                     return response;
                 },
                 deserializeResponse,
@@ -47,32 +56,28 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         /// </summary>
         /// <typeparam name="TRequest"></typeparam>
         /// <typeparam name="TResponse"></typeparam>
-        /// <param name="server"></param>
-        /// <param name="requestRoot"></param>
-        /// <param name="serializer"></param>
-        /// <param name="handleResponse"></param>
-        public static void DoWithSignedRequest<TRequest, TResponse>(
+        public static async Task DoWithSignedRequestAsync<TRequest, TResponse>(
             TestServer server,
             string requestRoot,
             TRequest requestContents,
             ISerializer<TRequest> serializer,
-            Func<SignedMessage<TRequest>, TestServer, string> performRequest,
-            Func<string, TResponse> deserializeResponse,
-            Action<TResponse> handleResponse)
+            Func<SignedMessage<TRequest>, TestServer, Task<string>> performRequestAsync,
+            Func<string, Task<TResponse>> deserializeResponseAsync,
+            Func<TResponse, Task> handleResponseAsync)
         {
             // Get some credentials from the server
-            var signedCredential = GetSignedCredential(server);
+            var signedCredential = await GetSignedCredentialAsync(server);
             var credentialAsStrings = signedCredential.Contents;
-            var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
+            var credentialAsBytes = await credentialAsStrings.ConvertAsync(ByteArrayExtensions.FromHexStringAsync);
 
             // Create a request that has been signed with those credentials
             var messageSerializer = new MessageSerializer<TRequest>(serializer);
             var signer = new Signer<SignedMessage<TRequest>, Message<TRequest>>(
-                new HMACProvider(() => new byte[0]),
+                new HMACProvider(() => Task.FromResult(new byte[0])),
                 messageSerializer,
                 new MapperTranslator<Message<TRequest>, SignedMessage<TRequest>>()
                 );
-            var request = signer.Sign(
+            var request = await signer.SignAsync(
                 new Message<TRequest>
                 {
                     Contents = requestContents,
@@ -82,11 +87,11 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 },
                 credentialAsBytes.Secret);
 
-            var responseString = performRequest(request, server);
-            var deserializedResponse = deserializeResponse(responseString);
+            var responseString = await performRequestAsync(request, server);
+            var deserializedResponse = await deserializeResponseAsync(responseString);
 
             // Perform the given action on the deserializedResponse
-            handleResponse(deserializedResponse);
+            await handleResponseAsync(deserializedResponse);
         }
 
         /// <summary>
@@ -94,32 +99,31 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        public static SignedMessage<Credential<string>> GetSignedCredential(TestServer server)
+        public static async Task<SignedMessage<Credential<string>>> GetSignedCredentialAsync(TestServer server)
         {
-            var response = Helpers.Get(server, Root);
+            var response = await Helpers.GetAsync(server, Root);
             var signedCredential = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response);
             return signedCredential;
         }
 
         [TestMethod]
         // ReSharper disable once InconsistentNaming
-        public void ReturnsJSON() => Helpers.AssertReturnsJSON(_server, Root);
+        public async Task ReturnsJSON() => await Helpers.AssertReturnsJSONAsync(_server, Root);
 
         [TestMethod]
-        public void ReturnsValidCredential()
+        public async Task ReturnsValidCredential()
         {
-            var credential = GetSignedCredential(_server);
+            var credential = await GetSignedCredentialAsync(_server);
             Assert.IsFalse(string.IsNullOrWhiteSpace(credential.Contents.ID));
             Assert.IsFalse(string.IsNullOrWhiteSpace(credential.Contents.Secret));
         }
 
         [TestMethod]
-        public void DoesNotSignResponseWhenSendingUnsignedRequest()
+        public async Task DoesNotSignResponseWhenSendingUnsignedRequest()
         {
             // Get some credentials from the server
-            var signedCredential = GetSignedCredential(_server);
+            var signedCredential = await GetSignedCredentialAsync(_server);
             var credentialAsStrings = signedCredential.Contents;
-            var credentialAsBytes = credentialAsStrings.Convert(ByteArrayExtensions.FromHexString);
 
             // Create a request that has been signed with those credentials
             var request =
@@ -131,10 +135,10 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
                 };
 
             // Create URL parameters from the signed request
-            var parameters = Helpers.CreateUrlParametersFrom(request);
+            var parameters = Helpers.CreateUrlParametersFromAsync(request);
 
             // Ask the server for another set of credentials
-            var response = Helpers.Get(_server, Root + "?" + string.Join("&", parameters));
+            var response = await Helpers.GetAsync(_server, Root + "?" + string.Join("&", parameters));
             var secondSignedCredential = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response);
 
             // Assert that the relevant fields are null
@@ -144,16 +148,16 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         }
 
         [TestMethod]
-        public void SignsResponseWhenSendingSignedRequest()
+        public async Task SignsResponseWhenSendingSignedRequest()
         {
             // Assert that none of the returned fields are empty
-            DoWithSignedGet(
+            await DoWithSignedGetAsync(
                 _server,
                 Root,
                 true,
                 Serializer<bool>.CreatePassthroughSerializer(),
-                response => JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response),
-                signedResponse => Helpers.AssertNoPropertiesAreNull(signedResponse));
+                response => Task.Run(() => JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(response)),
+                Helpers.AssertNoPropertiesAreNullAsync);
         }
     }
 }

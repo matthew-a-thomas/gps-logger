@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Common.Serialization
 {
@@ -14,26 +15,26 @@ namespace Common.Serialization
         /// <summary>
         /// The serialization steps to follow
         /// </summary>
-        private readonly LinkedList<Action<T, BinaryWriter>> _serializationSteps;
+        private readonly LinkedList<Func<T, BinaryWriter, Task>> _asyncSerializationSteps;
 
         /// <summary>
         /// Sets up a new serializer, which follows a series of steps to serialize an instance of T
         /// </summary>
         public Serializer()
         {
-            _serializationSteps = new LinkedList<Action<T, BinaryWriter>>();
+            _asyncSerializationSteps = new LinkedList<Func<T, BinaryWriter, Task>>();
         }
         
         /// <summary>
         /// Enqueues a serialization step
         /// </summary>
         /// <typeparam name="TMember"></typeparam>
-        /// <param name="converter"></param>
-        public void EnqueueStep<TMember>(Func<T, TMember> converter)
+        /// <param name="converterAsync"></param>
+        public void EnqueueStepAsync<TMember>(Func<T, Task<TMember>> converterAsync)
         {
             // Find the write method that will handle TMember
             var writeMethodInfo = typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(TMember) });
-            if (writeMethodInfo == null) throw new Exception("Cannot serialized type " + typeof(TMember).Name + ". Please try a type that you can write to a BinaryWriter");
+            if (writeMethodInfo == null) throw new Exception("Cannot serialize type " + typeof(TMember).Name + ". Please try a type that you can write to a BinaryWriter");
             var writeMethod = new Action<TMember, BinaryWriter>((member, writer) =>
             {
                 try
@@ -45,9 +46,9 @@ namespace Common.Serialization
             });
             
             // Add a serialization step to write the converted thing into the binary writer
-            _serializationSteps.AddLast((thing, writer) =>
+            _asyncSerializationSteps.AddLast(async (thing, writer) =>
             {
-                var converted = converter(thing);
+                var converted = await converterAsync(thing);
                 writeMethod(converted, writer);
             });
         }
@@ -59,7 +60,7 @@ namespace Common.Serialization
         public static ISerializer<T> CreatePassthroughSerializer()
         {
             var serializer = new Serializer<T>();
-            serializer.EnqueueStep(x => x);
+            serializer.EnqueueStepAsync(Task.FromResult);
             return serializer;
         }
 
@@ -68,21 +69,24 @@ namespace Common.Serialization
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        public byte[] Serialize(T thing)
+        public async Task<byte[]> SerializeAsync(T thing)
         {
-            using (var stream = new MemoryStream())
+            return await Task.Run(async () =>
             {
-                using (var writer = new BinaryWriter(stream))
+                using (var stream = new MemoryStream())
                 {
-                    foreach (var step in _serializationSteps)
+                    using (var writer = new BinaryWriter(stream))
                     {
-                        step(thing, writer);
+                        foreach (var stepAsync in _asyncSerializationSteps)
+                        {
+                            await stepAsync(thing, writer);
+                        }
+                        writer.Flush();
+                        var serialized = stream.ToArray();
+                        return serialized;
                     }
-                    writer.Flush();
-                    var serialized = stream.ToArray();
-                    return serialized;
                 }
-            }
+            });
         }
     }
 }

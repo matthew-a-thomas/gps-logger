@@ -2,3 +2,5 @@
 /packages/
 /TestResults/
 *.user
+*.secret
+GPSLogger/Properties/launchSettings.json

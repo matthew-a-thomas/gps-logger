@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{E9F57F32-5A67-4FF7-91B0-03720E30F3F1}"
 EndProject
@@ -10,6 +10,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Common.Tests\Common.Tests.csproj", "{C4746CD5-54E2-4966-A949-5C0E3BBC41DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPSLogger.Tests", "GPSLogger.Tests\GPSLogger.Tests.csproj", "{ECB5F583-C91F-4455-BBF8-484A292312ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLDatabase", "SQLDatabase\SQLDatabase.csproj", "{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLDatabase.Tests", "SQLDatabase.Tests\SQLDatabase.Tests.csproj", "{9576D13D-DB76-423A-92BA-F31DA55E4469}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +73,30 @@ Global
 		{ECB5F583-C91F-4455-BBF8-484A292312ED}.Release|x64.Build.0 = Release|Any CPU
 		{ECB5F583-C91F-4455-BBF8-484A292312ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{ECB5F583-C91F-4455-BBF8-484A292312ED}.Release|x86.Build.0 = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|x64.Build.0 = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Debug|x86.Build.0 = Debug|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|x64.ActiveCfg = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|x64.Build.0 = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|x86.ActiveCfg = Release|Any CPU
+		{B62AAF02-C08B-4B53-B288-B45EE3D42E4D}.Release|x86.Build.0 = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|x64.Build.0 = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Debug|x86.Build.0 = Debug|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|x64.ActiveCfg = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|x64.Build.0 = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|x86.ActiveCfg = Release|Any CPU
+		{9576D13D-DB76-423A-92BA-F31DA55E4469}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

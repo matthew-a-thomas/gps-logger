@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Threading.Tasks;
+using AutoMapper;
 
 namespace Common.Serialization
 {
@@ -15,6 +16,6 @@ namespace Common.Serialization
             }).CreateMapper();
         }
 
-        public TTo Translate(TFrom thing) => _mapper.Map<TTo>(thing);
+        public async Task<TTo> TranslateAsync(TFrom thing) => await Task.Run(() => _mapper.Map<TTo>(thing));
     }
 }

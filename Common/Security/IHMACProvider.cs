@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Common.Security
 {
@@ -12,13 +13,13 @@ namespace Common.Security
         /// Create an HMAC with the default key
         /// </summary>
         /// <returns></returns>
-        HMAC Get();
+        Task<HMAC> GetAsync();
 
         /// <summary>
         /// Create an HMAC with the given key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        HMAC Get(byte[] key);
+        Task<HMAC> GetAsync(byte[] key);
     }
 }

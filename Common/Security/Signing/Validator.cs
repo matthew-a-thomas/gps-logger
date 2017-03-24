@@ -1,7 +1,8 @@
 ﻿using Common.Utilities;
-using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Common.Security.Signing
 {
@@ -9,24 +10,28 @@ namespace Common.Security.Signing
         where TSigned : TUnsigned, ISignable, new()
     {
         // ReSharper disable once InconsistentNaming
-        private readonly Func<TSigned, byte[]> _deriveIDFromThing;
-        private readonly Delegates.GenerateCredentialDelegate _generateCredentials;
-        private readonly Func<TSigned, bool> _passesDomainSpecificValidation;
+        public delegate Task<byte[]> DeriveIDFromThingDelegateAsync(TSigned thing);
+        public delegate Task<bool> PassesDomainSpecificValidationDelegateAsync(TSigned thing);
+
+        // ReSharper disable once InconsistentNaming
+        private readonly DeriveIDFromThingDelegateAsync _deriveIdFromThingAsync;
+        private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialsAsync;
+        private readonly PassesDomainSpecificValidationDelegateAsync _passesDomainSpecificValidationAsync;
         private readonly Signer<TSigned, TUnsigned> _signer;
         private readonly ReplayDetector<TSigned> _replayDetector;
 
         public Validator(
-            Delegates.GenerateCredentialDelegate generateCredentials,
+            Delegates.GenerateCredentialDelegateAsync generateCredentialsAsync,
             Signer<TSigned, TUnsigned> signer,
-            Func<TSigned, bool> passesDomainSpecificValidation,
+            PassesDomainSpecificValidationDelegateAsync passesDomainSpecificValidationAsync,
             // ReSharper disable once InconsistentNaming
-            Func<TSigned, byte[]> deriveIDFromThing,
+            DeriveIDFromThingDelegateAsync deriveIDFromThingAsync,
             ReplayDetector<TSigned> replayDetector
             )
         {
-            _deriveIDFromThing = deriveIDFromThing;
-            _generateCredentials = generateCredentials;
-            _passesDomainSpecificValidation = passesDomainSpecificValidation;
+            _deriveIdFromThingAsync = deriveIDFromThingAsync;
+            _generateCredentialsAsync = generateCredentialsAsync;
+            _passesDomainSpecificValidationAsync = passesDomainSpecificValidationAsync;
             _replayDetector = replayDetector;
             _signer = signer;
         }
@@ -36,7 +41,7 @@ namespace Common.Security.Signing
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        public bool IsValid(TSigned thing)
+        public async Task<bool> IsValidAsync(TSigned thing)
         {
             try
             {
@@ -52,14 +57,14 @@ namespace Common.Security.Signing
                     return false;
 
                 // See if it fails domain-specific validation
-                if (!_passesDomainSpecificValidation(thing))
+                if (!await _passesDomainSpecificValidationAsync(thing))
                     return false; // It failed domain-specific validation
                 
                 // Derive the client's credentials from the ID they gave in the message
-                var purportedCredential = _generateCredentials(_deriveIDFromThing(thing));
+                var purportedCredential = await _generateCredentialsAsync(await _deriveIdFromThingAsync(thing));
 
                 // Go through the process of signing the given message using the generated client secret
-                var signed = _signer.Sign(thing, purportedCredential.Secret);
+                var signed = await _signer.SignAsync(thing, purportedCredential.Secret);
 
                 // Now see if the HMAC (using the given credential's secret) matches the reported HMAC
                 return signed.HMAC.SequenceEqual(thing.HMAC);

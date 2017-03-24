@@ -2,47 +2,49 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
+using System.Threading.Tasks;
 using static GPSLogger.Controllers.HMACKeyController;
 
 namespace GPSLogger.Tests.IntegrationTests.Controllers
 {
     [TestClass]
+    // ReSharper disable once InconsistentNaming
     public class HMACKeyControllerClass
     {
         private const string Root = "/api/hmackey";
 
-        private static TestServer PostKeyAndReturnServer()
+        private static async Task<TestServer> PostKeyAndReturnServerAsync()
         {
             var parameters = new PostParameters
             {
                 NewKey = Encoding.ASCII.GetBytes("Hello world, this is your new key").ToHexString()
             };
-            var server = Helpers.CreateServer();
-            var response = Helpers.Post(server, Root, parameters);
+            var server = await Helpers.CreateServerAsync();
+            var response = await Helpers.PostAsync(server, Root, parameters);
             Assert.IsTrue(string.IsNullOrWhiteSpace(response));
             return server;
         }
 
         [TestMethod]
-        public void CanPostKey()
+        public async Task CanPostKey()
         {
-            PostKeyAndReturnServer();
+            await PostKeyAndReturnServerAsync();
         }
         
         [TestMethod]
-        public void ReturnsFalseAtFirst()
+        public async Task ReturnsFalseAtFirst()
         {
-            var server = Helpers.CreateServer();
-            var response = Helpers.Get(server, Root);
+            var server = await Helpers.CreateServerAsync();
+            var response = await Helpers.GetAsync(server, Root);
             var boolean = bool.Parse(response);
             Assert.IsFalse(boolean);
         }
 
         [TestMethod]
-        public void ReturnsTrueAfterPostingKey()
+        public async Task ReturnsTrueAfterPostingKey()
         {
-            var server = PostKeyAndReturnServer();
-            var response = Helpers.Get(server, Root);
+            var server = await PostKeyAndReturnServerAsync();
+            var response = await Helpers.GetAsync(server, Root);
             var boolean = bool.Parse(response);
             Assert.IsTrue(boolean);
         }

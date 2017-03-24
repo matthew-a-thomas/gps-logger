@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Common.Extensions.Security;
 using Common.Security;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,16 +14,16 @@ namespace Common.Tests.Extensions.Security
         public class ConvertMethod
         {
             [TestMethod]
-            public void InvokesConversionFunctionForAllMembers()
+            public async Task InvokesConversionFunctionForAllMembers()
             {
-                var a = new Credential<string>();
+                var credential = new Credential<string>();
                 var numProperties =
-                    a
+                    credential
                     .GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
                     .Length;
                 var numTimesCalled = 0;
-                a.Convert(x => Interlocked.Increment(ref numTimesCalled));
+                await credential.ConvertAsync(x => Task.FromResult(Interlocked.Increment(ref numTimesCalled)));
                 Assert.AreEqual(numProperties, numTimesCalled);
             }
         }

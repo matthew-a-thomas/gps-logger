@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Common.Utilities
 {
@@ -16,7 +17,7 @@ namespace Common.Utilities
             new HashSet<char>(
                 Path.GetInvalidFileNameChars().Concat(
                 Path.GetInvalidPathChars()).Concat(
-                new char[] { Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar })
+                new [] { Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar })
                 );
 
         /// <summary>
@@ -38,30 +39,35 @@ namespace Common.Utilities
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static void Sanitize(ref string path)
+        public static async Task<string> SanitizeAsync(string path)
         {
-            if (path == null)
-                return;
-
-            // Escape any escape characters
-            path = path.Replace(EscapeCharacter.ToString(), Escape(EscapeCharacter));
-
-            // Escape any invalid characters
-            foreach (var c in InvalidCharacters)
-                path = path.Replace(c.ToString(), Escape(c));
-
-            // Shorten by truncating and appending with part of the SHA1 hash of the whole thing
-            const int maxLength = 40;
-            if (path.Length > maxLength)
+            return await Task.Run(() =>
             {
-                using (var hasher = SHA1.Create())
+                if (path == null)
+                    return null;
+
+                // Escape any escape characters
+                path = path.Replace(EscapeCharacter.ToString(), Escape(EscapeCharacter));
+
+                // Escape any invalid characters
+                foreach (var c in InvalidCharacters)
+                    path = path.Replace(c.ToString(), Escape(c));
+
+                // Shorten by truncating and appending with part of the SHA1 hash of the whole thing
+                const int maxLength = 40;
+                if (path.Length > maxLength)
                 {
-                    var hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(path));
-                    var hashString = hash.ToHexString();
-                    var partialHashString = new string(hashString.Take(6).ToArray()); // Take the first six hex characters
-                    path = string.Format("{0}__{1}", path.Substring(0, maxLength - partialHashString.Length - 2), partialHashString);
+                    using (var hasher = SHA1.Create())
+                    {
+                        var hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(path));
+                        var hashString = hash.ToHexString();
+                        var partialHashString = new string(hashString.Take(6).ToArray()); // Take the first six hex characters
+                        path = string.Format("{0}__{1}", path.Substring(0, maxLength - partialHashString.Length - 2), partialHashString);
+                    }
                 }
-            }
+
+                return path;
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Common.Messages;
+﻿using System.Threading.Tasks;
+using Common.Messages;
 
 namespace Common.Serialization
 {
@@ -24,10 +25,10 @@ namespace Common.Serialization
             // Set up a new serializer to handle messages
             var serializer = new Serializer<Message<T>>();
 
-            serializer.EnqueueStep(x => contentsSerializer.Serialize(x.Contents)); // Delegate serialization of the contents to the provided contentsSerializer
-            serializer.EnqueueStep(x => x.ID);
-            serializer.EnqueueStep(x => x.Salt);
-            serializer.EnqueueStep(x => x.UnixTime);
+            serializer.EnqueueStepAsync(async x => await contentsSerializer.SerializeAsync(x.Contents));
+            serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
+            serializer.EnqueueStepAsync(x => Task.FromResult(x.Salt));
+            serializer.EnqueueStepAsync(x => Task.FromResult(x.UnixTime));
 
             _serializer = serializer;
         }
@@ -37,6 +38,6 @@ namespace Common.Serialization
         /// </summary>
         /// <param name="thing"></param>
         /// <returns></returns>
-        public byte[] Serialize(Message<T> thing) => _serializer.Serialize(thing);
+        public async Task<byte[]> SerializeAsync(Message<T> thing) => await _serializer.SerializeAsync(thing);
     }
 }

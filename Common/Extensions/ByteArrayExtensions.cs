@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Common.Extensions
 {
@@ -13,20 +14,23 @@ namespace Common.Extensions
         /// <param name="s"></param>
         /// <returns></returns>
         /// <remarks>Inspired by http://stackoverflow.com/a/18021603/3063273</remarks>
-        public static byte[] FromHexString(string s)
+        public static async Task<byte[]> FromHexStringAsync(string s)
         {
-            try
+            return await Task.Run(() =>
             {
-                return s?
-                    .Zip(s.Skip(1), (one, two) => new string(new[] {one, two})) // From ABCD make {AB, BC, CD}
-                    .Where((tuple, index) => index % 2 == 0) // Choose only {AB, CD}
-                    .Select(tuple => Convert.ToByte(tuple, 16)) // Turn to byte e.g. AB => 171
-                    .ToArray();
-            }
-            catch
-            {
-                return null;
-            }
+                try
+                {
+                    return s?
+                        .Zip(s.Skip(1), (one, two) => new string(new[] { one, two })) // From ABCD make {AB, BC, CD}
+                        .Where((tuple, index) => index % 2 == 0) // Choose only {AB, CD}
+                        .Select(tuple => Convert.ToByte(tuple, 16)) // Turn to byte e.g. AB => 171
+                        .ToArray();
+                }
+                catch
+                {
+                    return null;
+                }
+            });
         }
 
         /// <summary>

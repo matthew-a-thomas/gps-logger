@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Common.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,30 +13,30 @@ namespace Common.Tests.Extensions
         public class FromHexStringMethod
         {
             [TestMethod]
-            public void ReturnsNullWhenGivenNull()
+            public async Task ReturnsNullWhenGivenNull()
             {
-                var b = ByteArrayExtensions.FromHexString(null);
+                var b = await ByteArrayExtensions.FromHexStringAsync(null);
                 Assert.IsNull(b);
             }
 
             [TestMethod]
-            public void ReturnsNullWhenGivenInvalidHexString()
+            public async Task ReturnsNullWhenGivenInvalidHexString()
             {
-                var b = ByteArrayExtensions.FromHexString("hello world");
+                var b = await ByteArrayExtensions.FromHexStringAsync("hello world");
                 Assert.IsNull(b);
             }
 
             [TestMethod]
-            public void HandlesHalfNibbleStrings()
+            public async Task HandlesHalfNibbleStrings()
             {
-                var b = ByteArrayExtensions.FromHexString("012");
+                var b = await ByteArrayExtensions.FromHexStringAsync("012");
                 Assert.IsNotNull(b);
                 Assert.AreEqual(1, b.Length);
                 Assert.AreEqual(1, b[0]);
             }
 
             [TestMethod]
-            public void HandlesAllHexDigits()
+            public async Task HandlesAllHexDigits()
             {
                 var allDigits =
                     string.Join("",
@@ -43,12 +44,12 @@ namespace Common.Tests.Extensions
                             .Concat(Enumerable.Range('a', 'f' - 'a' + 1).Select(x => (char) x))
                     );
                 allDigits += allDigits.ToUpper();
-                var b = ByteArrayExtensions.FromHexString(allDigits);
+                var b = await ByteArrayExtensions.FromHexStringAsync(allDigits);
                 Assert.IsNotNull(b);
             }
 
             [TestMethod]
-            public void DoesNotHandleNonHexDigits()
+            public async Task DoesNotHandleNonHexDigits()
             {
                 var nonHexDigits =
                     string.Join("",
@@ -56,7 +57,7 @@ namespace Common.Tests.Extensions
                             .Except(Enumerable.Range(0, 10).Select(x => x.ToString()[0])
                                 .Concat(Enumerable.Range('a', 'f' - 'a' + 1).Select(x => (char) x)))
                     );
-                var b = ByteArrayExtensions.FromHexString(nonHexDigits);
+                var b = await ByteArrayExtensions.FromHexStringAsync(nonHexDigits);
                 Assert.IsNull(b);
             }
         }
@@ -80,14 +81,14 @@ namespace Common.Tests.Extensions
                     for (var i = 0; i < 1000; ++i)
                     {
                         var bytes = rng.GetBytes(16);
-                        var s = bytes.ToHexString();
+                        bytes.ToHexString();
                     }
                 }
             }
         }
 
         [TestMethod]
-        public void ToAndFromWorkTogether()
+        public async Task ToAndFromWorkTogether()
         {
             using (var rng = RandomNumberGenerator.Create())
             {
@@ -95,7 +96,7 @@ namespace Common.Tests.Extensions
                 {
                     var bytes = rng.GetBytes(16);
                     var s = bytes.ToHexString();
-                    var b = ByteArrayExtensions.FromHexString(s);
+                    var b = await ByteArrayExtensions.FromHexStringAsync(s);
                     Assert.IsTrue(bytes.SequenceEqual(b));
                 }
             }

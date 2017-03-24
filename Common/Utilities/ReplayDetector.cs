@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Common.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
@@ -17,6 +18,11 @@ namespace Common.Utilities
         private readonly TimeSpan _window;
 
         private readonly ConcurrentDictionary<string, Wrapper<int>> _counts;
+
+        /// <summary>
+        /// Something that helps pin the lifetimes of other objects to ReplayDetectors
+        /// </summary>
+        private static readonly LifetimePinner<AutoFinalizer, ReplayDetector<T>> LifetimePinner = new LifetimePinner<AutoFinalizer, ReplayDetector<T>>();
 
         /// <summary>
         /// Creates a new replay detector, which can tell if an instance of T has been seen by the "InNew" function within the past "window" timeframe
@@ -70,11 +76,13 @@ namespace Common.Utilities
                                 {
                                     // This count is through... we can remove it from memory
                                     // Note that this is where the race condition above came from
-                                    _counts.TryRemove(serialized, out Wrapper<int> o);
+                                    _counts.TryRemove(serialized);
                                 }
                             }
                         }
                     });
+                    // Pin the created subscription to the lifetime of this ReplayDetector so that it's disposed when we are finalized
+                    LifetimePinner.Pin(new AutoFinalizer(subscription.Dispose), this);
                     
                     return false; // Don't loop again
                 }

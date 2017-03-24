@@ -1,4 +1,5 @@
-﻿using Common.Extensions;
+﻿using System.Threading.Tasks;
+using Common.Extensions;
 using Common.Serialization;
 
 namespace Common.Security.Signing
@@ -34,11 +35,11 @@ namespace Common.Security.Signing
         /// <param name="thing">The thing to sign</param>
         /// <param name="hmacKey">The signing key</param>
         /// <returns></returns>
-        public TSigned Sign(TUnsigned thing, byte[] hmacKey)
+        public async Task<TSigned> SignAsync(TUnsigned thing, byte[] hmacKey)
         {
-            var result = _translator.Translate(thing);
-            var serialized = _serializer.Serialize(thing);
-            using (var hmac = _hmacProvider.Get(hmacKey))
+            var result = await _translator.TranslateAsync(thing);
+            var serialized = await _serializer.SerializeAsync(thing);
+            using (var hmac = await _hmacProvider.GetAsync(hmacKey))
             {
                 var signature = hmac.ComputeHash(serialized);
                 result.HMAC = signature.ToHexString();

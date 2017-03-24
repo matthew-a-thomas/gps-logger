@@ -19,9 +19,9 @@ namespace GPSLogger.Tests
 {
     public static class Helpers
     {
-        public static void AssertNoPropertiesAreNull(object o)
+        public static async Task AssertNoPropertiesAreNullAsync(object o)
         {
-            Assert.IsTrue(Helpers.ReflectPropertiesOf<string>(o).All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2)));
+            await Task.Run(() => Assert.IsTrue(ReflectPropertiesOf<string>(o).All(tuple => !string.IsNullOrWhiteSpace(tuple.Item2))));
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace GPSLogger.Tests
         /// <param name="server"></param>
         /// <param name="url"></param>
         // ReSharper disable once InconsistentNaming
-        public static void AssertReturnsJSON(TestServer server, string url)
+        public static async Task AssertReturnsJSONAsync(TestServer server, string url)
         {
-            JsonConvert.DeserializeObject(Get(server, url));
+            JsonConvert.DeserializeObject(await GetAsync(server, url));
         }
 
         public static void AssertIsNotSigned<T>(SignedMessage<T> signedMessage)
@@ -60,7 +60,7 @@ namespace GPSLogger.Tests
         /// Creates a new GPS Logger server
         /// </summary>
         /// <returns></returns>
-        public static TestServer CreateServer()
+        public static async Task<TestServer> CreateServerAsync()
         {
             // Figure out where the GPS Logger directory is
             var startingLocation = new DirectoryInfo(Path.GetDirectoryName(typeof(Helpers).GetTypeInfo().Assembly.Location));
@@ -75,7 +75,9 @@ namespace GPSLogger.Tests
             var pattern = new Regex(@"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2} - [a-f0-9\-]+$");
             Assert.IsTrue(pattern.IsMatch(contentRootDirectory.Name));
             var maxAge = TimeSpan.FromDays(1);
+#pragma warning disable 4014
             Task.Run(() =>
+#pragma warning restore 4014
             {
                 foreach (var directory in
                     contentRootDirectory
@@ -88,23 +90,27 @@ namespace GPSLogger.Tests
                     {
                         directory.Delete(true);
                     }
+                    // ReSharper disable once EmptyGeneralCatchClause
                     catch { }
                 }
             });
 
-            // Copy over needed files
-            foreach (var file in new[]
+            return await Task.Run(() =>
             {
-                "appsettings.json"
-            })
-                File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
+                // Copy over needed files
+                foreach (var file in new[]
+                {
+                    "appsettings.json"
+                })
+                    File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
 
-            // Spin up the server
-            return new TestServer(
-                new WebHostBuilder()
-                .UseContentRoot(contentRoot)
-                .UseStartup<Startup>()
-                );
+                // Spin up the server
+                return new TestServer(
+                    new WebHostBuilder()
+                    .UseContentRoot(contentRoot)
+                    .UseStartup<Startup>()
+                    );
+            });
         }
 
         /// <summary>
@@ -112,8 +118,8 @@ namespace GPSLogger.Tests
         /// </summary>
         /// <param name="o"></param>
         /// <returns></returns>
-        public static IEnumerable<string> CreateUrlParametersFrom(object o)
-            => ReflectPropertiesOf<string>(o).Select(tuple => tuple.Item1.Name + "=" + WebUtility.UrlEncode(tuple.Item2));
+        public static async Task<IEnumerable<string>> CreateUrlParametersFromAsync(object o)
+            => await Task.Run(() => ReflectPropertiesOf<string>(o).Select(tuple => tuple.Item1.Name + "=" + WebUtility.UrlEncode(tuple.Item2)));
 
         /// <summary>
         /// Returns the string the came back from getting the given URL from the given server
@@ -121,35 +127,27 @@ namespace GPSLogger.Tests
         /// <param name="server"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        public static string Get(TestServer server, string url)
+        public static async Task<string> GetAsync(TestServer server, string url)
         {
             using (var client = server.CreateClient())
             {
-                var responseTask = client.GetAsync(url);
-                responseTask.Wait();
-                var response = responseTask.Result;
+                var response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                var responseStringTask = response.Content.ReadAsStringAsync();
-                responseStringTask.Wait();
-                var responseString = responseStringTask.Result;
+                var responseString = await response.Content.ReadAsStringAsync();
                 return responseString;
             }
         }
 
-        public static string Post(TestServer server, string url, object contents)
+        public static async Task<string> PostAsync(TestServer server, string url, object contents)
         {
             using (var client = server.CreateClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 var json = JsonConvert.SerializeObject(contents);
                 var encodedContent = new StringContent(json, Encoding.UTF8, "application/json");
-                var postTask = client.PostAsync(url, encodedContent);
-                postTask.Wait();
-                var response = postTask.Result;
+                var response = await client.PostAsync(url, encodedContent);
                 response.EnsureSuccessStatusCode();
-                var responseStringTask = response.Content.ReadAsStringAsync();
-                responseStringTask.Wait();
-                var responseString = responseStringTask.Result;
+                var responseString = await response.Content.ReadAsStringAsync();
                 return responseString;
             }
         }

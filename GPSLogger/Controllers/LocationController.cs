@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Extensions;
 using Common.Messages;
 using Common.Security.Signing;
@@ -14,8 +15,8 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class LocationController : ControllerBase
     {
-        private readonly LocationProvider _locationProvider;
-        private readonly HandleLocationPost _handleLocationPost;
+        private readonly LocationProviderAsync _locationProviderAsync;
+        private readonly HandleLocationPostAsync _handleLocationPostAsync;
         private readonly MessageHandler<Location, bool> _messageHandler;
 
         /// <summary>
@@ -23,22 +24,22 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <param name="location"></param>
-        public delegate void HandleLocationPost(byte[] id, Location location);
+        public delegate Task HandleLocationPostAsync(byte[] id, Location location);
 
         /// <summary>
         /// Delegate for reading locations for the given ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate IEnumerable<Location> LocationProvider(byte[] id);
+        public delegate Task<IEnumerable<Location>> LocationProviderAsync(byte[] id);
         
         public LocationController(
-            LocationProvider locationProvider,
-            HandleLocationPost handleLocationPost,
+            LocationProviderAsync locationProviderAsync,
+            HandleLocationPostAsync handleLocationPostAsync,
             MessageHandler<Location, bool> messageHandler)
         {
-            _locationProvider = locationProvider;
-            _handleLocationPost = handleLocationPost;
+            _locationProviderAsync = locationProviderAsync;
+            _handleLocationPostAsync = handleLocationPostAsync;
             _messageHandler = messageHandler;
         }
         
@@ -48,7 +49,7 @@ namespace GPSLogger.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public IEnumerable<Location> Get(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : _locationProvider(ByteArrayExtensions.FromHexString(id));
+        public async Task<IEnumerable<Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : await _locationProviderAsync(await ByteArrayExtensions.FromHexStringAsync(id));
 
         /// <summary>
         /// Posts a new location
@@ -56,12 +57,12 @@ namespace GPSLogger.Controllers
         /// <param name="posted"></param>
         /// <returns></returns>
         [HttpPost]
-        public SignedMessage<bool> Post([FromBody] SignedMessage<Location> posted) => _messageHandler.CreateResponse(
+        public async Task<SignedMessage<bool>> PostAsync([FromBody] SignedMessage<Location> posted) => await _messageHandler.CreateResponseAsync(
             posted,
-            valid =>
+            async valid =>
             {
                 if (valid)
-                    _handleLocationPost(ByteArrayExtensions.FromHexString(posted.ID), posted.Contents);
+                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.ID), posted.Contents);
 
                 return valid;
             });

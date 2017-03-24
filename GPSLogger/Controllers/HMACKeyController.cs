@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Extensions;
 using Common.LocalStorage;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +10,8 @@ namespace GPSLogger.Controllers
     /// <summary>
     /// Controller for the HMAC key, which is stored in persisted storage
     /// </summary>
-    // ReSharper disable once InconsistentNaming
     [Route("api/[controller]")]
+    // ReSharper disable once InconsistentNaming
     public class HMACKeyController : ControllerBase
     {
         public class PostParameters
@@ -39,32 +40,31 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public bool Get() => _persistentStoreManager.IsSet(HMACKeyName);
+        public async Task<bool> GetAsync() => await _persistentStoreManager.IsSetAsync(HMACKeyName);
         
         /// <summary>
         /// Returns the current HMAC key.
         /// Do not expose this to clients
         /// </summary>
         /// <returns></returns>
-        internal byte[] GetCurrent() => _persistentStoreManager.Get(HMACKeyName) ?? DefaultKeyGenerator();
+        internal async Task<byte[]> GetCurrentAsync() => await _persistentStoreManager.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
-        /// <param name="newKey"></param>
         [HttpPost]
-        public void Post([FromBody] PostParameters parameters)
+        public async Task PostAsync([FromBody] PostParameters parameters)
         {
             if (ReferenceEquals(parameters, null) || string.IsNullOrWhiteSpace(parameters.NewKey))
                 throw new Exception("Please provide a new key");
-            if (Get())
+            if (await GetAsync())
                 throw new Exception("The HMAC key has already been set");
             
-            var hmacKeyBytes = ByteArrayExtensions.FromHexString(parameters.NewKey);
+            var hmacKeyBytes = await ByteArrayExtensions.FromHexStringAsync(parameters.NewKey);
             if (hmacKeyBytes.Length < MinKeySize)
                 throw new Exception("Please provide at least " + MinKeySize + " bytes");
 
-            _persistentStoreManager.Set(HMACKeyName, hmacKeyBytes);
+            await _persistentStoreManager.SetAsync(HMACKeyName, hmacKeyBytes);
         }
     }
 }

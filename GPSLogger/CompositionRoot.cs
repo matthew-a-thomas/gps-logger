@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -14,8 +13,11 @@ using GPSLogger.Controllers;
 using GPSLogger.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Common.Utilities;
+using Common.RemoteStorage.Command;
+using Common.RemoteStorage.Query;
 
 namespace GPSLogger
 {
@@ -27,12 +29,12 @@ namespace GPSLogger
               // GenerateSaltDelegate
                 builder.Register(c =>
                 {
-                    var rngFactory = c.Resolve<Delegates.RNGFactory>();
-                    return new Delegates.GenerateSaltDelegate(() =>
+                    var rngFactoryAsync = c.Resolve<Delegates.RNGFactoryAsync>();
+                    return new Delegates.GenerateSaltDelegateAsync(async () =>
                     {
-                        using (var rng = rngFactory())
+                        using (var rng = await rngFactoryAsync())
                         {
-                            return rng.GetBytes(CredentialController.IDSize);
+                            return await rng.GetBytesAsync(CredentialController.IDSize);
                         }
                     });
                 });
@@ -41,10 +43,10 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var hmacProvider = c.Resolve<IHMACProvider>();
-                    return new Delegates.GenerateCredentialDelegate(id =>
+                    return new Delegates.GenerateCredentialDelegateAsync(async id =>
                     {
                         id = id ?? new byte[0];
-                        using (var hmac = hmacProvider.Get())
+                        using (var hmac = await hmacProvider.GetAsync())
                         {
                             var secret = hmac.ComputeHash(id);
                             return new Credential<byte[]> { ID = id.CreateClone(), Secret = secret };
@@ -56,14 +58,14 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var controller = c.Resolve<HMACKeyController>();
-                    return new Delegates.HMACKeyProvider(controller.GetCurrent);
+                    return new Delegates.HMACKeyProviderAsync(controller.GetCurrentAsync);
                 });
 
                 // IHMACProvider
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
 
                 // RNG factory
-                builder.RegisterInstance(new Delegates.RNGFactory(RandomNumberGenerator.Create)); // Not single instance, since we need a new RNG each time
+                builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => Task.FromResult(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
             // IPersistentStore
@@ -77,18 +79,38 @@ namespace GPSLogger
             builder.RegisterType<PersistentStoreManager>().SingleInstance();
             
             { // Controllers
-                // Location storage
-                var locations = new ConcurrentDictionary<string, ConcurrentQueue<Location>>();
-                var listGetter = new Func<string, ConcurrentQueue<Location>>(id => locations.GetOrAdd(id, x => new ConcurrentQueue<Location>()));
-                builder.RegisterInstance(new LocationController.HandleLocationPost((id, location) => listGetter(id.ToHexString()).Enqueue(location))).SingleInstance();
-                builder.RegisterInstance(new LocationController.LocationProvider(id => listGetter(id.ToHexString()))).SingleInstance();
+                // Location storage and retrieval
+                builder.Register(c =>
+                {
+                    var locationPoster = c.Resolve<ILocationPoster>();
 
+                    return new LocationController.HandleLocationPostAsync(async (id, location) =>
+                    {
+                        await locationPoster.PostLocationAsync(id, new Common.RemoteStorage.Models.Location
+                        {
+                            Latitude = location.Latitude,
+                            Longitude = location.Longitude
+                        });
+                    });
+                });
+                builder.Register(c =>
+                {
+                    var locationProvider = c.Resolve<ILocationProvider>();
+
+                    return new LocationController.LocationProviderAsync(async id =>
+                    {
+                        var identifiedLocations = await locationProvider.GetAllLocationsAsync(id);
+                        var locations = identifiedLocations.Select(x => new Location { Latitude = x.Latitude, Longitude = x.Longitude });
+                        return locations;
+                    });
+                });
+                
                 // Location serializer
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Location>();
-                    serializer.EnqueueStep(x => x.Latitude);
-                    serializer.EnqueueStep(x => x.Longitude);
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
                     return (ISerializer<Location>)serializer;
                 }).SingleInstance();
 
@@ -96,8 +118,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Credential<byte[]>>();
-                    serializer.EnqueueStep(x => x.ID);
-                    serializer.EnqueueStep(x => x.Secret);
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
                     return (ISerializer<Credential<byte[]>>)serializer;
                 });
 
@@ -112,8 +134,8 @@ namespace GPSLogger
 
                     // "Location" requests leading to "bool" responses
                     var locationSerializer = new Serializer<Location>();
-                    locationSerializer.EnqueueStep(x => x.Latitude);
-                    locationSerializer.EnqueueStep(x => x.Longitude);
+                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
+                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         locationSerializer,
@@ -122,10 +144,10 @@ namespace GPSLogger
 
                     // "bool" requests leading to "Credential" responses
                     var credentialSerializer = new Serializer<Credential<string>>();
-                    credentialSerializer.EnqueueStep(x => x.ID?.Length ?? 0);
-                    credentialSerializer.EnqueueStep(x => x.ID);
-                    credentialSerializer.EnqueueStep(x => x.Secret?.Length ?? 0);
-                    credentialSerializer.EnqueueStep(x => x.Secret);
+                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
+                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         Serializer<bool>.CreatePassthroughSerializer(),
@@ -154,7 +176,7 @@ namespace GPSLogger
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
             builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
-            builder.RegisterInstance(new Func<SignedMessage<TRequest>, bool>(message =>
+            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.PassesDomainSpecificValidationDelegateAsync(message => Task.Run(() =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
 
@@ -168,7 +190,7 @@ namespace GPSLogger
                 {
                     try
                     {
-                        ByteArrayExtensions.FromHexString(x);
+                        ByteArrayExtensions.FromHexStringAsync(x).Wait();
                         return true;
                     }
                     catch
@@ -176,8 +198,8 @@ namespace GPSLogger
                         return false;
                     }
                 });
-            })).SingleInstance();
-            builder.RegisterInstance(new Func<SignedMessage<TRequest>, byte[]>(message => ByteArrayExtensions.FromHexString(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
+            }))).SingleInstance();
+            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.DeriveIDFromThingDelegateAsync(message => ByteArrayExtensions.FromHexStringAsync(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
 
             RegisterSignerAndSerializers(builder, requestContentSerializer);
             RegisterSignerAndSerializers(builder, responseContentSerializer);
