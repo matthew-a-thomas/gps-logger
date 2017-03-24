@@ -21,9 +21,7 @@ namespace SQLDatabase.Tests
 
         internal static ConnectionProvider CreateConnectionProvider()
         {
-            var config = new ConfigurationBuilder()
-                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = true })
-                .Build();
+            var config = new ConfigurationFactory().CreateConfiguration();
             var provider = new ConnectionProvider(config);
             return provider;
         }

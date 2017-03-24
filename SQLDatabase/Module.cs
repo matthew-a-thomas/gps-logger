@@ -15,11 +15,13 @@ namespace SQLDatabase
     {
         protected override void Load(ContainerBuilder builder)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = false })
-                .Build();
-            builder.RegisterInstance(config);
-
+            builder.RegisterType<ConfigurationFactory>().SingleInstance();
+            builder.Register(c =>
+            {
+                var factory = c.Resolve<ConfigurationFactory>();
+                var configuration = factory.CreateConfiguration();
+                return configuration;
+            }).SingleInstance();
             builder.RegisterType<ConnectionProvider>();
             builder.RegisterType<Transaction>();
             builder.RegisterType<IdentifierPoster>();
