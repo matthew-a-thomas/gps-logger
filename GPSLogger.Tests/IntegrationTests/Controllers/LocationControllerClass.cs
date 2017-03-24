@@ -19,6 +19,13 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
     [TestClass]
     public class LocationControllerClass
     {
+        public static async Task<IEnumerable<Location>> GetLocationsAsync(TestServer server, IEnumerable<byte> id)
+        {
+            var response = await Helpers.GetAsync(server, $"{Root}?id={id.ToHexString()}");
+            var enumerable = JsonConvert.DeserializeObject<IEnumerable<Location>>(response);
+            return enumerable;
+        }
+
         private static readonly ISerializer<Location> LocationSerializer = new Func<Serializer<Location>>(() =>
         {
             var result = new Serializer<Location>();
@@ -101,6 +108,47 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         }
 
         [TestMethod]
+        public async Task GetsBackPostedLocation()
+        {
+            var signedResponse = await CredentialControllerClass.GetSignedCredentialAsync(_server);
+            var credentialAsStrings = signedResponse.Contents;
+            var credentialAsBytes = await credentialAsStrings.ConvertAsync(ByteArrayExtensions.FromHexStringAsync);
+            var messageSerializer = new MessageSerializer<Location>(LocationSerializer);
+
+            var requestContents = new Location
+            {
+                Latitude = DateTime.Now.Second,
+                Longitude = DateTime.Now.Minute
+            };
+            var signer = new Signer<SignedMessage<Location>, Message<Location>>(
+                new HMACProvider(() => Task.FromResult(new byte[0])),
+                messageSerializer,
+                new MapperTranslator<Message<Location>, SignedMessage<Location>>()
+                );
+            var request = await signer.SignAsync(
+                new Message<Location>
+                {
+                    Contents = requestContents,
+                    ID = credentialAsStrings.ID,
+                    Salt = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString(),
+                    UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                },
+                credentialAsBytes.Secret);
+
+            var response = await Helpers.PostAsync(_server, Root, request);
+            var deserializedResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(response);
+            await Helpers.AssertNoPropertiesAreNullAsync(deserializedResponse);
+
+            var locations = await GetLocationsAsync(_server, credentialAsBytes.ID);
+
+            Assert.IsNotNull(locations);
+            Assert.IsTrue(locations.Count() == 1);
+            var first = locations.First();
+            Assert.AreEqual(requestContents.Latitude, first.Latitude);
+            Assert.AreEqual(requestContents.Longitude, first.Longitude);
+        }
+
+        [TestMethod]
         // ReSharper disable once InconsistentNaming
         public async Task ReturnsJSON() => await Helpers.AssertReturnsJSONAsync(_server, Root);
 
@@ -117,8 +165,7 @@ namespace GPSLogger.Tests.IntegrationTests.Controllers
         // ReSharper disable once InconsistentNaming
         public async Task ReturnsEmptyArrayForRandomID()
         {
-            var response = await Helpers.GetAsync(_server, Root + "?id=" + Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()).ToHexString());
-            var enumerable = JsonConvert.DeserializeObject<IEnumerable<object>>(response);
+            IEnumerable<object> enumerable = await GetLocationsAsync(_server, Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()));
             Assert.IsTrue(!enumerable.Any());
         }
     }
