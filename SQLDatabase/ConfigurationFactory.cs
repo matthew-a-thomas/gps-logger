@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
 
 namespace SQLDatabase
@@ -10,7 +11,8 @@ namespace SQLDatabase
         public IConfiguration CreateConfiguration()
         {
             var config = new ConfigurationBuilder()
-                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = false })
+                .Add(new JsonConfigurationSource { Path = "sql.json", Optional = true })
+                .Add(new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" })
                 .Build();
             return config;
         }
