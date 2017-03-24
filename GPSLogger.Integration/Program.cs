@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace GPSLogger.Integration
 {
@@ -6,7 +7,7 @@ namespace GPSLogger.Integration
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine(JsonConvert.SerializeObject(args));
         }
     }
 }
