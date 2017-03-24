@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.FileProviders;
@@ -19,6 +22,7 @@ namespace SQLDatabase
 
             var config = new ConfigurationBuilder()
                 .Add(new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = new PhysicalFileProvider(root) })
+                .Add(new CommandLineConfigurationSource { Args = Environment.GetCommandLineArgs().Skip(1) })
                 .Add(new EnvironmentVariablesConfigurationSource { Prefix = "SQL_" })
                 .Build();
             return config;
