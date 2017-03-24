@@ -13,11 +13,11 @@ namespace Common.Extensions
         /// <param name="dictionary"></param>
         /// <param name="key"></param>
         /// <returns></returns>
+        // ReSharper disable once UnusedMethodReturnValue.Global
         public static bool TryRemove<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key)
         {
-#pragma warning disable 168
+            // ReSharper disable once UnusedVariable
             return dictionary.TryRemove(key, out TValue value);
-#pragma warning restore 168
         }
     }
 }

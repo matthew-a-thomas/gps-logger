@@ -1,20 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using Common.RemoteStorage.Command;
 using Common.RemoteStorage.Models;
 using System.Threading.Tasks;
-using SQLDatabase.Extensions;
-using System.Data.SqlClient;
 
 namespace SQLDatabase.RemoteStorage.Command
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     internal class LocationPoster : ILocationPoster
     {
         private readonly IdentifierPoster _identifierPoster;
-        private readonly Func<Transaction> _transactionFactory;
+        private readonly Func<ITransaction> _transactionFactory;
 
         public LocationPoster(
             IdentifierPoster identifierPoster,
-            Func<Transaction> transactionFactory
+            Func<ITransaction> transactionFactory
             )
         {
             _identifierPoster = identifierPoster;
@@ -26,7 +26,7 @@ namespace SQLDatabase.RemoteStorage.Command
             using (var transaction = _transactionFactory())
             {
                 var id = await _identifierPoster.PostOrGetIdentifierAsync(transaction, identifier);
-                await transaction.ExecuteAsync(@"
+                await transaction.ExecuteAsync(Commands.Command.Create(@"
 insert into
     locations (
         id,
@@ -39,10 +39,10 @@ values (
     @longitude
 )
 ",
-                    new SqlParameter("@id", id),
-                    new SqlParameter("@latitude", location.Latitude),
-                    new SqlParameter("@longitude", location.Longitude)
-                );
+                    new KeyValuePair<string, object>("@id", id),
+                    new KeyValuePair<string, object>("@latitude", location.Latitude),
+                    new KeyValuePair<string, object>("@longitude", location.Longitude)
+                ));
                 transaction.Commit();
             }
         }
