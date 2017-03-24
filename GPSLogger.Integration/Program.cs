@@ -13,6 +13,7 @@ namespace GPSLogger.Integration
         static void Main(string[] args)
         {
             Console.WriteLine(JsonConvert.SerializeObject(args));
+            throw new NotImplementedException();
         }
     }
 }
