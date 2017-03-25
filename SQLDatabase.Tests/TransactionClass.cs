@@ -12,6 +12,26 @@ namespace SQLDatabase.Tests
     [TestClass]
     public class TransactionClass
     {
+        private static void TestWithNullConstructorParameters(Action<Transaction> test)
+        {
+            using (var t = new Transaction(null, null))
+            {
+                test(t);
+            }
+            using (var t = new Transaction(null, new ConnectionOptions()))
+            {
+                test(t);
+            }
+            using (var t = new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), null))
+            {
+                test(t);
+            }
+            using (var t = new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), new ConnectionOptions()))
+            {
+                test(t);
+            }
+        }
+
         [TestClass]
         public class Constructor
         {
@@ -19,10 +39,7 @@ namespace SQLDatabase.Tests
             [SuppressMessage("ReSharper", "ObjectCreationAsStatement")]
             public void HandlesNullParameters()
             {
-                using (new Transaction(null, null)) { }
-                using (new Transaction(null, new ConnectionOptions())) { }
-                using (new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), null)) { }
-                using (new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), new ConnectionOptions())) { }
+                TestWithNullConstructorParameters(_ => { });
             }
 
             [TestMethod]
@@ -32,6 +49,16 @@ namespace SQLDatabase.Tests
                 using (new Transaction(
                     new Mock<IFactory<ConnectionOptions, SqlConnection>>().Object,
                     new ConnectionOptions())) { }
+            }
+        }
+
+        [TestClass]
+        public class CommitMethod
+        {
+            [TestMethod]
+            public void CanBeCalledWithNullConstructorParameters()
+            {
+                TestWithNullConstructorParameters(transaction => transaction.Commit());
             }
         }
     }
