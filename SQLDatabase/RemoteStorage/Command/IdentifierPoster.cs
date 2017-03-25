@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SQLDatabase.RemoteStorage.Command
@@ -13,7 +14,7 @@ namespace SQLDatabase.RemoteStorage.Command
         // ReSharper disable once MemberCanBeMadeStatic.Global
         public async ValueTask<int> PostOrGetIdentifierAsync(ITransaction transaction, byte[] identifier)
         {
-            return (int) await transaction.GetScalarAsync(Commands.Command.Create(@"
+            return Convert.ToInt32(await transaction.GetScalarAsync(Commands.Command.Create(@"
 -- Insert the given @hex into [identifiers] if it isn't already there
 insert
 	identifiers (hex)
@@ -48,7 +49,7 @@ select @id
 
 -- Note that while it would be faster to select to see if an ID already exists, I can't think of a quick way to do that without introducing a race condition
 ",
-                new KeyValuePair<string, object>("@hex", identifier)));
+                new KeyValuePair<string, object>("@hex", identifier))));
         }
     }
 }
