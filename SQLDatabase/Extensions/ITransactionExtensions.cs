@@ -9,7 +9,7 @@ namespace SQLDatabase.Extensions
     {
         public static async ValueTask<T> GetScalarAsync<T>(this ITransaction transaction, Commands.Command command)
         {
-            var results = await transaction.GetResultsAsync(command);
+            var results = transaction == null ? null : await transaction.GetResultsAsync(command);
             var first = results?[0];
             var result = first?.Values.First();
             try
