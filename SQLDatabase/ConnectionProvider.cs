@@ -17,7 +17,7 @@ namespace SQLDatabase
         public ConnectionProvider(ConnectionOptions connectionOptions, IFactory<ConnectionOptions, string> connectionStringFactory, IFactory<string, SqlConnection> connectionFactory)
         {
             _connectionFactory = connectionFactory;
-            _connectionString = connectionStringFactory.Create(connectionOptions);
+            _connectionString = connectionStringFactory?.Create(connectionOptions);
         }
 
         /// <summary>
