@@ -6,6 +6,7 @@ using Moq;
 namespace Common.Tests.Extensions
 {
     [TestClass]
+    // ReSharper disable once InconsistentNaming
     public class IFactoryExtensionsClass
     {
         [TestClass]
@@ -15,7 +16,7 @@ namespace Common.Tests.Extensions
             public void HandlesNopInterfaces()
             {
                 // ReSharper disable once InvokeAsExtensionMethod
-                IFactoryExtensions.ChainInto<object, object, object>(
+                IFactoryExtensions.ChainInto(
                     new Mock<IFactory<object, object>>().Object,
                     new Mock<IFactory<object, object>>().Object
                 );

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Common.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
