@@ -25,17 +25,21 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
             }
 
             [TestMethod]
-            public async Task RequestsOneTransaction()
+            public async Task HandlesNopInterfaces()
             {
                 var mockedTransaction = new Mock<ITransaction>();
-                var invokationCount = 0;
-                var provider = new LocationProvider(() =>
-                {
-                    Interlocked.Increment(ref invokationCount);
-                    return mockedTransaction.Object;
-                });
+                var provider = new LocationProvider(() => mockedTransaction.Object);
                 await provider.GetAllLocationsAsync(new byte[0]);
-                Assert.AreEqual(1, invokationCount);
+            }
+
+            [TestMethod]
+            public async Task HandlesNullParameters()
+            {
+                var provider = new LocationProvider(() => null);
+                await provider.GetAllLocationsAsync(null);
+
+                var provider2 = new LocationProvider(null);
+                await provider2.GetAllLocationsAsync(null);
             }
 
             [TestMethod]
@@ -50,7 +54,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
                         )
                     )
                     .Returns(
-                        new ValueTask<IEnumerable<IReadOnlyDictionary<string, object>>>(
+                        new ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>>(
                             new[]
                             {
                                 new Dictionary<string, object>
@@ -80,25 +84,6 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
                 Assert.AreEqual(-8, list[1].Latitude);
                 Assert.AreEqual(11, list[1].Longitude);
                 Assert.AreEqual(2000, list[1].Timestamp.Ticks);
-            }
-
-            [TestMethod]
-            public async Task SendsAlongIdentifierParameter()
-            {
-                var mockedTransaction = new Mock<ITransaction>();
-                IDictionary<string, object> parameters = null;
-                mockedTransaction.Setup(transaction => transaction.GetResultsAsync(It.IsAny<Commands.Command>())).Returns<Commands.Command>(
-                    command =>
-                    {
-                        parameters = command.Parameters;
-                        return new ValueTask<IEnumerable<IReadOnlyDictionary<string, object>>>(Enumerable.Empty<IReadOnlyDictionary<string, object>>());
-                    });
-                var provider = new LocationProvider(() => mockedTransaction.Object);
-                await provider.GetAllLocationsAsync(new byte[] {1, 2, 3});
-                Assert.IsNotNull(parameters);
-                Assert.AreEqual(1, parameters.Keys.Count);
-                Assert.IsTrue(parameters.First().Value is byte[]);
-                Assert.IsTrue((parameters.First().Value as byte[]).SequenceEqual(new byte[] {1, 2, 3}));
             }
         }
     }
