@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -29,12 +27,12 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             {
                 var mockedTransaction = new Mock<ITransaction>();
                 IDictionary<string, object> parameters = null;
-                mockedTransaction.Setup(transaction => transaction.ExecuteAsync(It.IsAny<Commands.Command>()))
+                mockedTransaction.Setup(transaction => transaction.GetScalarAsync(It.IsAny<Commands.Command>()))
                     .Returns<Commands.Command>(
                         command =>
                         {
                             parameters = command.Parameters;
-                            return new ValueTask<int>(99);
+                            return new ValueTask<object>(99);
                         });
                 var poster = new IdentifierPoster();
                 await poster.PostOrGetIdentifierAsync(mockedTransaction.Object, new byte[0]);
