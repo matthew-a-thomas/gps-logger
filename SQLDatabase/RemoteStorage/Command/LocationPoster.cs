@@ -9,11 +9,11 @@ namespace SQLDatabase.RemoteStorage.Command
     // ReSharper disable once ClassNeverInstantiated.Global
     public class LocationPoster : ILocationPoster
     {
-        private readonly IdentifierPoster _identifierPoster;
+        private readonly IIdentifierPoster _identifierPoster;
         private readonly Func<ITransaction> _transactionFactory;
 
         public LocationPoster(
-            IdentifierPoster identifierPoster,
+            IIdentifierPoster identifierPoster,
             Func<ITransaction> transactionFactory
             )
         {
