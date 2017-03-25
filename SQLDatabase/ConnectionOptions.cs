@@ -1,5 +1,6 @@
 ﻿namespace SQLDatabase
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ConnectionOptions
     {
         public string Server { get; set; }
