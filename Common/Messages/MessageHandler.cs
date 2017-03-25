@@ -9,7 +9,7 @@ namespace Common.Messages
     /// <summary>
     /// Helps create responses to requests
     /// </summary>
-    public class MessageHandler<TRequest, TResponse>
+    public class MessageHandler<TRequest, TResponse> : IMessageHandler<TRequest, TResponse>
     {
         private readonly Validator<SignedMessage<TRequest>, Message<TRequest>> _validator;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
@@ -32,9 +32,9 @@ namespace Common.Messages
             _messageTranslator = messageTranslator;
         }
         
-        public async Task<SignedMessage<TResponse>> CreateResponseAsync(
+        public async ValueTask<SignedMessage<TResponse>> CreateResponseAsync(
             SignedMessage<TRequest> request,
-            Func<bool, Task<TResponse>> contentGeneratorAsync
+            Func<bool, ValueTask<TResponse>> contentGeneratorAsync
             )
         {
             // Figure out if the request is valid
