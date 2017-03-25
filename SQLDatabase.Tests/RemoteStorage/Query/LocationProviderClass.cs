@@ -16,6 +16,15 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
         public class GetAllLocationsAsyncMethod
         {
             [TestMethod]
+            public async Task DoesNotCommitTransaction()
+            {
+                var mockedTransaction = new Mock<ITransaction>();
+                var provider = new LocationProvider(() => mockedTransaction.Object);
+                await provider.GetAllLocationsAsync(new byte[0]);
+                mockedTransaction.Verify(transaction => transaction.Commit(), Times.Never);
+            }
+
+            [TestMethod]
             public async Task RequestsOneTransaction()
             {
                 var mockedTransaction = new Mock<ITransaction>();
@@ -74,12 +83,22 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
             }
 
             [TestMethod]
-            public async Task DoesNotCommitTransaction()
+            public async Task SendsAlongIdentifierParameter()
             {
                 var mockedTransaction = new Mock<ITransaction>();
+                IDictionary<string, object> parameters = null;
+                mockedTransaction.Setup(transaction => transaction.GetResultsAsync(It.IsAny<Commands.Command>())).Returns<Commands.Command>(
+                    command =>
+                    {
+                        parameters = command.Parameters;
+                        return new ValueTask<IEnumerable<IReadOnlyDictionary<string, object>>>(Enumerable.Empty<IReadOnlyDictionary<string, object>>());
+                    });
                 var provider = new LocationProvider(() => mockedTransaction.Object);
-                await provider.GetAllLocationsAsync(new byte[0]);
-                mockedTransaction.Verify(transaction => transaction.Commit(), Times.Never);
+                await provider.GetAllLocationsAsync(new byte[] {1, 2, 3});
+                Assert.IsNotNull(parameters);
+                Assert.AreEqual(1, parameters.Keys.Count);
+                Assert.IsTrue(parameters.First().Value is byte[]);
+                Assert.IsTrue((parameters.First().Value as byte[]).SequenceEqual(new byte[] {1, 2, 3}));
             }
         }
     }
