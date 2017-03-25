@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using SQLDatabase.RemoteStorage.Query;

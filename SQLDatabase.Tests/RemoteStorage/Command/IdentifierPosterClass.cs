@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SQLDatabase.RemoteStorage.Command;
@@ -24,7 +22,6 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
             [TestMethod]
             public async Task HandlesNullParameters()
             {
-                var mockedTransaction = new Mock<ITransaction>();
                 var identifierPoster = new IdentifierPoster();
                 await identifierPoster.PostOrGetIdentifierAsync(null, null);
             }

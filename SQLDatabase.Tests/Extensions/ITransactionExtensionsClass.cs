@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SQLDatabase.Extensions;
@@ -9,6 +6,8 @@ using SQLDatabase.Extensions;
 namespace SQLDatabase.Tests.Extensions
 {
     [TestClass]
+    // ReSharper disable once UnusedMember.Global
+    // ReSharper disable once InconsistentNaming
     public class ITransactionExtensionsClass
     {
         [TestClass]
