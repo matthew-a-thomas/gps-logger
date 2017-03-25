@@ -19,8 +19,12 @@ namespace SQLDatabase.RemoteStorage.Query
 
         public async ValueTask<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
+            if (_transactionFactory == null)
+                return null;
             using (var transaction = _transactionFactory())
             {
+                if (transaction == null)
+                    return null;
                 var results = await transaction.GetResultsAsync(Commands.Command.Create(@"
 select
     locations.*
