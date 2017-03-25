@@ -27,6 +27,8 @@ namespace SQLDatabase.RemoteStorage.Command
                 return;
             if (_transactionFactory == null)
                 return;
+            if (location == null)
+                return;
             using (var transaction = _transactionFactory())
             {
                 if (transaction == null)
