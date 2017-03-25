@@ -16,8 +16,9 @@ namespace SQLDatabase
     // ReSharper disable once ClassNeverInstantiated.Global
     public class Transaction : ITransaction
     {
-        private readonly SqlTransaction _transaction;
         private readonly SqlConnection _connection;
+        private readonly Action _disposeMethod;
+        private readonly SqlTransaction _transaction;
 
         /// <summary>
         /// Creates a new factory for commands that are within transactions and executed against this SqlConnection
@@ -26,6 +27,13 @@ namespace SQLDatabase
         {
             _connection = connectionFactory?.Create(connectionOptions);
             _transaction = _connection?.BeginTransaction();
+
+            _disposeMethod = new Action(() =>
+            {
+                _transaction?.Dispose();
+                _connection?.Dispose();
+            })
+            .MakeSingular();
         }
 
         /// <summary>
@@ -60,11 +68,7 @@ namespace SQLDatabase
         /// <summary>
         /// Rolls back this transaction
         /// </summary>
-        public void Dispose()
-        {
-            _transaction.Dispose();
-            _connection.Dispose();
-        }
+        public void Dispose() => _disposeMethod();
 
         /// <summary>
         /// Asynchronously processes results as they come back from a DataReader from the given command
