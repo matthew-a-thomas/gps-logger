@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Extensions;
+using Common.Utilities;
 using SQLDatabase.Commands;
 
 namespace SQLDatabase
@@ -21,10 +22,10 @@ namespace SQLDatabase
         /// <summary>
         /// Creates a new factory for commands that are within transactions and executed against this SqlConnection
         /// </summary>
-        public Transaction(ConnectionProvider connectionProvider)
+        public Transaction(IFactory<ConnectionOptions, SqlConnection> connectionFactory, ConnectionOptions connectionOptions)
         {
-            _connection = connectionProvider.CreateConnection();
-            _transaction = _connection.BeginTransaction();
+            _connection = connectionFactory?.Create(connectionOptions);
+            _transaction = _connection?.BeginTransaction();
         }
 
         /// <summary>

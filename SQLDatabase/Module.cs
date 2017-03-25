@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.FileProviders;
+using Common.Extensions;
 
 namespace SQLDatabase
 {
@@ -74,7 +75,12 @@ namespace SQLDatabase
                 });
                 return connectionFactory;
             }).SingleInstance();
-            builder.RegisterType<ConnectionProvider>();
+            builder.Register(c =>
+            {
+                var connectionStringFactory = c.Resolve<IFactory<ConnectionOptions, string>>();
+                var connectionFactory = c.Resolve<IFactory<string, SqlConnection>>();
+                return connectionStringFactory.ChainInto(connectionFactory);
+            });
             builder.RegisterType<Transaction>();
             builder.RegisterType<IdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
