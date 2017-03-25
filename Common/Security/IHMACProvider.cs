@@ -13,13 +13,13 @@ namespace Common.Security
         /// Create an HMAC with the default key
         /// </summary>
         /// <returns></returns>
-        Task<HMAC> GetAsync();
+        ValueTask<HMAC> GetAsync();
 
         /// <summary>
         /// Create an HMAC with the given key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        Task<HMAC> GetAsync(byte[] key);
+        ValueTask<HMAC> GetAsync(byte[] key);
     }
 }

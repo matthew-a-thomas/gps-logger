@@ -26,9 +26,9 @@ namespace Common.Serialization
             var serializer = new Serializer<Message<T>>();
 
             serializer.EnqueueStepAsync(async x => await contentsSerializer.SerializeAsync(x.Contents));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.Salt));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.UnixTime));
+            serializer.EnqueueStepAsync(x => new ValueTask<string>(x.ID));
+            serializer.EnqueueStepAsync(x => new ValueTask<string>(x.Salt));
+            serializer.EnqueueStepAsync(x => new ValueTask<long>(x.UnixTime));
 
             _serializer = serializer;
         }

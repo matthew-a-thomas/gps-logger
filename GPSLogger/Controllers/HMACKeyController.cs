@@ -40,14 +40,14 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<bool> GetAsync() => await _persistentStoreManager.IsSetAsync(HMACKeyName);
+        public async ValueTask<bool> GetAsync() => await _persistentStoreManager.IsSetAsync(HMACKeyName);
         
         /// <summary>
         /// Returns the current HMAC key.
         /// Do not expose this to clients
         /// </summary>
         /// <returns></returns>
-        internal async Task<byte[]> GetCurrentAsync() => await _persistentStoreManager.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
+        internal async ValueTask<byte[]> GetCurrentAsync() => await _persistentStoreManager.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set

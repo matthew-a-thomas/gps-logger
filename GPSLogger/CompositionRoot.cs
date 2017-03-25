@@ -65,7 +65,7 @@ namespace GPSLogger
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
 
                 // RNG factory
-                builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => Task.FromResult(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
+                builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => new ValueTask<RandomNumberGenerator>(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
             // IPersistentStore
@@ -109,8 +109,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Location>();
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
+                    serializer.EnqueueStepAsync(x => new ValueTask<double>(x.Latitude));
+                    serializer.EnqueueStepAsync(x => new ValueTask<double>(x.Longitude));
                     return (ISerializer<Location>)serializer;
                 }).SingleInstance();
 
@@ -118,8 +118,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Credential<byte[]>>();
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
+                    serializer.EnqueueStepAsync(x => new ValueTask<byte[]>(x.ID));
+                    serializer.EnqueueStepAsync(x => new ValueTask<byte[]>(x.Secret));
                     return (ISerializer<Credential<byte[]>>)serializer;
                 });
 
@@ -134,8 +134,8 @@ namespace GPSLogger
 
                     // "Location" requests leading to "bool" responses
                     var locationSerializer = new Serializer<Location>();
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
+                    locationSerializer.EnqueueStepAsync(x => new ValueTask<double>(x.Latitude));
+                    locationSerializer.EnqueueStepAsync(x => new ValueTask<double>(x.Longitude));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         locationSerializer,
@@ -144,10 +144,10 @@ namespace GPSLogger
 
                     // "bool" requests leading to "Credential" responses
                     var credentialSerializer = new Serializer<Credential<string>>();
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID?.Length ?? 0));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret?.Length ?? 0));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
+                    credentialSerializer.EnqueueStepAsync(x => new ValueTask<int>(x.ID?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => new ValueTask<string>(x.ID));
+                    credentialSerializer.EnqueueStepAsync(x => new ValueTask<int>(x.Secret?.Length ?? 0));
+                    credentialSerializer.EnqueueStepAsync(x => new ValueTask<string>(x.Secret));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         Serializer<bool>.CreatePassthroughSerializer(),
