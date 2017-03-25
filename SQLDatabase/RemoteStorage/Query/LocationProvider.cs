@@ -33,7 +33,7 @@ where
 ",
                     new KeyValuePair<string, object>("@hex", forIdentifier)
                 ));
-                var locations = results.Select(record => new IdentifiedLocation
+                var locations = results?.Select(record => new IdentifiedLocation
                 {
                     Identifier = forIdentifier,
                     Latitude = (double)record["latitude"],
