@@ -34,16 +34,14 @@ namespace SQLDatabase
 
         public async ValueTask<int> ExecuteAsync(Command command) => await CreateSQLCommandFrom(command).ExecuteNonQueryAsync();
 
-        public async ValueTask<IEnumerable<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command)
+        public async ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command)
         {
-            var results = new LinkedList<IReadOnlyDictionary<string, object>>();
+            var results = new List<IReadOnlyDictionary<string, object>>();
             var sqlCommand = CreateSQLCommandFrom(command);
-            await ProcessResultsAsync(sqlCommand, record => results.AddLast(record));
+            await ProcessResultsAsync(sqlCommand, record => results.Add(record));
             return results;
         }
-
-        public async ValueTask<object> GetScalarAsync(Command command) => await CreateSQLCommandFrom(command).ExecuteScalarAsync();
-
+        
         /// <summary>
         /// Creates a new SqlCommand that is within this transaction
         /// </summary>
