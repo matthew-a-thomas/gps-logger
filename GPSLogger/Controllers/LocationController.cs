@@ -17,7 +17,7 @@ namespace GPSLogger.Controllers
     {
         private readonly LocationProviderAsync _locationProviderAsync;
         private readonly HandleLocationPostAsync _handleLocationPostAsync;
-        private readonly MessageHandler<Location, bool> _messageHandler;
+        private readonly IMessageHandler<Location, bool> _messageHandler;
 
         /// <summary>
         /// Delegate for storing a new location. The ID has already been validated
@@ -36,7 +36,7 @@ namespace GPSLogger.Controllers
         public LocationController(
             LocationProviderAsync locationProviderAsync,
             HandleLocationPostAsync handleLocationPostAsync,
-            MessageHandler<Location, bool> messageHandler)
+            IMessageHandler<Location, bool> messageHandler)
         {
             _locationProviderAsync = locationProviderAsync;
             _handleLocationPostAsync = handleLocationPostAsync;

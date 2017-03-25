@@ -172,7 +172,7 @@ namespace GPSLogger
             ISerializer<TResponse> responseContentSerializer)
         {
             builder.RegisterType<MapperTranslator<Message<TResponse>, SignedMessage<TResponse>>>().As<ITranslator<Message<TResponse>, SignedMessage<TResponse>>>();
-            builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
+            builder.RegisterType<MessageHandler<TRequest, TResponse>>().As<IMessageHandler<TRequest, TResponse>>().SingleInstance();
             builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
             builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();

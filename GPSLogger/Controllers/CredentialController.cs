@@ -19,12 +19,12 @@ namespace GPSLogger.Controllers
         
         private readonly Delegates.GenerateSaltDelegateAsync _generateSaltAsync;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
-        private readonly MessageHandler<bool, Credential<string>> _messageHandler;
+        private readonly IMessageHandler<bool, Credential<string>> _messageHandler;
 
         public CredentialController(
             Delegates.GenerateSaltDelegateAsync generateSaltAsync,
             Delegates.GenerateCredentialDelegateAsync generateCredentialAsync,
-            MessageHandler<bool, Credential<string>> messageHandler
+            IMessageHandler<bool, Credential<string>> messageHandler
             )
         {
             _generateSaltAsync = generateSaltAsync;
