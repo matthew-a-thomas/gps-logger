@@ -39,7 +39,7 @@ namespace SQLDatabase
         /// <summary>
         /// Commits this transaction, if commits are allowed
         /// </summary>
-        public void Commit() => _transaction.Commit();
+        public void Commit() => _transaction?.Commit();
 
         public async ValueTask<int> ExecuteAsync(Command command) => await CreateSQLCommandFrom(command).ExecuteNonQueryAsync();
 
