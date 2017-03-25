@@ -6,7 +6,7 @@ namespace SQLDatabase
     /// <summary>
     /// Opens SQL connections
     /// </summary>
-    internal class ConnectionProvider
+    public class ConnectionProvider
     {
         private readonly IFactory<string, SqlConnection> _connectionFactory;
         private readonly string _connectionString;

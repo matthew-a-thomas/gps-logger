@@ -1,6 +1,6 @@
 ﻿namespace SQLDatabase
 {
-    internal class ConnectionOptions
+    public class ConnectionOptions
     {
         public string Server { get; set; }
         public string Database { get; set; }

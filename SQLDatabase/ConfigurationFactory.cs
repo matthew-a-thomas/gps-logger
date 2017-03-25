@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 namespace SQLDatabase
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class ConfigurationFactory
+    public class ConfigurationFactory
     {
         private readonly ConfigurationBuilder _builder;
 

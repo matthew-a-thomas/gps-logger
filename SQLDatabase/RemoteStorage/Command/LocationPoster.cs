@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SQLDatabase.RemoteStorage.Command
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class LocationPoster : ILocationPoster
+    public class LocationPoster : ILocationPoster
     {
         private readonly IdentifierPoster _identifierPoster;
         private readonly Func<ITransaction> _transactionFactory;

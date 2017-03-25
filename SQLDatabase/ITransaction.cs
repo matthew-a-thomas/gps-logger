@@ -8,7 +8,7 @@ namespace SQLDatabase
     /// <summary>
     /// A transaction that can be rolled back
     /// </summary>
-    internal interface ITransaction : IDisposable
+    public interface ITransaction : IDisposable
     {
         /// <summary>
         /// Commits this transaction

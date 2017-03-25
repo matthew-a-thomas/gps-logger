@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace SQLDatabase.RemoteStorage.Command
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class IdentifierPoster
+    public class IdentifierPoster
     {
         /// <summary>
         /// Creates a new record in the identifiers table and returns the generated ID,

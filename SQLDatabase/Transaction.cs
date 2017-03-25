@@ -13,7 +13,7 @@ namespace SQLDatabase
     /// Factory for commands that are within transactions
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class Transaction : ITransaction
+    public class Transaction : ITransaction
     {
         private readonly SqlTransaction _transaction;
         private readonly SqlConnection _connection;

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SQLDatabase.Commands
 {
-    internal class Command
+    public class Command
     {
         public string CommandText { get; set; }
         public IDictionary<string, object> Parameters { get; set; }

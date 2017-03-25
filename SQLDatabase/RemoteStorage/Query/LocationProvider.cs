@@ -8,7 +8,7 @@ using System.Linq;
 namespace SQLDatabase.RemoteStorage.Query
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class LocationProvider : ILocationProvider
+    public class LocationProvider : ILocationProvider
     {
         private readonly Func<ITransaction> _transactionFactory;
 
