@@ -14,8 +14,8 @@ namespace Common.Extensions.Security
         /// <param name="from"></param>
         /// <param name="conversionFunctionAsync"></param>
         /// <returns></returns>
-        public static async Task<Credential<TTo>> ConvertAsync<TFrom, TTo>(this Credential<TFrom> from,
-            Func<TFrom, Task<TTo>> conversionFunctionAsync) => new Credential<TTo>
+        public static async ValueTask<Credential<TTo>> ConvertAsync<TFrom, TTo>(this Credential<TFrom> from,
+            Func<TFrom, ValueTask<TTo>> conversionFunctionAsync) => new Credential<TTo>
         {
                 ID = await conversionFunctionAsync(from.ID),
                 Secret = await conversionFunctionAsync(from.Secret)
