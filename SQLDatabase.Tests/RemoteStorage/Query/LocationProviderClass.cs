@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using SQLDatabase.Commands;
 using SQLDatabase.RemoteStorage.Query;
 
 namespace SQLDatabase.Tests.RemoteStorage.Query
@@ -38,7 +37,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
                     .Setup(
                         transaction =>
                         transaction.GetResultsAsync(
-                            It.IsAny<Command>()
+                            It.IsAny<Commands.Command>()
                         )
                     )
                     .Returns(
