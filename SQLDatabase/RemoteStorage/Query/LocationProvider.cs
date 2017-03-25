@@ -36,9 +36,9 @@ where
                 var locations = results?.Select(record => new IdentifiedLocation
                 {
                     Identifier = forIdentifier,
-                    Latitude = (double)record["latitude"],
-                    Longitude = (double)record["longitude"],
-                    Timestamp = (DateTime)record["timestamp"]
+                    Latitude = Convert.ToDouble(record["latitude"]),
+                    Longitude = Convert.ToDouble(record["longitude"]),
+                    Timestamp = Convert.ToDateTime(record["timestamp"])
                 }).ToList();
                 return locations;
             }
