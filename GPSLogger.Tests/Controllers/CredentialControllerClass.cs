@@ -88,7 +88,7 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public void WorksWithNullAndNopParameters()
             {
-                TestWithNullAndNopConstructorParameters(controller => controller.GetAsync(null).Wait());
+                TestWithNullAndNopConstructorParameters(controller => controller.GetAsync(null).AsTask().Wait());
             }
         }
     }

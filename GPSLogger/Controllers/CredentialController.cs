@@ -39,7 +39,7 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request)
+        public async ValueTask<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request)
         {
             if (_messageHandler == null)
                 return null;
