@@ -76,7 +76,6 @@ namespace GPSLogger
                 root.Create();
                 return (IPersistentStore)new PersistentStore(root);
             }).SingleInstance();
-            builder.RegisterType<PersistentStoreManager>().SingleInstance();
             
             { // Controllers
                 // Location storage and retrieval
