@@ -47,7 +47,13 @@ namespace GPSLogger.Controllers
                 return null;
             if (_generateSaltAsync == null)
                 return null;
-            return await _messageHandler.CreateResponseAsync(request, async valid => await (await _generateCredentialAsync(await _generateSaltAsync())).ConvertAsync(bytes => new ValueTask<string>(bytes.ToHexString())));
+            return await _messageHandler.CreateResponseAsync(
+                request,
+                async valid =>
+                    await (await _generateCredentialAsync(await _generateSaltAsync()))
+                    .ConvertAsync(bytes => new ValueTask<string>(bytes.ToHexString())
+                )
+            );
         }
     }
 }
