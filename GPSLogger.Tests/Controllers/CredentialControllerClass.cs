@@ -83,8 +83,7 @@ namespace GPSLogger.Tests.Controllers
                 );
                 var response = await controller.GetAsync(null);
                 Assert.IsNotNull(response);
-                Assert.IsNotNull(response.Contents);
-                Assert.AreEqual(signedMessage, response.Contents);
+                Assert.AreEqual(signedMessage, response);
             }
 
             [TestMethod]
