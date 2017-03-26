@@ -94,6 +94,38 @@ namespace GPSLogger.Tests.Controllers
             }
 
             [TestMethod]
+            public async Task ReturnsFromValidRequest()
+            {
+                var mockMessageHandler = new Mock<IMessageHandler<bool, Credential<string>>>();
+                mockMessageHandler
+                    .Setup(handler => handler.CreateResponseAsync(
+                        It.IsAny<SignedMessage<bool>>(),
+                        It.IsAny<Func<bool, ValueTask<Credential<string>>>>())
+                    )
+                    .Returns<SignedMessage<bool>, Func<bool, ValueTask<Credential<string>>>>((request, generateFn) =>
+                    {
+                        var contentsTask = generateFn(true).AsTask(); // Pretend like it's a valid request
+                        contentsTask.Wait();
+                        return new ValueTask<SignedMessage<Credential<string>>>(new SignedMessage<Credential<string>>
+                        {
+                            Contents = contentsTask.Result
+                        });
+                    });
+                var controller = new CredentialController(
+                    () => new ValueTask<byte[]>(new byte[0]),
+                    id => new ValueTask<Credential<byte[]>>(new Credential<byte[]>
+                    {
+                        ID = id,
+                        Secret = new byte[0]
+                    }),
+                    mockMessageHandler.Object
+                );
+                var response = await controller.GetAsync(null);
+                Assert.IsNotNull(response);
+                Assert.IsNotNull(response.Contents);
+            }
+
+            [TestMethod]
             public void WorksWithNullAndNopParameters()
             {
                 TestWithNullAndNopConstructorParameters(controller => controller.GetAsync(null).AsTask().Wait());
