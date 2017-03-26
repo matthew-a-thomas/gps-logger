@@ -67,8 +67,10 @@ namespace GPSLogger.Tests.Controllers
                 var signedMessage = new SignedMessage<Credential<string>>();
                 var mockMessageHandler = new Mock<IMessageHandler<bool, Credential<string>>>();
                 mockMessageHandler
-                    .Setup(handler => handler.CreateResponseAsync(It.IsAny<SignedMessage<bool>>(),
-                        It.IsAny<Func<bool, ValueTask<Credential<string>>>>()))
+                    .Setup(handler => handler.CreateResponseAsync(
+                        It.IsAny<SignedMessage<bool>>(),
+                        It.IsAny<Func<bool, ValueTask<Credential<string>>>>())
+                        )
                     .Returns(new ValueTask<SignedMessage<Credential<string>>>(signedMessage));
                 var controller = new CredentialController(
                     () => new ValueTask<byte[]>(new byte[0]),
