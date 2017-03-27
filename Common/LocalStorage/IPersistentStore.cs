@@ -1,12 +1,29 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
     public interface IPersistentStore
     {
-        Task<bool> ExistsAsync(string key);
+        /// <summary>
+        /// Indicates if the given key exists in this persistent store
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        ValueTask<bool> ExistsAsync(string key);
 
-        Task<Stream> OpenAsync(string key, Options options);
+        /// <summary>
+        /// Retrieves all the contents of the given key from this persistent store
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        ValueTask<byte[]> GetAsync(string key);
+
+        /// <summary>
+        /// Overwrites all the contents of the given key with the given contents through this persistent store
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="contents"></param>
+        /// <returns></returns>
+        Task SetAsync(string key, byte[] contents);
     }
 }
