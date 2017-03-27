@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Common.Extensions;
 using Common.LocalStorage;
 using GPSLogger.Controllers;
