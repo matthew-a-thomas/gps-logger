@@ -2,7 +2,7 @@
 
 namespace Common.LocalStorage
 {
-    public interface IStorage
+    public interface IStorage<T>
     {
         /// <summary>
         /// Indicates if the given key exists in this persistent store
@@ -16,7 +16,7 @@ namespace Common.LocalStorage
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        ValueTask<byte[]> GetAsync(string key);
+        ValueTask<T> GetAsync(string key);
 
         /// <summary>
         /// Overwrites all the contents of the given key with the given contents through this persistent store
@@ -24,6 +24,6 @@ namespace Common.LocalStorage
         /// <param name="key"></param>
         /// <param name="contents"></param>
         /// <returns></returns>
-        Task SetAsync(string key, byte[] contents);
+        Task SetAsync(string key, T contents);
     }
 }

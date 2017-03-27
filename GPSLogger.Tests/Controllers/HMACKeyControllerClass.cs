@@ -11,7 +11,7 @@ namespace GPSLogger.Tests.Controllers
     // ReSharper disable once InconsistentNaming
     public class HMACKeyControllerClass
     {
-        private static IStorage CreateStore() => new MemoryStorage();
+        private static IStorage<byte[]> CreateStore() => new MemoryStorage<byte[]>();
 
         [TestClass]
         public class GetAsyncMethod
@@ -19,7 +19,7 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task HandlesNopConstructorParameter()
             {
-                var mockedStore = new Mock<IStorage>();
+                var mockedStore = new Mock<IStorage<byte[]>>();
                 var controller = new HMACKeyController(mockedStore.Object);
                 await controller.GetAsync();
             }
@@ -53,7 +53,7 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task HandlesNopConstructorParameter()
             {
-                var mockedStore = new Mock<IStorage>();
+                var mockedStore = new Mock<IStorage<byte[]>>();
                 var controller = new HMACKeyController(mockedStore.Object);
                 await controller.PostAsync(new HMACKeyController.PostParameters { NewKey = new byte[100].ToHexString() });
             }

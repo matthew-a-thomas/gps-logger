@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
-    public class PhysicalStorage : IStorage
+    public class PhysicalStorage : IStorage<byte[]>
     {
         private readonly DirectoryInfo _storageDirectory;
         private readonly int _maxKeyLength;

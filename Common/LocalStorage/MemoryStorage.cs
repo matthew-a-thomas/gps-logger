@@ -6,15 +6,15 @@ namespace Common.LocalStorage
     /// <summary>
     /// In-memory implementation of storage
     /// </summary>
-    public class MemoryStorage : IStorage
+    public class MemoryStorage<T> : IStorage<T>
     {
-        private ConcurrentDictionary<string, byte[]> _memory = new ConcurrentDictionary<string, byte[]>();
+        private readonly ConcurrentDictionary<string, T> _memory = new ConcurrentDictionary<string, T>();
 
         public ValueTask<bool> ExistsAsync(string key) => new ValueTask<bool>(_memory.ContainsKey(key));
 
-        public ValueTask<byte[]> GetAsync(string key) => _memory.TryGetValue(key, out byte[] value) ? new ValueTask<byte[]>(value) : new ValueTask<byte[]>((byte[])null);
+        public ValueTask<T> GetAsync(string key) => _memory.TryGetValue(key, out T value) ? new ValueTask<T>(value) : new ValueTask<T>(default(T));
 
-        public Task SetAsync(string key, byte[] contents)
+        public Task SetAsync(string key, T contents)
         {
             _memory.AddOrUpdate(key, _ => contents,
                 (_, __) => contents);

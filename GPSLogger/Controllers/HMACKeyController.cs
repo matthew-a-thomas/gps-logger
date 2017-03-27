@@ -25,9 +25,9 @@ namespace GPSLogger.Controllers
         private const string HMACKeyName = "hmac key";
         private const int MinKeySize = 16;
 
-        private readonly IStorage _storage;
+        private readonly IStorage<byte[]> _storage;
 
-        public HMACKeyController(IStorage storage)
+        public HMACKeyController(IStorage<byte[]> storage)
         {
             _storage = storage;
         }

@@ -75,7 +75,7 @@ namespace GPSLogger
                 var root = new DirectoryInfo(Path.Combine(environment.ContentRootPath, "App_Data"));
                 root.Create();
                 const int maxKeyLength = 100;
-                return (IStorage)new PhysicalStorage(root, maxKeyLength);
+                return (IStorage<byte[]>)new PhysicalStorage(root, maxKeyLength);
             }).SingleInstance();
             
             { // Controllers
