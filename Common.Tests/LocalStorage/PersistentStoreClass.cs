@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Common.LocalStorage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -41,7 +43,8 @@ namespace Common.Tests.LocalStorage
             {
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    await store.ExistsAsync("../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
+                    await store.ExistsAsync(
+                        "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../");
                     await store.ExistsAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|");
                 });
             }
@@ -59,164 +62,118 @@ namespace Common.Tests.LocalStorage
                 var keyName = Guid.NewGuid().ToString();
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (await store.OpenAsync(keyName, new Options
-                    {
-                        FileAccess = FileAccess.ReadWrite,
-                        FileMode = FileMode.OpenOrCreate,
-                        FileShare = FileShare.None
-                    }))
-                    {
-                        Assert.IsTrue(await store.ExistsAsync(keyName));
-                    }
+                    await store.SetAsync(keyName, new byte[0]);
+                    Assert.IsTrue(await store.ExistsAsync(keyName));
                 });
             }
         }
 
         [TestClass]
-        public class OpenMethod
+        public class GetAsyncMethod
         {
             [TestMethod]
-            public async Task CanCreateRandomKey()
+            public async Task CanGetLongKeyName()
             {
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (await store.OpenAsync(Guid.NewGuid().ToString(), new Options
-                    {
-                        FileAccess = FileAccess.ReadWrite,
-                        FileMode = FileMode.OpenOrCreate,
-                        FileShare = FileShare.None
-                    }))
-                    {
-
-                    }
+                    var builder = new StringBuilder();
+                    foreach (var piece in Enumerable.Repeat("../", 10000))
+                        builder.Append(piece);
+                    var key = builder.ToString();
+                    await store.GetAsync(key);
                 });
             }
 
             [TestMethod]
-            public async Task CanWriteToStreamOpenedAsWrite()
+            public async Task CanGetFunnyKeyName()
             {
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (var stream = await store.OpenAsync(Guid.NewGuid().ToString(), new Options
-                    {
-                        FileAccess = FileAccess.Write,
-                        FileMode = FileMode.CreateNew,
-                        FileShare = FileShare.None
-                    }))
-                    {
-                        stream.WriteByte(0xFF);
-                    }
+                    var builder = new StringBuilder();
+                    for (var i = 1; i < 256; ++i)
+                        builder.Append((char)i);
+                    var key = builder.ToString();
+                    await store.GetAsync(key);
                 });
             }
 
             [TestMethod]
-            public async Task CannotOpenNonSharedKeyTwice()
-            {
-                var failed = false;
-                var keyName = Guid.NewGuid().ToString();
-                var options = new Options
-                {
-                    FileAccess = FileAccess.ReadWrite,
-                    FileMode = FileMode.OpenOrCreate,
-                    FileShare = FileShare.None
-                };
-                await DoWithTempPersistentStoreAsync(async store =>
-                {
-                    using (await store.OpenAsync(keyName, options))
-                    {
-                        try
-                        {
-                            using (await store.OpenAsync(keyName, options))
-                            { }
-                        }
-                        catch
-                        {
-                            failed = true;
-                        }
-                    }
-                });
-                Assert.IsTrue(failed);
-            }
-
-            [TestMethod]
-            public async Task CannotWriteToStreamOpenedAsRead()
-            {
-                var failed = false;
-                await DoWithTempPersistentStoreAsync(async store =>
-                {
-                    using (var stream = await store.OpenAsync(Guid.NewGuid().ToString(), new Options
-                    {
-                        FileAccess = FileAccess.Read,
-                        FileMode = FileMode.OpenOrCreate,
-                        FileShare = FileShare.None
-                    }))
-                    {
-                        try
-                        {
-                            stream.WriteByte(0xFF);
-                        }
-                        catch
-                        {
-                            failed = true;
-                        }
-                    }
-                });
-                Assert.IsTrue(failed);
-            }
-
-            [TestMethod]
-            public async Task DoesNotBreakWithFunnyNames()
+            public async Task ReturnsNullForNonExistentKey()
             {
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    using (
-                        await store.OpenAsync(
-                            "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../",
-                            new Options
-                            {
-                                FileAccess = FileAccess.ReadWrite,
-                                FileMode = FileMode.OpenOrCreate,
-                                FileShare = FileShare.ReadWrite
-                            }))
-                    {
-                    }
-                    using (
-                        await store.OpenAsync("a/b/c/d/!@#$%^&*()_+~`[]{};':\",./<>?\\|",
-                            new Options
-                            {
-                                FileAccess = FileAccess.ReadWrite,
-                                FileMode = FileMode.OpenOrCreate,
-                                FileShare = FileShare.ReadWrite
-                            }))
-                    {
-                    }
+                    var key = Guid.NewGuid().ToString();
+                    var result = await store.GetAsync(key);
+                    Assert.IsNull(result);
                 });
             }
 
             [TestMethod]
-            public async Task FailsToOpenNewKey()
+            public async Task ReturnsWhatWasSet()
             {
-                var failed = false;
                 await DoWithTempPersistentStoreAsync(async store =>
                 {
-                    try
-                    {
-                        using (await store.OpenAsync(Guid.NewGuid().ToString(), new Options
-                        {
-                            FileAccess = FileAccess.Read,
-                            FileMode = FileMode.Open,
-                            FileShare = FileShare.None
-                        }))
-                        {
-
-                        }
-                    }
-                    catch
-                    {
-                        failed = true;
-                    }
+                    var key = Guid.NewGuid().ToString();
+                    var contents = Guid.NewGuid().ToByteArray();
+                    await store.SetAsync(key, contents);
+                    var got = await store.GetAsync(key);
+                    Assert.IsTrue(contents.SequenceEqual(got));
                 });
-                Assert.IsTrue(failed);
+            }
+        }
+
+        [TestClass]
+        public class SetAsyncMethod
+        {
+            [TestMethod]
+            public async Task CanSetNewThing()
+            {
+                await DoWithTempPersistentStoreAsync(async store =>
+                {
+                    var key = Guid.NewGuid().ToString();
+                    await store.SetAsync(key, new byte[0]);
+                });
+            }
+
+            [TestMethod]
+            public async Task CanSetOldThing()
+            {
+                await DoWithTempPersistentStoreAsync(async store =>
+                {
+                    var key = Guid.NewGuid().ToString();
+                    await store.SetAsync(key, new byte[0]);
+                    await store.SetAsync(key, new byte[0]);
+                });
+            }
+
+            [TestMethod]
+            public async Task CanSetLongKeyName()
+            {
+                await DoWithTempPersistentStoreAsync(async store =>
+                {
+                    var builder = new StringBuilder();
+                    foreach (var piece in Enumerable.Repeat("../", 10000))
+                        builder.Append(piece);
+                    var key = builder.ToString();
+                    await store.SetAsync(
+                        key,
+                        new byte[0]);
+                });
+            }
+
+            [TestMethod]
+            public async Task CanSetFunnyKeyName()
+            {
+                await DoWithTempPersistentStoreAsync(async store =>
+                {
+                    var builder = new StringBuilder();
+                    for (var i = 1; i < 256; ++i)
+                        builder.Append((char) i);
+                    var key = builder.ToString();
+                    await store.SetAsync(
+                        key,
+                        new byte[0]);
+                });
             }
         }
     }
