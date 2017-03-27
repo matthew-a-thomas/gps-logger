@@ -25,11 +25,11 @@ namespace GPSLogger.Controllers
         private const string HMACKeyName = "hmac key";
         private const int MinKeySize = 16;
 
-        private readonly IPersistentStore _persistentStore;
+        private readonly IStorage _storage;
 
-        public HMACKeyController(IPersistentStore persistentStore)
+        public HMACKeyController(IStorage storage)
         {
-            _persistentStore = persistentStore;
+            _storage = storage;
         }
 
         /// <summary>
@@ -43,14 +43,14 @@ namespace GPSLogger.Controllers
         /// <returns></returns>
         [HttpGet]
         // ReSharper disable once MemberCanBePrivate.Global
-        public async ValueTask<bool> GetAsync() => await _persistentStore.ExistsAsync(HMACKeyName);
+        public async ValueTask<bool> GetAsync() => await _storage.ExistsAsync(HMACKeyName);
         
         /// <summary>
         /// Returns the current HMAC key.
         /// Do not expose this to clients
         /// </summary>
         /// <returns></returns>
-        internal async ValueTask<byte[]> GetCurrentAsync() => await _persistentStore.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
+        internal async ValueTask<byte[]> GetCurrentAsync() => await _storage.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
@@ -68,7 +68,7 @@ namespace GPSLogger.Controllers
             if (hmacKeyBytes.Length < MinKeySize)
                 throw new Exception("Please provide at least " + MinKeySize + " bytes");
 
-            await _persistentStore.SetAsync(HMACKeyName, hmacKeyBytes);
+            await _storage.SetAsync(HMACKeyName, hmacKeyBytes);
         }
     }
 }

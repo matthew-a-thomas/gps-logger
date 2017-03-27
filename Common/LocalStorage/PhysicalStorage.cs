@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
-    public class PersistentStore : IPersistentStore
+    public class PhysicalStorage : IStorage
     {
         private readonly DirectoryInfo _storageDirectory;
         private readonly int _maxKeyLength;
 
-        public PersistentStore(DirectoryInfo storageDirectory, int maxKeyLength)
+        public PhysicalStorage(DirectoryInfo storageDirectory, int maxKeyLength)
         {
             _storageDirectory = storageDirectory;
             _maxKeyLength = maxKeyLength;

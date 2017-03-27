@@ -2,7 +2,7 @@
 
 namespace Common.LocalStorage
 {
-    public interface IPersistentStore
+    public interface IStorage
     {
         /// <summary>
         /// Indicates if the given key exists in this persistent store

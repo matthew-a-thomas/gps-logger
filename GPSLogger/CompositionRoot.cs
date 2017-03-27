@@ -68,14 +68,14 @@ namespace GPSLogger
                 builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => new ValueTask<RandomNumberGenerator>(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
-            // IPersistentStore
+            // IStorage
             builder.Register(c =>
             {
                 var environment = c.Resolve<IHostingEnvironment>();
                 var root = new DirectoryInfo(Path.Combine(environment.ContentRootPath, "App_Data"));
                 root.Create();
                 const int maxKeyLength = 100;
-                return (IPersistentStore)new PersistentStore(root, maxKeyLength);
+                return (IStorage)new PhysicalStorage(root, maxKeyLength);
             }).SingleInstance();
             
             { // Controllers

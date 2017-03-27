@@ -12,7 +12,7 @@ namespace Common.Tests.LocalStorage
     /// Note that executing these tests has side effects: files and directories are created in the temp directory. An effort is made to clean them up, though
     /// </summary>
     [TestClass]
-    public class PersistentStoreClass
+    public class PhysicalStorageClass
     {
         private static DirectoryInfo CreateTempDirectory()
         {
@@ -21,10 +21,10 @@ namespace Common.Tests.LocalStorage
             return directoryInfo;
         }
 
-        internal static async Task DoWithTempPersistentStoreAsync(Func<PersistentStore, Task> actionAsync)
+        internal static async Task DoWithTempPersistentStoreAsync(Func<PhysicalStorage, Task> actionAsync)
         {
             var directory = CreateTempDirectory();
-            var store = new PersistentStore(directory, 100);
+            var store = new PhysicalStorage(directory, 100);
             try
             {
                 await actionAsync(store);
@@ -52,7 +52,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public async Task ReturnsFalseForDummyDirectory()
             {
-                var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()), 100);
+                var store = new PhysicalStorage(new DirectoryInfo(Guid.NewGuid().ToString()), 100);
                 Assert.IsFalse(await store.ExistsAsync(Guid.NewGuid().ToString()));
             }
 
