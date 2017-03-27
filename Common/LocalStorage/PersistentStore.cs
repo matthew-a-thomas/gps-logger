@@ -7,17 +7,19 @@ namespace Common.LocalStorage
     public class PersistentStore : IPersistentStore
     {
         private readonly DirectoryInfo _storageDirectory;
+        private readonly int _maxKeyLength;
 
-        public PersistentStore(DirectoryInfo storageDirectory)
+        public PersistentStore(DirectoryInfo storageDirectory, int maxKeyLength)
         {
             _storageDirectory = storageDirectory;
+            _maxKeyLength = maxKeyLength;
         }
 
         public async ValueTask<bool> ExistsAsync(string key)
         {
             if (key == null)
                 return false;
-            key = await FileSystemPathSanitizer.SanitizeAsync(key);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key, _maxKeyLength);
             return await Task.Run(() => File.Exists(GetPath(key)));
         }
 
@@ -47,7 +49,7 @@ namespace Common.LocalStorage
         {
             if (key == null)
                 return null;
-            key = await FileSystemPathSanitizer.SanitizeAsync(key);
+            key = await FileSystemPathSanitizer.SanitizeAsync(key, _maxKeyLength);
             return await Task.Run(() => File.Open(GetPath(key), options.FileMode, options.FileAccess, options.FileShare));
         }
     }

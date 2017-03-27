@@ -37,9 +37,8 @@ namespace Common.Utilities
         /// <summary>
         /// Sanitizes the given string so that it's safe for file system use
         /// </summary>
-        /// <param name="path"></param>
         /// <returns></returns>
-        public static async Task<string> SanitizeAsync(string path)
+        public static async Task<string> SanitizeAsync(string path, int maxLength)
         {
             return await Task.Run(() =>
             {
@@ -54,7 +53,6 @@ namespace Common.Utilities
                     path = path.Replace(c.ToString(), Escape(c));
 
                 // Shorten by truncating and appending with part of the SHA1 hash of the whole thing
-                const int maxLength = 40;
                 if (path.Length > maxLength)
                 {
                     using (var hasher = SHA1.Create())

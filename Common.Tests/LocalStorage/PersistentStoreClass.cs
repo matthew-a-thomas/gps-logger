@@ -24,7 +24,7 @@ namespace Common.Tests.LocalStorage
         internal static async Task DoWithTempPersistentStoreAsync(Func<PersistentStore, Task> actionAsync)
         {
             var directory = CreateTempDirectory();
-            var store = new PersistentStore(directory);
+            var store = new PersistentStore(directory, 100);
             try
             {
                 await actionAsync(store);
@@ -52,7 +52,7 @@ namespace Common.Tests.LocalStorage
             [TestMethod]
             public async Task ReturnsFalseForDummyDirectory()
             {
-                var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()));
+                var store = new PersistentStore(new DirectoryInfo(Guid.NewGuid().ToString()), 100);
                 Assert.IsFalse(await store.ExistsAsync(Guid.NewGuid().ToString()));
             }
 

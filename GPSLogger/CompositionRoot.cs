@@ -74,7 +74,8 @@ namespace GPSLogger
                 var environment = c.Resolve<IHostingEnvironment>();
                 var root = new DirectoryInfo(Path.Combine(environment.ContentRootPath, "App_Data"));
                 root.Create();
-                return (IPersistentStore)new PersistentStore(root);
+                const int maxKeyLength = 100;
+                return (IPersistentStore)new PersistentStore(root, maxKeyLength);
             }).SingleInstance();
             
             { // Controllers
