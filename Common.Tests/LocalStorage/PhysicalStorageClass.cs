@@ -21,7 +21,7 @@ namespace Common.Tests.LocalStorage
             return directoryInfo;
         }
 
-        internal static async Task DoWithTempPersistentStoreAsync(Func<PhysicalStorage, Task> actionAsync)
+        internal static async Task DoWithTempPersistentStoreAsync(Func<IStorage, Task> actionAsync)
         {
             var directory = CreateTempDirectory();
             var store = new PhysicalStorage(directory, 100);
