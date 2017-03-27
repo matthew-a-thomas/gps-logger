@@ -98,6 +98,20 @@ namespace Common.Tests.LocalStorage
             }
 
             [TestMethod]
+            public async Task IsCaseInsensitive()
+            {
+                await DoWithTempPersistentStoreAsync(async store =>
+                {
+                    var uppercasedKey = Guid.NewGuid().ToString().ToUpper();
+                    await store.SetAsync(uppercasedKey, new byte[0]);
+                    var lowercasedKey = uppercasedKey.ToLower();
+                    Assert.IsFalse(uppercasedKey.Equals(lowercasedKey));
+                    var got = await store.GetAsync(lowercasedKey);
+                    Assert.IsNotNull(got);
+                });
+            }
+
+            [TestMethod]
             public async Task ReturnsNullForNonExistentKey()
             {
                 await DoWithTempPersistentStoreAsync(async store =>
