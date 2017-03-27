@@ -12,21 +12,7 @@ namespace GPSLogger.Tests.Controllers
     // ReSharper disable once InconsistentNaming
     public class HMACKeyControllerClass
     {
-        private static IStorage CreateStore()
-        {
-            var mockedStore = new Mock<IStorage>();
-            var dictionary = new ConcurrentDictionary<string, byte[]>();
-            mockedStore.Setup(store => store.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>()))
-                .Returns<string, byte[]>(
-                    (key, value) =>
-                    {
-                        dictionary.AddOrUpdate(key, _ => value, (_, __) => value);
-                        return Task.CompletedTask;
-                    });
-            mockedStore.Setup(store => store.GetAsync(It.IsAny<string>()))
-                .Returns<string>(key => new ValueTask<byte[]>(dictionary[key]));
-            return mockedStore.Object;
-        }
+        private static IStorage CreateStore() => new MemoryStorage();
 
         [TestClass]
         public class GetAsyncMethod
