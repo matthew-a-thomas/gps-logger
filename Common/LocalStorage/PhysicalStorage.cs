@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 
 namespace Common.LocalStorage
 {
+    /// <summary>
+    /// Provides an IStorage interface to physical files.
+    /// Note that this class should be wrapped in a ConcurrentStorage class if you'd like thread safety
+    /// </summary>
     public class PhysicalStorage : IStorage<byte[]>
     {
         private readonly DirectoryInfo _storageDirectory;
