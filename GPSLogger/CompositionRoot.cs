@@ -172,7 +172,7 @@ namespace GPSLogger
             builder.RegisterType<MessageHandler<TRequest, TResponse>>().As<IMessageHandler<TRequest, TResponse>>().SingleInstance();
             builder.RegisterType<Validator<TRequest>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
-            builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
+            builder.RegisterInstance(new ReplayDetector<Message<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
             builder.RegisterInstance(new Validator<TRequest>.PassesDomainSpecificValidationDelegateAsync(message => Task.Run(() =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
