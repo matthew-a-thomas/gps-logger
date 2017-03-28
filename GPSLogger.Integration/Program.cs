@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace GPSLogger.Integration
@@ -13,7 +15,13 @@ namespace GPSLogger.Integration
         static void Main(string[] args)
         {
             Console.WriteLine(JsonConvert.SerializeObject(args));
-            throw new NotImplementedException();
+            var program = new Program();
+            program.RunTests().Wait();
+        }
+
+        private async Task RunTests()
+        {
+            var server = await Helpers.CreateServerAsync();
         }
     }
 }

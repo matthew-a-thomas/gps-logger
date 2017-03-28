@@ -1,4 +1,52 @@
-﻿//using System;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+
+namespace GPSLogger.Integration
+{
+    public static class Helpers
+    {
+        public static async Task<TestServer> CreateServerAsync()
+        {
+            // Figure out where the GPS Logger directory is
+            var startingLocation = new DirectoryInfo(Path.GetDirectoryName(typeof(Helpers).GetTypeInfo().Assembly.Location));
+            var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, typeof(Startup).Namespace);
+
+            // Create a temp directory for this server to run from
+            var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
+            var contentRoot = Path.Combine(baseDirectory, "tests", temp);
+            var contentRootDirectory = Directory.CreateDirectory(contentRoot);
+
+            // Clean up older files on a background thread
+            var pattern = new Regex(@"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2} - [a-f0-9\-]+$");
+            if (!pattern.IsMatch(contentRootDirectory.Name))
+                throw new Exception();
+
+            return await Task.Run(() =>
+            {
+                // Copy over needed files
+                foreach (var file in new[]
+                {
+                    "appsettings.json"
+                })
+                File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
+
+                    // Spin up the server
+                    return new TestServer(
+                    new WebHostBuilder()
+                    .UseContentRoot(contentRoot)
+                    .UseStartup<Startup>()
+                    );
+            });
+        }
+    }
+}
+
+//using System;
 //using System.Collections.Generic;
 //using System.Linq;
 //using System.Net;
