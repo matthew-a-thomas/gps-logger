@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Threading;
-using Common.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
 
 namespace Common.Tests.Utilities
 {

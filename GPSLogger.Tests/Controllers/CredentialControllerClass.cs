@@ -76,7 +76,10 @@ namespace GPSLogger.Tests.Controllers
                         contentsTask.Wait();
                         return new ValueTask<SignedMessage<Credential<string>>>(new SignedMessage<Credential<string>>
                         {
-                            Contents = contentsTask.Result
+                            Message = new Message<Credential<string>>
+                            {
+                                Contents = contentsTask.Result
+                            }
                         });
                     });
                 var controller = new CredentialController(
@@ -90,7 +93,7 @@ namespace GPSLogger.Tests.Controllers
                 );
                 var response = await controller.GetAsync(null);
                 Assert.IsNotNull(response);
-                Assert.IsNotNull(response.Contents);
+                Assert.IsNotNull(response.Message.Contents);
             }
 
             [TestMethod]
@@ -108,7 +111,10 @@ namespace GPSLogger.Tests.Controllers
                         contentsTask.Wait();
                         return new ValueTask<SignedMessage<Credential<string>>>(new SignedMessage<Credential<string>>
                         {
-                            Contents = contentsTask.Result
+                            Message = new Message<Credential<string>>
+                            {
+                                Contents = contentsTask.Result
+                            }
                         });
                     });
                 var controller = new CredentialController(
@@ -122,7 +128,7 @@ namespace GPSLogger.Tests.Controllers
                 );
                 var response = await controller.GetAsync(null);
                 Assert.IsNotNull(response);
-                Assert.IsNotNull(response.Contents);
+                Assert.IsNotNull(response.Message.Contents);
             }
 
             [TestMethod]

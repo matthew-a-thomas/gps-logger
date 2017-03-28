@@ -10,6 +10,7 @@ using Common.Security.Signing;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using System.Linq;
+using Common.Messages;
 using GPSLogger.Models;
 
 namespace GPSLogger.Integration
@@ -52,7 +53,7 @@ namespace GPSLogger.Integration
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadAsStringAsync();
                 var deserialized = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(content);
-                result = deserialized.Contents;
+                result = deserialized.Message.Contents;
             });
             return result;
         }
@@ -84,15 +85,18 @@ namespace GPSLogger.Integration
                 var salt = BitConverter.GetBytes(DateTime.Now.Ticks);
                 var signedRequest = new SignedMessage<bool>
                 {
-                    Contents = true,
-                    ID = credentialBytes.ID.ToHexString(),
-                    Salt = salt.ToHexString(),
-                    UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                    Message = new Message<bool>
+                    {
+                        Contents = true,
+                        ID = credentialBytes.ID.ToHexString(),
+                        Salt = salt.ToHexString(),
+                        UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                    }
                 };
                 await SignAsync(signedRequest, credentialBytes, x => Task.Run(() => BitConverter.GetBytes(x)));
 
                 var response = await client.GetAsync(
-                    $"/api/credential?contents={signedRequest.Contents}&id={signedRequest.ID}&hmac={signedRequest.HMAC}&salt={signedRequest.Salt}&unixTime={signedRequest.UnixTime}");
+                    $"/api/credential?contents={signedRequest.Message.Contents}&id={signedRequest.Message.ID}&hmac={signedRequest.HMAC}&salt={signedRequest.Message.Salt}&unixTime={signedRequest.Message.UnixTime}");
                 response.EnsureSuccessStatusCode();
                 var contents = await response.Content.ReadAsStringAsync();
                 newCredentialResponse = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(contents);
@@ -132,10 +136,10 @@ namespace GPSLogger.Integration
         {
             var serialized = new[]
                 {
-                    await conversion(signedRequest.Contents),
-                    await ByteArrayExtensions.FromHexStringAsync(signedRequest.ID),
-                    await ByteArrayExtensions.FromHexStringAsync(signedRequest.Salt),
-                    BitConverter.GetBytes(signedRequest.UnixTime)
+                    await conversion(signedRequest.Message.Contents),
+                    await ByteArrayExtensions.FromHexStringAsync(signedRequest.Message.ID),
+                    await ByteArrayExtensions.FromHexStringAsync(signedRequest.Message.Salt),
+                    BitConverter.GetBytes(signedRequest.Message.UnixTime)
                 }.SelectMany(_ => _)
                 .ToArray();
             using (var hmac = new HMACMD5(credential.Secret))

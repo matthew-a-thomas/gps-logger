@@ -62,7 +62,7 @@ namespace GPSLogger.Controllers
             async valid =>
             {
                 if (valid)
-                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.ID), posted.Contents);
+                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.Message.ID), posted.Message.Contents);
 
                 return valid;
             });
