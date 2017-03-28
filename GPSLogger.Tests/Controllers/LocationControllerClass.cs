@@ -24,7 +24,7 @@ namespace GPSLogger.Tests.Controllers
                     (id, location) => Task.CompletedTask,
                     new Mock<IMessageHandler<Location, bool>>().Object
                 );
-                var locations = await controller.GetAsync("00");
+                var locations = (await controller.GetAsync("00"))?.ToList();
                 Assert.IsNotNull(locations);
                 Assert.IsTrue(locations.Any());
                 Assert.IsNotNull(locations.First());
