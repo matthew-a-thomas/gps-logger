@@ -22,9 +22,9 @@ namespace GPSLogger.Integration
         // ReSharper disable once UnusedMember.Local
         // ReSharper disable once ArrangeTypeMemberModifiers
         // ReSharper disable once SuggestBaseTypeForParameter
+        // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(args));
             var program = new Program();
             program.RunTests().Wait();
         }
