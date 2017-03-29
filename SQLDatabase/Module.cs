@@ -95,7 +95,7 @@ namespace SQLDatabase
                 return connectionStringFactory.ChainInto(connectionFactory);
             });
             builder.RegisterType<Transaction>().As<ITransaction>();
-            builder.RegisterType<IdentifierPoster>();
+            builder.RegisterType<IdentifierPoster>().As<IIdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
             builder.RegisterType<LocationPoster>().As<ILocationPoster>();
         }
