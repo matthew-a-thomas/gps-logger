@@ -130,6 +130,8 @@ namespace GPSLogger.Integration
             });
             if (locations == null)
                 throw new Exception("Locations is null");
+            if (locations.Any())
+                throw new Exception("Returned some locations, even though the credential is supposed to be new");
         }
 
         private static async Task SignAsync<T>(SignedMessage<T> signedRequest, Credential<byte[]> credential, Func<T, Task<byte[]>> conversion)
