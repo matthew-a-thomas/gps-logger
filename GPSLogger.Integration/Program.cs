@@ -95,8 +95,8 @@ namespace GPSLogger.Integration
                 };
                 await SignAsync(signedRequest, credentialBytes, x => Task.Run(() => BitConverter.GetBytes(x)));
 
-                var response = await client.GetAsync(
-                    $"/api/credential?contents={signedRequest.Message.Contents}&id={signedRequest.Message.ID}&hmac={signedRequest.HMAC}&salt={signedRequest.Message.Salt}&unixTime={signedRequest.Message.UnixTime}");
+                var queryString = $"/api/credential?contents={signedRequest.Message.Contents}&id={signedRequest.Message.ID}&hmac={signedRequest.HMAC}&salt={signedRequest.Message.Salt}&unixTime={signedRequest.Message.UnixTime}";
+                var response = await client.GetAsync(queryString);
                 response.EnsureSuccessStatusCode();
                 var contents = await response.Content.ReadAsStringAsync();
                 newCredentialResponse = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(contents);
