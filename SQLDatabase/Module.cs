@@ -7,6 +7,7 @@ using Common.RemoteStorage.Command;
 using System.Composition;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Autofac.Core;
 using Common.Utilities;
@@ -64,6 +65,8 @@ namespace SQLDatabase
                     Server = configuration["server"],
                     User = configuration["user"]
                 };
+                if (connectionOptions.GetType().GetProperties().Select(property => property.GetValue(connectionOptions)).Any(x => ReferenceEquals(x, null)))
+                    throw new Exception("At least one of the connection options is null. Make sure all the options are specified in configuration");
                 return connectionOptions;
             });
             builder.Register(c =>
