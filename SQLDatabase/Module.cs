@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using SQLDatabase.RemoteStorage.Query;
 using Common.RemoteStorage.Query;
 using SQLDatabase.RemoteStorage.Command;
@@ -55,6 +56,18 @@ namespace SQLDatabase
             }).SingleInstance();
             builder.Register(c =>
             {
+                var configuration = c.Resolve<IConfiguration>();
+                var connectionOptions = new ConnectionOptions
+                {
+                    Database = configuration["database"],
+                    Password = configuration["password"],
+                    Server = configuration["server"],
+                    User = configuration["user"]
+                };
+                return connectionOptions;
+            });
+            builder.Register(c =>
+            {
                 IFactory<ConnectionOptions, string> connectionStringFactory = new Factory<ConnectionOptions, string>(options => new SqlConnectionStringBuilder
                 {
                     UserID = options.User,
@@ -81,7 +94,7 @@ namespace SQLDatabase
                 var connectionFactory = c.Resolve<IFactory<string, SqlConnection>>();
                 return connectionStringFactory.ChainInto(connectionFactory);
             });
-            builder.RegisterType<Transaction>();
+            builder.RegisterType<Transaction>().As<ITransaction>();
             builder.RegisterType<IdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
             builder.RegisterType<LocationPoster>().As<ILocationPoster>();
