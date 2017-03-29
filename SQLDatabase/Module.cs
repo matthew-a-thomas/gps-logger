@@ -77,7 +77,8 @@ namespace SQLDatabase
                     Password = options.Password,
                     DataSource = options.Server,
                     IntegratedSecurity = false,
-                    InitialCatalog = options.Database
+                    InitialCatalog = options.Database,
+                    Encrypt = true
                 }.ToString());
                 return connectionStringFactory;
             }).SingleInstance();
