@@ -27,6 +27,7 @@ namespace GPSLogger.Integration
         {
             var program = new Program();
             program.RunTests().Wait();
+            Console.WriteLine("All tests executed successfully");
         }
 
         public Program()

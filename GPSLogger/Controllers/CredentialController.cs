@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Common.Extensions;
 using Common.Extensions.Security;
 using Common.Messages;
@@ -11,12 +12,13 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class CredentialController : ControllerBase
     {
+        // ReSharper disable once ClassNeverInstantiated.Global
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public class GetParameters
         {
             public bool Contents { get; set; }
-            // ReSharper disable once InconsistentNaming
             public string HMAC { get; set; }
-            // ReSharper disable once InconsistentNaming
             public string ID { get; set; }
             public string Salt { get; set; }
             public long UnixTime { get; set; }
@@ -52,8 +54,6 @@ namespace GPSLogger.Controllers
         [HttpGet]
         public async Task<SignedMessage<Credential<string>>> GetAsync(GetParameters request)
         {
-            var modelState = ModelState;
-
             if (_messageHandler == null)
                 return null;
             if (_generateCredentialAsync == null)
