@@ -9,10 +9,10 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class TimeController : ControllerBase
     {
-        private readonly MessageHandler<bool, long> _messageHandler;
+        private readonly IMessageHandler<bool, long> _messageHandler;
         
         public TimeController(
-            MessageHandler<bool, long> messageHandler)
+            IMessageHandler<bool, long> messageHandler)
         {
             _messageHandler = messageHandler;
         }
@@ -22,6 +22,6 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => Task.FromResult(DateTimeOffset.Now.ToUnixTimeSeconds()));
+        public async ValueTask<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => new ValueTask<long>(DateTimeOffset.Now.ToUnixTimeSeconds()));
     }
 }

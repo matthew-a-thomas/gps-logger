@@ -6,6 +6,6 @@ namespace Common.RemoteStorage.Query
 {
     public interface ILocationProvider
     {
-        Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier);
+        ValueTask<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier);
     }
 }

@@ -3,26 +3,29 @@ using System;
 using System.Collections.Generic;
 using Common.RemoteStorage.Models;
 using System.Threading.Tasks;
-using SQLDatabase.Extensions;
-using System.Data.SqlClient;
+using System.Linq;
 
 namespace SQLDatabase.RemoteStorage.Query
 {
-    internal class LocationProvider : ILocationProvider
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class LocationProvider : ILocationProvider
     {
-        private readonly Func<Transaction> _transactionFactory;
+        private readonly Func<ITransaction> _transactionFactory;
 
-        public LocationProvider(Func<Transaction> transactionFactory)
+        public LocationProvider(Func<ITransaction> transactionFactory)
         {
             _transactionFactory = transactionFactory;
         }
 
-        public async Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
+        public async ValueTask<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
-            var result = new LinkedList<IdentifiedLocation>();
+            if (_transactionFactory == null)
+                return null;
             using (var transaction = _transactionFactory())
             {
-                await transaction.ProcessResultsAsync(@"
+                if (transaction == null)
+                    return null;
+                var results = await transaction.GetResultsAsync(Commands.Command.Create(@"
 select
     locations.*
 from
@@ -32,21 +35,17 @@ from
 where
     identifiers.hex = @hex
 ",
-                    record =>
-                    {
-                        var location = new IdentifiedLocation
-                        {
-                            Identifier = forIdentifier,
-                            Latitude = (double) record["latitude"],
-                            Longitude = (double) record["longitude"],
-                            Timestamp = (DateTime) record["timestamp"]
-                        };
-                        result.AddLast(location);
-                    },
-                    new SqlParameter("@hex", forIdentifier)
-                );
+                    new KeyValuePair<string, object>("@hex", forIdentifier)
+                ));
+                var locations = results?.Select(record => new IdentifiedLocation
+                {
+                    Identifier = forIdentifier,
+                    Latitude = Convert.ToDouble(record["latitude"]),
+                    Longitude = Convert.ToDouble(record["longitude"]),
+                    Timestamp = Convert.ToDateTime(record["timestamp"])
+                }).ToList();
+                return locations;
             }
-            return result;
         }
     }
 }

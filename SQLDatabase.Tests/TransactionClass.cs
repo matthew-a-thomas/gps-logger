@@ -1,77 +1,62 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SQLDatabase.Extensions;
-using System;
+﻿using System;
 using System.Data.SqlClient;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using Common.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace SQLDatabase.Tests
 {
     [TestClass]
     public class TransactionClass
     {
-        internal static async Task DoWithTransactionAsync(Func<Transaction, Task> action)
+        private static void TestWithNullConstructorParameters(Action<Transaction> test)
         {
-            await ConnectionProviderClass.DoWithConnectionAsync(async connection =>
+            using (var t = new Transaction(null, null))
             {
-                using (var transaction = new Transaction(ConnectionProviderClass.CreateConnectionProvider()))
-                    await action(transaction);
-            });
+                test(t);
+            }
+            using (var t = new Transaction(null, new ConnectionOptions()))
+            {
+                test(t);
+            }
+            using (var t = new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), null))
+            {
+                test(t);
+            }
+            using (var t = new Transaction(new Factory<ConnectionOptions, SqlConnection>(_ => null), new ConnectionOptions()))
+            {
+                test(t);
+            }
+        }
+
+        [TestClass]
+        public class Constructor
+        {
+            [TestMethod]
+            [SuppressMessage("ReSharper", "ObjectCreationAsStatement")]
+            public void HandlesNullParameters()
+            {
+                TestWithNullConstructorParameters(_ => { });
+            }
+
+            [TestMethod]
+            public void HandlesNopInterfaces()
+            {
+                // ReSharper disable once ObjectCreationAsStatement
+                using (new Transaction(
+                    new Mock<IFactory<ConnectionOptions, SqlConnection>>().Object,
+                    new ConnectionOptions())) { }
+            }
         }
 
         [TestClass]
         public class CommitMethod
         {
             [TestMethod]
-            public async Task NotCommittedUntilCalled()
+            public void CanBeCalledWithNullConstructorParameters()
             {
-                await DoWithTransactionAsync(async transaction =>
-                {
-                    var identifier = Guid.NewGuid().ToByteArray();
-                    using (var command = transaction.CreateCommand())
-                    {
-                        command.CommandText = "insert into identifiers(hex) values (@hex)";
-                        command.Parameters.AddWithValue("@hex", identifier);
-                        var numAffected = await command.ExecuteNonQueryAsync();
-                        Assert.AreEqual(1, numAffected);
-
-                        // The transaction has not yet been committed
-                        await DoWithTransactionAsync(async transaction2 =>
-                        {
-                            var count = await transaction2.GetAsync<int>("select count(*) from identifiers with (readpast) where hex = @hex", new SqlParameter("@hex", identifier));
-                            Assert.AreEqual(0, count);
-                        });
-                    }
-                });
-            }
-        }
-
-        [TestClass]
-        public class CreateCommandMethod
-        {
-            [TestMethod]
-            public async Task CreatesCommand()
-            {
-                await DoWithTransactionAsync(async transaction =>
-                {
-                    await Task.Run(() =>
-                    {
-                        using (var command = transaction.CreateCommand())
-                            Assert.IsNotNull(command);
-                    });
-                });
-            }
-
-            [TestMethod]
-            public async Task CreatesCommandThatIsInATransaction()
-            {
-                await DoWithTransactionAsync(async transaction =>
-                {
-                    await Task.Run(() =>
-                    {
-                        using (var command = transaction.CreateCommand())
-                            Assert.IsNotNull(command?.Transaction);
-                    });
-                });
+                TestWithNullConstructorParameters(transaction => transaction.Commit());
             }
         }
     }

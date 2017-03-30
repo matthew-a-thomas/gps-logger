@@ -1,8 +1,8 @@
-﻿using Common.RemoteStorage.Models;
+﻿using System.Threading.Tasks;
+using Common.RemoteStorage.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using SQLDatabase.RemoteStorage.Command;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests.RemoteStorage.Command
 {
@@ -10,25 +10,24 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
     public class LocationPosterClass
     {
         [TestClass]
-        public class PostLocationAsyncMethod
+        public class PostLocationsAsyncMethod
         {
             [TestMethod]
-            // ReSharper disable once InconsistentNaming
-            public async Task AllowsPostingForRandomID()
+            public async Task HandlesNopInterfaces()
             {
-                await TransactionClass.DoWithTransactionAsync(async transaction =>
-                {
-                    var identifierPoster = new IdentifierPoster();
-                    var poster = new LocationPoster(identifierPoster, () => transaction);
-                    var id = new byte[16];
-                    using (var rng = RandomNumberGenerator.Create())
-                        rng.GetBytes(id);
-                    await poster.PostLocationAsync(id, new Location
-                    {
-                        Latitude = 0,
-                        Longitude = 0
-                    });
-                });
+                var mockedIdentifierPoster = new Mock<IIdentifierPoster>();
+                var mockedTransaction = new Mock<ITransaction>();
+                var locationPoster = new LocationPoster(mockedIdentifierPoster.Object, () => mockedTransaction.Object);
+                await locationPoster.PostLocationAsync(new byte[0], new Location {Latitude = 11, Longitude = 12});
+            }
+
+            [TestMethod]
+            public async Task HandlesNullParameters()
+            {
+                var mockedIdentifierPoster = new Mock<IIdentifierPoster>();
+                var mockedTransaction = new Mock<ITransaction>();
+                var locationPoster = new LocationPoster(mockedIdentifierPoster.Object, () => mockedTransaction.Object);
+                await locationPoster.PostLocationAsync(null, null);
             }
         }
     }

@@ -65,18 +65,18 @@ namespace GPSLogger
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
 
                 // RNG factory
-                builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => Task.FromResult(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
+                builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => new ValueTask<RandomNumberGenerator>(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
-            // IPersistentStore
+            // IStorage
             builder.Register(c =>
             {
                 var environment = c.Resolve<IHostingEnvironment>();
                 var root = new DirectoryInfo(Path.Combine(environment.ContentRootPath, "App_Data"));
                 root.Create();
-                return (IPersistentStore)new PersistentStore(root);
+                const int maxKeyLength = 100;
+                return (IStorage<byte[]>)new PhysicalStorage(root, maxKeyLength);
             }).SingleInstance();
-            builder.RegisterType<PersistentStoreManager>().SingleInstance();
             
             { // Controllers
                 // Location storage and retrieval
@@ -109,8 +109,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Location>();
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
+                    serializer.EnqueueStepAsync(x => new ValueTask<double>(x.Latitude));
+                    serializer.EnqueueStepAsync(x => new ValueTask<double>(x.Longitude));
                     return (ISerializer<Location>)serializer;
                 }).SingleInstance();
 
@@ -118,8 +118,8 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var serializer = new Serializer<Credential<byte[]>>();
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
+                    serializer.EnqueueStepAsync(x => new ValueTask<byte[]>(x.ID));
+                    serializer.EnqueueStepAsync(x => new ValueTask<byte[]>(x.Secret));
                     return (ISerializer<Credential<byte[]>>)serializer;
                 });
 
@@ -134,8 +134,8 @@ namespace GPSLogger
 
                     // "Location" requests leading to "bool" responses
                     var locationSerializer = new Serializer<Location>();
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
+                    locationSerializer.EnqueueStepAsync(x => new ValueTask<double>(x.Latitude));
+                    locationSerializer.EnqueueStepAsync(x => new ValueTask<double>(x.Longitude));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         locationSerializer,
@@ -144,10 +144,8 @@ namespace GPSLogger
 
                     // "bool" requests leading to "Credential" responses
                     var credentialSerializer = new Serializer<Credential<string>>();
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID?.Length ?? 0));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret?.Length ?? 0));
-                    credentialSerializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
+                    credentialSerializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.ID));
+                    credentialSerializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.Secret));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         Serializer<bool>.CreatePassthroughSerializer(),
@@ -171,12 +169,11 @@ namespace GPSLogger
             ISerializer<TRequest> requestContentSerializer,
             ISerializer<TResponse> responseContentSerializer)
         {
-            builder.RegisterType<MapperTranslator<Message<TResponse>, SignedMessage<TResponse>>>().As<ITranslator<Message<TResponse>, SignedMessage<TResponse>>>();
-            builder.RegisterType<MessageHandler<TRequest, TResponse>>().SingleInstance();
-            builder.RegisterType<Validator<SignedMessage<TRequest>, Message<TRequest>>>().SingleInstance();
+            builder.RegisterType<MessageHandler<TRequest, TResponse>>().As<IMessageHandler<TRequest, TResponse>>().SingleInstance();
+            builder.RegisterType<Validator<TRequest>>().SingleInstance();
             var slidingWindow = TimeSpan.FromMinutes(1);
-            builder.RegisterInstance(new ReplayDetector<SignedMessage<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
-            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.PassesDomainSpecificValidationDelegateAsync(message => Task.Run(() =>
+            builder.RegisterInstance(new ReplayDetector<Message<TRequest>>(new TimeSpan(slidingWindow.Ticks * 2))).SingleInstance();
+            builder.RegisterInstance(new Validator<TRequest>.PassesDomainSpecificValidationDelegateAsync(message => Task.Run(() =>
             {
                 // Domain-specific validation to tell if a SignedMessage<TRequest> is valid
 
@@ -199,7 +196,7 @@ namespace GPSLogger
                     }
                 });
             }))).SingleInstance();
-            builder.RegisterInstance(new Validator<SignedMessage<TRequest>, Message<TRequest>>.DeriveIDFromThingDelegateAsync(message => ByteArrayExtensions.FromHexStringAsync(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
+            builder.RegisterInstance(new Validator<TRequest>.DeriveIDFromThingDelegateAsync(message => ByteArrayExtensions.FromHexStringAsync(message?.ID))); // Function that pulls the ID out of a message so that the signers/validators will know what ID to use
 
             RegisterSignerAndSerializers(builder, requestContentSerializer);
             RegisterSignerAndSerializers(builder, responseContentSerializer);
@@ -209,8 +206,7 @@ namespace GPSLogger
             ContainerBuilder builder,
             ISerializer<T> contentSerializer)
         {
-            builder.RegisterType<MapperTranslator<Message<T>, SignedMessage<T>>>().As<ITranslator<Message<T>, SignedMessage<T>>>();
-            builder.RegisterType<Signer<SignedMessage<T>, Message<T>>>().SingleInstance();
+            builder.RegisterType<Signer<T>>().SingleInstance();
             builder.RegisterType<MessageSerializer<T>>().As<ISerializer<Message<T>>>().SingleInstance();
             builder.RegisterInstance(contentSerializer).SingleInstance();
         }

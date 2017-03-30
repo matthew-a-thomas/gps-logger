@@ -1,20 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using Common.RemoteStorage.Command;
 using Common.RemoteStorage.Models;
 using System.Threading.Tasks;
-using SQLDatabase.Extensions;
-using System.Data.SqlClient;
 
 namespace SQLDatabase.RemoteStorage.Command
 {
-    internal class LocationPoster : ILocationPoster
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public class LocationPoster : ILocationPoster
     {
-        private readonly IdentifierPoster _identifierPoster;
-        private readonly Func<Transaction> _transactionFactory;
+        private readonly IIdentifierPoster _identifierPoster;
+        private readonly Func<ITransaction> _transactionFactory;
 
         public LocationPoster(
-            IdentifierPoster identifierPoster,
-            Func<Transaction> transactionFactory
+            IIdentifierPoster identifierPoster,
+            Func<ITransaction> transactionFactory
             )
         {
             _identifierPoster = identifierPoster;
@@ -23,10 +23,18 @@ namespace SQLDatabase.RemoteStorage.Command
 
         public async Task PostLocationAsync(byte[] identifier, Location location)
         {
+            if (_identifierPoster == null)
+                return;
+            if (_transactionFactory == null)
+                return;
+            if (location == null)
+                return;
             using (var transaction = _transactionFactory())
             {
+                if (transaction == null)
+                    return;
                 var id = await _identifierPoster.PostOrGetIdentifierAsync(transaction, identifier);
-                await transaction.ExecuteAsync(@"
+                await transaction.ExecuteAsync(Commands.Command.Create(@"
 insert into
     locations (
         id,
@@ -39,10 +47,10 @@ values (
     @longitude
 )
 ",
-                    new SqlParameter("@id", id),
-                    new SqlParameter("@latitude", location.Latitude),
-                    new SqlParameter("@longitude", location.Longitude)
-                );
+                    new KeyValuePair<string, object>("@id", id),
+                    new KeyValuePair<string, object>("@latitude", location.Latitude),
+                    new KeyValuePair<string, object>("@longitude", location.Longitude)
+                ));
                 transaction.Commit();
             }
         }

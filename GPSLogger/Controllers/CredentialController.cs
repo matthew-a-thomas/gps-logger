@@ -11,21 +11,32 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class CredentialController : ControllerBase
     {
+        public class GetParameters
+        {
+            public bool Contents { get; set; }
+            // ReSharper disable once InconsistentNaming
+            public string HMAC { get; set; }
+            // ReSharper disable once InconsistentNaming
+            public string ID { get; set; }
+            public string Salt { get; set; }
+            public long UnixTime { get; set; }
+        }
+
         /// <summary>
         /// The number of bytes in a Credential's ID
         /// </summary>
         // ReSharper disable once InconsistentNaming
         public const int IDSize = 16;
-        
+
         private readonly Delegates.GenerateSaltDelegateAsync _generateSaltAsync;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
-        private readonly MessageHandler<bool, Credential<string>> _messageHandler;
+        private readonly IMessageHandler<bool, Credential<string>> _messageHandler;
 
         public CredentialController(
             Delegates.GenerateSaltDelegateAsync generateSaltAsync,
             Delegates.GenerateCredentialDelegateAsync generateCredentialAsync,
-            MessageHandler<bool, Credential<string>> messageHandler
-            )
+            IMessageHandler<bool, Credential<string>> messageHandler
+        )
         {
             _generateSaltAsync = generateSaltAsync;
             _generateCredentialAsync = generateCredentialAsync;
@@ -39,6 +50,36 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<SignedMessage<Credential<string>>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, async valid => await (await _generateCredentialAsync(await _generateSaltAsync())).ConvertAsync(bytes => Task.FromResult(bytes.ToHexString())));
+        public async Task<SignedMessage<Credential<string>>> GetAsync(GetParameters request)
+        {
+            var modelState = ModelState;
+
+            if (_messageHandler == null)
+                return null;
+            if (_generateCredentialAsync == null)
+                return null;
+            if (_generateSaltAsync == null)
+                return null;
+
+            var signedRequest = new SignedMessage<bool>
+            {
+                HMAC = request.HMAC,
+                Message = new Message<bool>
+                {
+                    Contents = request.Contents,
+                    ID = request.ID,
+                    Salt = request.Salt,
+                    UnixTime = request.UnixTime
+                }
+            };
+
+            return await _messageHandler.CreateResponseAsync(
+                signedRequest,
+                async valid =>
+                    await (await _generateCredentialAsync(await _generateSaltAsync()))
+                    .ConvertAsync(bytes => new ValueTask<string>(bytes.ToHexString())
+                )
+            );
+        }
     }
 }

@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using SQLDatabase.RemoteStorage.Command;
-using System;
-using System.Threading.Tasks;
 
 namespace SQLDatabase.Tests.RemoteStorage.Command
 {
@@ -12,29 +12,18 @@ namespace SQLDatabase.Tests.RemoteStorage.Command
         public class PostOrGetIdentifierAsyncMethod
         {
             [TestMethod]
-            public async Task ReturnsSomething()
+            public async Task HandlesNopInterfaces()
             {
-                await TransactionClass.DoWithTransactionAsync(async transaction =>
-                {
-                    var poster = new IdentifierPoster();
-                    var identifier = Guid.NewGuid().ToByteArray();
-                    await poster.PostOrGetIdentifierAsync(transaction, identifier);
-                });
+                var mockedTransaction = new Mock<ITransaction>();
+                var identifierPoster = new IdentifierPoster();
+                await identifierPoster.PostOrGetIdentifierAsync(mockedTransaction.Object, new byte[0]);
             }
 
             [TestMethod]
-            // ReSharper disable once InconsistentNaming
-            public async Task ReturnsTheIDThatWasJustCreated()
+            public async Task HandlesNullParameters()
             {
-                await TransactionClass.DoWithTransactionAsync(async transaction =>
-                {
-                    var poster = new IdentifierPoster();
-                    var identifier = Guid.NewGuid().ToByteArray();
-                    var id = await poster.PostOrGetIdentifierAsync(transaction, identifier);
-                    // ReSharper disable once InconsistentNaming
-                    var secondID = await poster.PostOrGetIdentifierAsync(transaction, identifier);
-                    Assert.AreEqual(id, secondID);
-                });
+                var identifierPoster = new IdentifierPoster();
+                await identifierPoster.PostOrGetIdentifierAsync(null, null);
             }
         }
     }

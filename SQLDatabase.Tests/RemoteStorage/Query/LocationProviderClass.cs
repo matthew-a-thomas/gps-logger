@@ -1,8 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SQLDatabase.RemoteStorage.Query;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Moq;
+using SQLDatabase.RemoteStorage.Query;
 
 namespace SQLDatabase.Tests.RemoteStorage.Query
 {
@@ -13,20 +15,74 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
         public class GetAllLocationsAsyncMethod
         {
             [TestMethod]
-            // ReSharper disable once InconsistentNaming
-            public async Task ReturnsNoLocationsForRandomID()
+            public async Task DoesNotCommitTransaction()
             {
-                await TransactionClass.DoWithTransactionAsync(async transaction =>
-                {
-                    var provider = new LocationProvider(() => transaction);
-                    using (var rng = RandomNumberGenerator.Create())
-                    {
-                        var id = new byte[16];
-                        rng.GetBytes(id);
-                        var locations = await provider.GetAllLocationsAsync(id);
-                        Assert.IsTrue(!locations.Any());
-                    }
-                });
+                var mockedTransaction = new Mock<ITransaction>();
+                var provider = new LocationProvider(() => mockedTransaction.Object);
+                await provider.GetAllLocationsAsync(new byte[0]);
+                mockedTransaction.Verify(transaction => transaction.Commit(), Times.Never);
+            }
+
+            [TestMethod]
+            public async Task HandlesNopInterfaces()
+            {
+                var mockedTransaction = new Mock<ITransaction>();
+                var provider = new LocationProvider(() => mockedTransaction.Object);
+                await provider.GetAllLocationsAsync(new byte[0]);
+            }
+
+            [TestMethod]
+            public async Task HandlesNullParameters()
+            {
+                var provider = new LocationProvider(() => null);
+                await provider.GetAllLocationsAsync(null);
+
+                var provider2 = new LocationProvider(null);
+                await provider2.GetAllLocationsAsync(null);
+            }
+
+            [TestMethod]
+            public async Task ReturnsCorrectResults()
+            {
+                var mockedTransaction = new Mock<ITransaction>();
+                mockedTransaction
+                    .Setup(
+                        transaction =>
+                        transaction.GetResultsAsync(
+                            It.IsAny<Commands.Command>()
+                        )
+                    )
+                    .Returns(
+                        new ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>>(
+                            new[]
+                            {
+                                new Dictionary<string, object>
+                                {
+                                    { "latitude", -9 },
+                                    { "longitude", 10 },
+                                    { "timestamp", new DateTime(1000) }
+                                },
+                                new Dictionary<string, object>
+                                {
+                                    { "latitude", -8 },
+                                    { "longitude", 11 },
+                                    { "timestamp", new DateTime(2000) }
+                                }
+                            }
+                        )
+                    );
+                var provider = new LocationProvider(() => mockedTransaction.Object);
+                var locations = await provider.GetAllLocationsAsync(new byte[0]);
+                var list = locations.ToArray();
+                Assert.AreEqual(2, list.Length);
+
+                Assert.AreEqual(-9, list[0].Latitude);
+                Assert.AreEqual(10, list[0].Longitude);
+                Assert.AreEqual(1000, list[0].Timestamp.Ticks);
+
+                Assert.AreEqual(-8, list[1].Latitude);
+                Assert.AreEqual(11, list[1].Longitude);
+                Assert.AreEqual(2000, list[1].Timestamp.Ticks);
             }
         }
     }

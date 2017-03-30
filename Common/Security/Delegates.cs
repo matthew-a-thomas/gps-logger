@@ -10,20 +10,20 @@ namespace Common.Security
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Task<Credential<byte[]>> GenerateCredentialDelegateAsync(byte[] id);
+        public delegate ValueTask<Credential<byte[]>> GenerateCredentialDelegateAsync(byte[] id);
 
         /// <summary>
         /// Delegate that generates a random salt
         /// </summary>
         /// <returns></returns>
-        public delegate Task<byte[]> GenerateSaltDelegateAsync();
+        public delegate ValueTask<byte[]> GenerateSaltDelegateAsync();
         
         /// <summary>
         /// Returns a copy of this server's HMAC key
         /// </summary>
         /// <returns></returns>
         // ReSharper disable once InconsistentNaming
-        public delegate Task<byte[]> HMACKeyProviderAsync();
+        public delegate ValueTask<byte[]> HMACKeyProviderAsync();
         
         /// <summary>
         /// Delegate that generates a new RandomNumberGenerator.
@@ -31,6 +31,6 @@ namespace Common.Security
         /// </summary>
         /// <returns></returns>
         // ReSharper disable once InconsistentNaming
-        public delegate Task<RandomNumberGenerator> RNGFactoryAsync();
+        public delegate ValueTask<RandomNumberGenerator> RNGFactoryAsync();
     }
 }

@@ -17,7 +17,7 @@ namespace GPSLogger.Controllers
     {
         private readonly LocationProviderAsync _locationProviderAsync;
         private readonly HandleLocationPostAsync _handleLocationPostAsync;
-        private readonly MessageHandler<Location, bool> _messageHandler;
+        private readonly IMessageHandler<Location, bool> _messageHandler;
 
         /// <summary>
         /// Delegate for storing a new location. The ID has already been validated
@@ -31,12 +31,12 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Task<IEnumerable<Location>> LocationProviderAsync(byte[] id);
+        public delegate ValueTask<IEnumerable<Location>> LocationProviderAsync(byte[] id);
         
         public LocationController(
             LocationProviderAsync locationProviderAsync,
             HandleLocationPostAsync handleLocationPostAsync,
-            MessageHandler<Location, bool> messageHandler)
+            IMessageHandler<Location, bool> messageHandler)
         {
             _locationProviderAsync = locationProviderAsync;
             _handleLocationPostAsync = handleLocationPostAsync;
@@ -62,7 +62,7 @@ namespace GPSLogger.Controllers
             async valid =>
             {
                 if (valid)
-                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.ID), posted.Contents);
+                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.Message.ID), posted.Message.Contents);
 
                 return valid;
             });

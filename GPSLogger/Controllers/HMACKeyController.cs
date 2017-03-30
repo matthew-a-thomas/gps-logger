@@ -14,8 +14,10 @@ namespace GPSLogger.Controllers
     // ReSharper disable once InconsistentNaming
     public class HMACKeyController : ControllerBase
     {
+        // ReSharper disable once ClassNeverInstantiated.Global
         public class PostParameters
         {
+            // ReSharper disable once UnusedAutoPropertyAccessor.Global
             public string NewKey { get; set; }
         }
 
@@ -23,11 +25,11 @@ namespace GPSLogger.Controllers
         private const string HMACKeyName = "hmac key";
         private const int MinKeySize = 16;
 
-        private readonly PersistentStoreManager _persistentStoreManager;
+        private readonly IStorage<byte[]> _storage;
 
-        public HMACKeyController(PersistentStoreManager persistentStoreManager)
+        public HMACKeyController(IStorage<byte[]> storage)
         {
-            _persistentStoreManager = persistentStoreManager;
+            _storage = storage;
         }
 
         /// <summary>
@@ -40,19 +42,21 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<bool> GetAsync() => await _persistentStoreManager.IsSetAsync(HMACKeyName);
+        // ReSharper disable once MemberCanBePrivate.Global
+        public async ValueTask<bool> GetAsync() => await _storage.ExistsAsync(HMACKeyName);
         
         /// <summary>
         /// Returns the current HMAC key.
         /// Do not expose this to clients
         /// </summary>
         /// <returns></returns>
-        internal async Task<byte[]> GetCurrentAsync() => await _persistentStoreManager.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
+        internal async ValueTask<byte[]> GetCurrentAsync() => await _storage.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
         [HttpPost]
+        // ReSharper disable once UnusedMember.Global
         public async Task PostAsync([FromBody] PostParameters parameters)
         {
             if (ReferenceEquals(parameters, null) || string.IsNullOrWhiteSpace(parameters.NewKey))
@@ -64,7 +68,7 @@ namespace GPSLogger.Controllers
             if (hmacKeyBytes.Length < MinKeySize)
                 throw new Exception("Please provide at least " + MinKeySize + " bytes");
 
-            await _persistentStoreManager.SetAsync(HMACKeyName, hmacKeyBytes);
+            await _storage.SetAsync(HMACKeyName, hmacKeyBytes);
         }
     }
 }

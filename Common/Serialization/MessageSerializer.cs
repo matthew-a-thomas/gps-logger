@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Common.Extensions;
 using Common.Messages;
 
 namespace Common.Serialization
@@ -26,9 +27,9 @@ namespace Common.Serialization
             var serializer = new Serializer<Message<T>>();
 
             serializer.EnqueueStepAsync(async x => await contentsSerializer.SerializeAsync(x.Contents));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.Salt));
-            serializer.EnqueueStepAsync(x => Task.FromResult(x.UnixTime));
+            serializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.ID));
+            serializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.Salt));
+            serializer.EnqueueStepAsync(x => new ValueTask<long>(x.UnixTime));
 
             _serializer = serializer;
         }
