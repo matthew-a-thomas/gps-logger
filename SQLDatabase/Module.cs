@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.FileProviders;
 using Common.Extensions;
+using Newtonsoft.Json;
 
 namespace SQLDatabase
 {
@@ -65,6 +66,7 @@ namespace SQLDatabase
                     Server = configuration["server"],
                     User = configuration["user"]
                 };
+                Console.WriteLine(JsonConvert.SerializeObject(connectionOptions));
                 if (connectionOptions.GetType().GetProperties().Select(property => property.GetValue(connectionOptions)).Any(x => ReferenceEquals(x, null)))
                     throw new Exception("At least one of the connection options is null. Make sure all the options are specified in configuration");
                 return connectionOptions;
