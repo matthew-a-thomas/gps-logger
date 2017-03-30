@@ -132,6 +132,64 @@ namespace GPSLogger.Integration
                 throw new Exception("Locations is null");
             if (locations.Any())
                 throw new Exception("Returned some locations, even though the credential is supposed to be new");
+
+            // Post a location using the first credential
+            var postResponse = default(SignedMessage<bool>);
+            var postedLocation = new Location
+            {
+                Latitude = -1,
+                Longitude = -2
+            };
+            await DoWithClientAsync(async client =>
+            {
+                var request = new SignedMessage<Location>
+                {
+                    Message = new Message<Location>
+                    {
+                        ID = credential.ID,
+                        Salt = BitConverter.GetBytes(DateTimeOffset.Now.Ticks).ToHexString(),
+                        UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                        Contents = postedLocation
+                    }
+                };
+                await SignAsync(
+                    request,
+                    credentialBytes,
+                    location => Task.FromResult(new[] { location.Latitude, location.Longitude }.Select(BitConverter.GetBytes).SelectMany(_ => _).ToArray())
+                    );
+                var response = await client.PostAsync($"/api/location", request);
+                postResponse = JsonConvert.DeserializeObject<SignedMessage<bool>>(response);
+            });
+            if (postResponse == null)
+                throw new Exception("Didn't receive a valid response after posting a location");
+            if (string.IsNullOrWhiteSpace(postResponse.HMAC))
+                throw new Exception("The response from posting a location was not signed");
+            if (postResponse.Message == null)
+                throw new Exception("The message within the signed response is null instead of having something");
+            if (!postResponse.Message.Contents)
+                throw new Exception("The server indicated the post wasn't successful");
+
+            // Get all the locations for the first credential again
+            locations = default(IEnumerable<Location>);
+            await DoWithClientAsync(async client =>
+            {
+                var response = await client.GetStringAsync($"/api/location/?id={credential.ID}");
+                locations = JsonConvert.DeserializeObject<IEnumerable<Location>>(response);
+            });
+            // Make sure we got back the location we just posted
+            if (locations == null)
+                throw new Exception("Locations is null");
+            var locationsArray = locations.ToArray();
+            if (locationsArray.Length > 1)
+                throw new Exception("Got back more than one location, even though we only posted one");
+            var firstLocation = locationsArray.FirstOrDefault();
+            if (ReferenceEquals(firstLocation, null))
+                throw new Exception("Didn't return any locations, even though we just posted one");
+            const double tolerance = 0.0000001;
+            if (Math.Abs(firstLocation.Latitude - postedLocation.Latitude) > tolerance)
+                throw new Exception($"The returned latitude is more than {tolerance} off");
+            if (Math.Abs(firstLocation.Longitude - postedLocation.Longitude) > tolerance)
+                throw new Exception($"The returned longitude is more than {tolerance} off");
         }
 
         private static async Task SignAsync<T>(SignedMessage<T> signedRequest, Credential<byte[]> credential, Func<T, Task<byte[]>> conversion)
