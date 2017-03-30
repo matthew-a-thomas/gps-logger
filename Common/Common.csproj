@@ -14,10 +14,4 @@
     <PackageReference Include="System.Reactive" Version="3.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions">
-      <HintPath>C:\Users\thoma\.nuget\packages\microsoft.extensions.fileproviders.abstractions\1.1.0\lib\netstandard1.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
