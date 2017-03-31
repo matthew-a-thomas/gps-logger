@@ -30,7 +30,6 @@ namespace GPSLogger.Integration
         // ReSharper disable once UnusedParameter.Local
         static void Main(string[] args)
         {
-            var program = new Program();
             RunTests().Wait();
             Debug.WriteLine("All tests executed successfully");
         }
