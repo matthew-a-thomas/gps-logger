@@ -45,7 +45,7 @@ namespace GPSLogger.Integration
             var contentRoot = Path.Combine(baseDirectory, "tests", temp);
             var contentRootDirectory = Directory.CreateDirectory(contentRoot);
 
-            // Clean up older files on a background thread
+            // Assert that the newly created folder name matches what we expect
             var pattern = new Regex(@"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2} - [a-f0-9\-]+$");
             if (!pattern.IsMatch(contentRootDirectory.Name))
                 throw new Exception();
