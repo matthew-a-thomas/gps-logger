@@ -21,11 +21,11 @@ namespace Common.LocalStorage
             _locker = new Locker<string>();
         }
 
-        private bool Exists(string key) => GetWhileLocked(key, () => _backingStorage.ExistsAsync(key).AsTask().WaitAndGet());
-        public async ValueTask<bool> ExistsAsync(string key) => await Task.Run(() => Exists(key));
+        private bool Exists(string key) => GetWhileLocked(key, () => _backingStorage.ExistsAsync(key).WaitAndGet());
+        public async Task<bool> ExistsAsync(string key) => await Task.Run(() => Exists(key));
 
-        private T Get(string key) => GetWhileLocked(key, () => _backingStorage.GetAsync(key).AsTask().WaitAndGet());
-        public async ValueTask<T> GetAsync(string key) => await Task.Run(() => Get(key));
+        private T Get(string key) => GetWhileLocked(key, () => _backingStorage.GetAsync(key).WaitAndGet());
+        public async Task<T> GetAsync(string key) => await Task.Run(() => Get(key));
 
         /// <summary>
         /// Returns the current value associated with the given key, using the given function to generate and assign the value if needed
@@ -33,7 +33,7 @@ namespace Common.LocalStorage
         /// <param name="key"></param>
         /// <param name="add"></param>
         /// <returns></returns>
-        public async ValueTask<T> GetOrAddAsync(string key, Func<string, T> add)
+        public async Task<T> GetOrAddAsync(string key, Func<string, T> add)
         {
             return await Task.Run(() =>
             {

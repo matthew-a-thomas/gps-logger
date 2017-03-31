@@ -29,9 +29,9 @@ namespace Common.Messages
             _idExtractorAsync = idExtractorAsync;
         }
         
-        public async ValueTask<SignedMessage<TResponse>> CreateResponseAsync(
+        public async Task<SignedMessage<TResponse>> CreateResponseAsync(
             SignedMessage<TRequest> request,
-            Func<bool, ValueTask<TResponse>> contentGeneratorAsync
+            Func<bool, Task<TResponse>> contentGeneratorAsync
             )
         {
             // Figure out if the request is valid

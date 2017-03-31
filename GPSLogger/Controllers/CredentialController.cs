@@ -77,7 +77,7 @@ namespace GPSLogger.Controllers
                 signedRequest,
                 async valid =>
                     await (await _generateCredentialAsync(await _generateSaltAsync()))
-                    .ConvertAsync(bytes => new ValueTask<string>(bytes.ToHexString())
+                    .ConvertAsync(bytes => Task.FromResult(bytes.ToHexString())
                 )
             );
         }

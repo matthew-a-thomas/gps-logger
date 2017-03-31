@@ -29,8 +29,8 @@
 //        private static readonly ISerializer<Location> LocationSerializer = new Func<Serializer<Location>>(() =>
 //        {
 //            var result = new Serializer<Location>();
-//            result.EnqueueStepAsync(x => ValueTask(x.Latitude));
-//            result.EnqueueStepAsync(x => ValueTask(x.Longitude));
+//            result.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
+//            result.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
 //            return result;
 //        })();
 //        private const string Root = "/api/location";
@@ -57,7 +57,7 @@
 //                Longitude = 0
 //            };
 //            var signer = new Signer<SignedMessage<Location>, Message<Location>>(
-//                new HMACProvider(() => ValueTask(new byte[0])),
+//                new HMACProvider(() => Task.FromResult(new byte[0])),
 //                messageSerializer,
 //                new MapperTranslator<Message<Location>, SignedMessage<Location>>()
 //                );
@@ -121,7 +121,7 @@
 //                Longitude = DateTime.Now.Minute
 //            };
 //            var signer = new Signer<SignedMessage<Location>, Message<Location>>(
-//                new HMACProvider(() => ValueTask(new byte[0])),
+//                new HMACProvider(() => Task.FromResult(new byte[0])),
 //                messageSerializer,
 //                new MapperTranslator<Message<Location>, SignedMessage<Location>>()
 //                );

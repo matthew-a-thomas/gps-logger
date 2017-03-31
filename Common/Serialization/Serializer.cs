@@ -30,7 +30,7 @@ namespace Common.Serialization
         /// </summary>
         /// <typeparam name="TMember"></typeparam>
         /// <param name="converterAsync"></param>
-        public void EnqueueStepAsync<TMember>(Func<T, ValueTask<TMember>> converterAsync)
+        public void EnqueueStepAsync<TMember>(Func<T, Task<TMember>> converterAsync)
         {
             // Find the write method that will handle TMember
             var writeMethodInfo = typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(TMember) });
@@ -60,7 +60,7 @@ namespace Common.Serialization
         public static ISerializer<T> CreatePassthroughSerializer()
         {
             var serializer = new Serializer<T>();
-            serializer.EnqueueStepAsync(x => new ValueTask<T>(x));
+            serializer.EnqueueStepAsync(Task.FromResult);
             return serializer;
         }
 

@@ -73,7 +73,7 @@
 //            // Create a request that has been signed with those credentials
 //            var messageSerializer = new MessageSerializer<TRequest>(serializer);
 //            var signer = new Signer<SignedMessage<TRequest>, Message<TRequest>>(
-//                new HMACProvider(() => ValueTask(new byte[0])),
+//                new HMACProvider(() => Task.FromResult(new byte[0])),
 //                messageSerializer,
 //                new MapperTranslator<Message<TRequest>, SignedMessage<TRequest>>()
 //                );

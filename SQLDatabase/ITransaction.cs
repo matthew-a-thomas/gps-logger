@@ -15,7 +15,7 @@ namespace SQLDatabase
         /// </summary>
         void Commit();
         
-        ValueTask<int> ExecuteAsync(Command command);
-        ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command);
+        Task<int> ExecuteAsync(Command command);
+        Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command);
     }
 }

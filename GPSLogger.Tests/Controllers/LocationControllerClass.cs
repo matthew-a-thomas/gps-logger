@@ -19,7 +19,7 @@ namespace GPSLogger.Tests.Controllers
             public async Task ReturnsLocations()
             {
                 var controller = new LocationController(
-                    id => new ValueTask<IEnumerable<Location>>(new[]
+                    id => Task.FromResult<IEnumerable<Location>>(new[]
                         {new Location {Latitude = 0, Longitude = 1}}),
                     (id, location) => Task.CompletedTask,
                     new Mock<IMessageHandler<Location, bool>>().Object

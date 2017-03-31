@@ -80,7 +80,7 @@ namespace GPSLogger.Integration
                     rng.GetBytes(buffer);
                     newKey = buffer.ToHexString();
                 }
-                var response = await client.PostAsync("/api/hmackey", new { newKey = newKey });
+                var response = await client.PostAsync("/api/hmackey", new { newKey });
                 if (!string.IsNullOrWhiteSpace(response))
                     throw new Exception("The HMAC key controller responded with something after we told it to set the key");
             });

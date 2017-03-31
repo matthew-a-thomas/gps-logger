@@ -23,7 +23,7 @@ namespace Common.Tests.Extensions.Security
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
                     .Length;
                 var numTimesCalled = 0;
-                await credential.ConvertAsync(x => new ValueTask<int>(Interlocked.Increment(ref numTimesCalled)));
+                await credential.ConvertAsync(x => Task.FromResult(Interlocked.Increment(ref numTimesCalled)));
                 Assert.AreEqual(numProperties, numTimesCalled);
             }
         }

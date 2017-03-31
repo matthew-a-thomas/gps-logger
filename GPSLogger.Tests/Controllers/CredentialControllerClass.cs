@@ -24,27 +24,27 @@ namespace GPSLogger.Tests.Controllers
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
             test(new CredentialController(
                 null,
-                id => new ValueTask<Credential<byte[]>>(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
+                id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 null));
             test(new CredentialController(
                 null,
-                id => new ValueTask<Credential<byte[]>>(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
+                id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
             test(new CredentialController(
-                () => new ValueTask<byte[]>(new byte[0]),
+                () => Task.FromResult(new byte[0]),
                 null,
                 null));
             test(new CredentialController(
-                () => new ValueTask<byte[]>(new byte[0]),
+                () => Task.FromResult(new byte[0]),
                 null,
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
             test(new CredentialController(
-                () => new ValueTask<byte[]>(new byte[0]),
-                id => new ValueTask<Credential<byte[]>>(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
+                () => Task.FromResult(new byte[0]),
+                id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 null));
             test(new CredentialController(
-                () => new ValueTask<byte[]>(new byte[0]),
-                id => new ValueTask<Credential<byte[]>>(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
+                () => Task.FromResult(new byte[0]),
+                id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
         }
 
@@ -68,13 +68,13 @@ namespace GPSLogger.Tests.Controllers
                 mockMessageHandler
                     .Setup(handler => handler.CreateResponseAsync(
                         It.IsAny<SignedMessage<bool>>(),
-                        It.IsAny<Func<bool, ValueTask<Credential<string>>>>())
+                        It.IsAny<Func<bool, Task<Credential<string>>>>())
                         )
-                    .Returns<SignedMessage<bool>, Func<bool, ValueTask<Credential<string>>>>((request, generateFn) =>
+                    .Returns<SignedMessage<bool>, Func<bool, Task<Credential<string>>>>((request, generateFn) =>
                     {
-                        var contentsTask = generateFn(false).AsTask(); // Pretend like it's an invalid request
+                        var contentsTask = generateFn(false); // Pretend like it's an invalid request
                         contentsTask.Wait();
-                        return new ValueTask<SignedMessage<Credential<string>>>(new SignedMessage<Credential<string>>
+                        return Task.FromResult(new SignedMessage<Credential<string>>
                         {
                             Message = new Message<Credential<string>>
                             {
@@ -83,8 +83,8 @@ namespace GPSLogger.Tests.Controllers
                         });
                     });
                 var controller = new CredentialController(
-                    () => new ValueTask<byte[]>(new byte[0]),
-                    id => new ValueTask<Credential<byte[]>>(new Credential<byte[]>
+                    () => Task.FromResult(new byte[0]),
+                    id => Task.FromResult(new Credential<byte[]>
                     {
                         ID = id,
                         Secret = new byte[0]
@@ -103,13 +103,13 @@ namespace GPSLogger.Tests.Controllers
                 mockMessageHandler
                     .Setup(handler => handler.CreateResponseAsync(
                         It.IsAny<SignedMessage<bool>>(),
-                        It.IsAny<Func<bool, ValueTask<Credential<string>>>>())
+                        It.IsAny<Func<bool, Task<Credential<string>>>>())
                     )
-                    .Returns<SignedMessage<bool>, Func<bool, ValueTask<Credential<string>>>>((request, generateFn) =>
+                    .Returns<SignedMessage<bool>, Func<bool, Task<Credential<string>>>>((request, generateFn) =>
                     {
-                        var contentsTask = generateFn(true).AsTask(); // Pretend like it's a valid request
+                        var contentsTask = generateFn(true); // Pretend like it's a valid request
                         contentsTask.Wait();
-                        return new ValueTask<SignedMessage<Credential<string>>>(new SignedMessage<Credential<string>>
+                        return Task.FromResult(new SignedMessage<Credential<string>>
                         {
                             Message = new Message<Credential<string>>
                             {
@@ -118,8 +118,8 @@ namespace GPSLogger.Tests.Controllers
                         });
                     });
                 var controller = new CredentialController(
-                    () => new ValueTask<byte[]>(new byte[0]),
-                    id => new ValueTask<Credential<byte[]>>(new Credential<byte[]>
+                    () => Task.FromResult(new byte[0]),
+                    id => Task.FromResult(new Credential<byte[]>
                     {
                         ID = id,
                         Secret = new byte[0]

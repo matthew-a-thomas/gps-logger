@@ -10,9 +10,9 @@ namespace Common.LocalStorage
     {
         private readonly ConcurrentDictionary<string, T> _memory = new ConcurrentDictionary<string, T>();
 
-        public ValueTask<bool> ExistsAsync(string key) => new ValueTask<bool>(_memory.ContainsKey(key));
+        public Task<bool> ExistsAsync(string key) => Task.FromResult(_memory.ContainsKey(key));
 
-        public ValueTask<T> GetAsync(string key) => _memory.TryGetValue(key, out T value) ? new ValueTask<T>(value) : new ValueTask<T>(default(T));
+        public Task<T> GetAsync(string key) => _memory.TryGetValue(key, out T value) ? Task.FromResult(value) : Task.FromResult(default(T));
 
         public Task SetAsync(string key, T contents)
         {

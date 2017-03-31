@@ -15,8 +15,8 @@ namespace Common.Security
             _hmacKeyProviderAsync = hmacKeyProviderAsync;
         }
 
-        public async ValueTask<HMAC> GetAsync() => await GetAsync(await _hmacKeyProviderAsync());
+        public async Task<HMAC> GetAsync() => await GetAsync(await _hmacKeyProviderAsync());
 
-        public ValueTask<HMAC> GetAsync(byte[] key) => new ValueTask<HMAC>(new HMACMD5(key));
+        public Task<HMAC> GetAsync(byte[] key) => Task.FromResult<HMAC>(new HMACMD5(key));
     }
 }

@@ -31,7 +31,7 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate ValueTask<IEnumerable<Location>> LocationProviderAsync(byte[] id);
+        public delegate Task<IEnumerable<Location>> LocationProviderAsync(byte[] id);
         
         public LocationController(
             LocationProviderAsync locationProviderAsync,

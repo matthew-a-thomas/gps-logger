@@ -9,14 +9,14 @@ namespace Common.LocalStorage
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        ValueTask<bool> ExistsAsync(string key);
+        Task<bool> ExistsAsync(string key);
 
         /// <summary>
         /// Retrieves all the contents of the given key from this persistent store
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        ValueTask<T> GetAsync(string key);
+        Task<T> GetAsync(string key);
 
         /// <summary>
         /// Overwrites all the contents of the given key with the given contents through this persistent store
