@@ -113,6 +113,19 @@ namespace GPSLogger.Integration
         {
             using (var server = await CreateServerAsync())
             {
+                // Assert that the time returned from the time controller is within a second of now
+                await DoWithClientAsync(server, async client =>
+                {
+                    var response = await client.GetAsync<SignedMessage<long>>("/api/time");
+                    if (response == null)
+                        throw new Exception("The time controller returned a null response instead of giving us the current time");
+                    if (response.Message == null)
+                        throw new Exception("The contents of the time controller's response is null instead of containing the current time");
+                    var difference = Math.Abs(response.Message.Contents - DateTimeOffset.Now.ToUnixTimeSeconds());
+                    if (difference > 1)
+                        throw new Exception($"The time controller returned a time that is {difference} seconds different than the current time. This test only tolerates a difference of up to one second");
+                });
+
                 // Assert that no HMAC has been set yet
                 await DoWithClientAsync(server, async client =>
                 {
@@ -270,6 +283,32 @@ namespace GPSLogger.Integration
                     throw new Exception($"The returned latitude is more than {tolerance} off");
                 if (Math.Abs(firstLocation.Longitude - postedLocation.Longitude) > tolerance)
                     throw new Exception($"The returned longitude is more than {tolerance} off");
+
+                // Sign a request to get the current time
+                await DoWithClientAsync(server, async client =>
+                {
+                    var request = new SignedMessage<bool>
+                    {
+                        Message = new Message<bool>
+                        {
+                            Contents = true,
+                            ID = credential.ID,
+                            Salt = Guid.NewGuid().ToByteArray().ToHexString(),
+                            UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds()
+                        }
+                    };
+                    await SignAsync(request, credentialBytes, x => Task.FromResult(BitConverter.GetBytes(x)));
+                    var response = await client.GetAsync<SignedMessage<long>>($"/api/time/?hmac={request.HMAC}&id={request.Message.ID}&salt={request.Message.Salt}&unixTime={request.Message.UnixTime}&contents={request.Message.Contents}");
+                    if (response == null)
+                        throw new Exception("The time controller returned a null response");
+                    if (string.IsNullOrWhiteSpace(response.HMAC))
+                        throw new Exception("The HMAC of the time controller's response was null or whitespace");
+                    if (response.Message == null)
+                        throw new Exception("The message within the time controller's response was null");
+                    var difference = Math.Abs(response.Message.Contents - DateTimeOffset.Now.ToUnixTimeSeconds());
+                    if (difference > 1)
+                        throw new Exception("The time reported by the time controller in response to a signed request was more than one second off");
+                });
             }
         }
 
