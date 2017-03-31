@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -36,6 +37,7 @@ namespace GPSLogger.Integration
                     File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
 
                 // Spin up the server
+                Debug.WriteLine($"Starting test server under {contentRoot}");
                 return new TestServer(
                     new WebHostBuilder()
                     .UseContentRoot(contentRoot)
