@@ -6,7 +6,6 @@ using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
 using System.Composition;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Autofac.Core;
@@ -28,8 +27,7 @@ namespace SQLDatabase
             builder.RegisterType<CommandLineArgumentsProvider>().As<IArgumentsProvider>().SingleInstance();
             builder.Register(c =>
             {
-                var thisAssemblyLocation = GetType().GetTypeInfo().Assembly.Location;
-                var root = new FileInfo(thisAssemblyLocation).Directory.Root.FullName;
+                var fileProvider = c.Resolve<IFileProvider>();
                 const string sqlJsonName = "sql.json";
 
                 var argumentsProvider = c.Resolve<IArgumentsProvider>();
@@ -37,8 +35,8 @@ namespace SQLDatabase
 
                 var configSources = new IConfigurationSource[]
                 {
-                    // Try loading config values from a "sql.json" file located at the root directory above wherever this assembly is
-                    new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = new PhysicalFileProvider(root) },
+                    // Try loading config values from a "sql.json" file located inside the registered IFileProvider
+                    new JsonConfigurationSource { Path = sqlJsonName, Optional = true, FileProvider = fileProvider },
                     // Try loading config values from command line arguments
                     new CommandLineConfigurationSource { Args = arguments },
                     // Try loading config values from environment variables

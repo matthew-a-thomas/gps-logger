@@ -17,7 +17,7 @@ namespace SQLDatabase.RemoteStorage.Query
             _transactionFactory = transactionFactory;
         }
 
-        public async ValueTask<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
+        public async Task<IEnumerable<IdentifiedLocation>> GetAllLocationsAsync(byte[] forIdentifier)
         {
             if (_transactionFactory == null)
                 return null;

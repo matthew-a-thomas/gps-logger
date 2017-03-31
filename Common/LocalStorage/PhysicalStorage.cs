@@ -19,7 +19,7 @@ namespace Common.LocalStorage
             _maxKeyLength = maxKeyLength;
         }
 
-        public async ValueTask<bool> ExistsAsync(string key)
+        public async Task<bool> ExistsAsync(string key)
         {
             if (key == null)
                 return false;
@@ -27,7 +27,7 @@ namespace Common.LocalStorage
             return await Task.Run(() => File.Exists(GetPath(key)));
         }
 
-        public async ValueTask<byte[]> GetAsync(string key)
+        public async Task<byte[]> GetAsync(string key)
         {
             if (key == null) return null;
             if (!await ExistsAsync(key))

@@ -7,7 +7,7 @@ namespace SQLDatabase.Extensions
     // ReSharper disable once InconsistentNaming
     public static class ITransactionExtensions
     {
-        public static async ValueTask<T> GetScalarAsync<T>(this ITransaction transaction, Commands.Command command)
+        public static async Task<T> GetScalarAsync<T>(this ITransaction transaction, Commands.Command command)
         {
             var results = transaction == null ? null : await transaction.GetResultsAsync(command);
             var first = results?[0];

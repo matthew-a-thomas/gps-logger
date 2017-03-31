@@ -12,7 +12,7 @@ namespace SQLDatabase.RemoteStorage.Command
         /// or selects the ID that already exists
         /// </summary>
         // ReSharper disable once MemberCanBeMadeStatic.Global
-        public async ValueTask<int> PostOrGetIdentifierAsync(ITransaction transaction, byte[] identifier)
+        public async Task<int> PostOrGetIdentifierAsync(ITransaction transaction, byte[] identifier)
         {
             return await transaction.GetScalarAsync<int>(Commands.Command.Create(@"
 -- Insert the given @hex into [identifiers] if it isn't already there

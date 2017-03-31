@@ -53,7 +53,7 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
                         )
                     )
                     .Returns(
-                        new ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>>(
+                        Task.FromResult<IReadOnlyList<IReadOnlyDictionary<string, object>>>(
                             new[]
                             {
                                 new Dictionary<string, object>

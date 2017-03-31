@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Common.Messages;
 using Common.Security.Signing;
@@ -9,6 +10,18 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class TimeController : ControllerBase
     {
+        // ReSharper disable once ClassNeverInstantiated.Global
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+        public class GetParameters
+        {
+            public string HMAC { get; set; }
+            public string ID { get; set; }
+            public string Salt { get; set; }
+            public long UnixTime { get; set; }
+            public bool Contents { get; set; }
+        }
+
         private readonly IMessageHandler<bool, long> _messageHandler;
         
         public TimeController(
@@ -22,6 +35,23 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async ValueTask<SignedMessage<long>> GetAsync(SignedMessage<bool> request) => await _messageHandler.CreateResponseAsync(request, valid => new ValueTask<long>(DateTimeOffset.Now.ToUnixTimeSeconds()));
+        public async Task<SignedMessage<long>> GetAsync(GetParameters parameters)
+        {
+            var signedRequest = new SignedMessage<bool>
+            {
+                HMAC = parameters?.HMAC,
+                Message = new Message<bool>
+                {
+                    Contents = parameters?.Contents ?? false,
+                    ID = parameters?.ID,
+                    Salt = parameters?.Salt,
+                    UnixTime = parameters?.UnixTime ?? 0
+                }
+            };
+            return await _messageHandler.CreateResponseAsync(
+                signedRequest,
+                valid => Task.FromResult(DateTimeOffset.Now.ToUnixTimeSeconds())
+                );
+        }
     }
 }

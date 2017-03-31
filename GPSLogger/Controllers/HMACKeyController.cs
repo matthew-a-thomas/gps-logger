@@ -43,14 +43,14 @@ namespace GPSLogger.Controllers
         /// <returns></returns>
         [HttpGet]
         // ReSharper disable once MemberCanBePrivate.Global
-        public async ValueTask<bool> GetAsync() => await _storage.ExistsAsync(HMACKeyName);
+        public async Task<bool> GetAsync() => await _storage.ExistsAsync(HMACKeyName);
         
         /// <summary>
         /// Returns the current HMAC key.
         /// Do not expose this to clients
         /// </summary>
         /// <returns></returns>
-        internal async ValueTask<byte[]> GetCurrentAsync() => await _storage.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
+        internal async Task<byte[]> GetCurrentAsync() => await _storage.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set

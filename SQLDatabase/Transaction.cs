@@ -41,9 +41,9 @@ namespace SQLDatabase
         /// </summary>
         public void Commit() => _transaction?.Commit();
 
-        public async ValueTask<int> ExecuteAsync(Command command) => await CreateSQLCommandFrom(command).ExecuteNonQueryAsync();
+        public async Task<int> ExecuteAsync(Command command) => await CreateSQLCommandFrom(command).ExecuteNonQueryAsync();
 
-        public async ValueTask<IReadOnlyList<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command)
+        public async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> GetResultsAsync(Command command)
         {
             var results = new List<IReadOnlyDictionary<string, object>>();
             var sqlCommand = CreateSQLCommandFrom(command);

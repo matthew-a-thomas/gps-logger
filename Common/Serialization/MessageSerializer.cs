@@ -26,10 +26,10 @@ namespace Common.Serialization
             // Set up a new serializer to handle messages
             var serializer = new Serializer<Message<T>>();
 
-            serializer.EnqueueStepAsync(async x => await contentsSerializer.SerializeAsync(x.Contents));
-            serializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.ID));
-            serializer.EnqueueStepAsync(async x => await ByteArrayExtensions.FromHexStringAsync(x.Salt));
-            serializer.EnqueueStepAsync(x => new ValueTask<long>(x.UnixTime));
+            serializer.EnqueueStepAsync(x => contentsSerializer.SerializeAsync(x.Contents));
+            serializer.EnqueueStepAsync(x => ByteArrayExtensions.FromHexStringAsync(x.ID));
+            serializer.EnqueueStepAsync(x => ByteArrayExtensions.FromHexStringAsync(x.Salt));
+            serializer.EnqueueStepAsync(x => Task.FromResult(x.UnixTime));
 
             _serializer = serializer;
         }

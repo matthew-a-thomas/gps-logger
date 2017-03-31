@@ -63,13 +63,13 @@ namespace GPSLogger.Controllers
 
             var signedRequest = new SignedMessage<bool>
             {
-                HMAC = request.HMAC,
+                HMAC = request?.HMAC,
                 Message = new Message<bool>
                 {
-                    Contents = request.Contents,
-                    ID = request.ID,
-                    Salt = request.Salt,
-                    UnixTime = request.UnixTime
+                    Contents = request?.Contents ?? false,
+                    ID = request?.ID,
+                    Salt = request?.Salt,
+                    UnixTime = request?.UnixTime ?? 0
                 }
             };
 
@@ -77,7 +77,7 @@ namespace GPSLogger.Controllers
                 signedRequest,
                 async valid =>
                     await (await _generateCredentialAsync(await _generateSaltAsync()))
-                    .ConvertAsync(bytes => new ValueTask<string>(bytes.ToHexString())
+                    .ConvertAsync(bytes => Task.FromResult(bytes.ToHexString())
                 )
             );
         }
