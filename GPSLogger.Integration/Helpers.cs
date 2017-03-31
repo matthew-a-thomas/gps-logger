@@ -17,7 +17,7 @@ namespace GPSLogger.Integration
             var baseDirectory = Path.Combine(startingLocation.Parent.Parent.Parent.Parent.FullName, typeof(Startup).Namespace);
 
             // Create a temp directory for this server to run from
-            var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid().ToString();
+            var temp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + " - " + Guid.NewGuid();
             var contentRoot = Path.Combine(baseDirectory, "tests", temp);
             var contentRootDirectory = Directory.CreateDirectory(contentRoot);
 
@@ -33,10 +33,10 @@ namespace GPSLogger.Integration
                 {
                     "appsettings.json"
                 })
-                File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
+                    File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
 
-                    // Spin up the server
-                    return new TestServer(
+                // Spin up the server
+                return new TestServer(
                     new WebHostBuilder()
                     .UseContentRoot(contentRoot)
                     .UseStartup<Startup>()
