@@ -8,6 +8,15 @@ namespace GPSLogger.Integration
 {
     public static class Extensions
     {
+        public static async Task<T> GetAsync<T>(this HttpClient client, string url)
+        {
+            var response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var text = await response.Content.ReadAsStringAsync();
+            var deserialized = JsonConvert.DeserializeObject<T>(text);
+            return deserialized;
+        }
+
         public static async Task<string> PostAsync(this HttpClient client, string url, object contents)
         {
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

@@ -34,6 +34,13 @@ namespace GPSLogger.Integration
             Debug.WriteLine("All tests executed successfully");
         }
 
+        /// <summary>
+        /// Asynchronously spins up a test server.
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// The test server's content root will be located within a randomly-created directory under GPSLogger/tests
+        /// </remarks>
         private static async Task<TestServer> CreateServerAsync()
         {
             // Figure out where the GPS Logger directory is
@@ -69,6 +76,12 @@ namespace GPSLogger.Integration
             });
         }
 
+        /// <summary>
+        /// Does the given action with a newly-created client which is connected to the given server
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
         private static async Task DoWithClientAsync(TestServer server, Func<HttpClient, Task> action)
         {
             using (var client = server.CreateClient())
@@ -77,6 +90,11 @@ namespace GPSLogger.Integration
             }
         }
 
+        /// <summary>
+        /// Asynchronously retrieves a credential from the server
+        /// </summary>
+        /// <param name="server"></param>
+        /// <returns></returns>
         private static async Task<Credential<string>> GetCredentialAsync(TestServer server)
         {
             var result = default(Credential<string>);
@@ -98,8 +116,7 @@ namespace GPSLogger.Integration
                 // Assert that no HMAC has been set yet
                 await DoWithClientAsync(server, async client =>
                 {
-                    var response = await client.GetStringAsync("/api/hmackey");
-                    var hmacIsSet = JsonConvert.DeserializeObject<bool>(response);
+                    var hmacIsSet = await client.GetAsync<bool>("/api/hmackey");
                     if (hmacIsSet)
                         throw new Exception("An HMAC key has already been set, even though we just started this server");
                 });
@@ -122,8 +139,7 @@ namespace GPSLogger.Integration
                 // Assert that the HMAC has now been set
                 await DoWithClientAsync(server, async client =>
                 {
-                    var response = await client.GetStringAsync("/api/hmackey");
-                    var hmacIsSet = JsonConvert.DeserializeObject<bool>(response);
+                    var hmacIsSet = await client.GetAsync<bool>("/api/hmackey");
                     if (!hmacIsSet)
                         throw new Exception("An HMAC key has not been set, even though we just told the HMAC controller to set it");
                 });
@@ -164,10 +180,8 @@ namespace GPSLogger.Integration
                     await SignAsync(signedRequest, credentialBytes, x => Task.Run(() => BitConverter.GetBytes(x)));
 
                     var queryString = $"/api/credential?contents={signedRequest.Message.Contents}&id={signedRequest.Message.ID}&hmac={signedRequest.HMAC}&salt={signedRequest.Message.Salt}&unixTime={signedRequest.Message.UnixTime}";
-                    var response = await client.GetAsync(queryString);
-                    response.EnsureSuccessStatusCode();
-                    var contents = await response.Content.ReadAsStringAsync();
-                    newCredentialResponse = JsonConvert.DeserializeObject<SignedMessage<Credential<string>>>(contents);
+                    var response = await client.GetAsync<SignedMessage<Credential<string>>>(queryString);
+                    newCredentialResponse = response;
                 });
                 if (newCredentialResponse == null)
                     throw new Exception("New credential was null");
@@ -193,8 +207,7 @@ namespace GPSLogger.Integration
                 var locations = default(IEnumerable<Location>);
                 await DoWithClientAsync(server, async client =>
                 {
-                    var response = await client.GetStringAsync($"/api/location/?id={credential.ID}");
-                    locations = JsonConvert.DeserializeObject<IEnumerable<Location>>(response);
+                    locations = await client.GetAsync<IEnumerable<Location>>($"/api/location/?id={credential.ID}");
                 });
                 if (locations == null)
                     throw new Exception("Locations is null");
@@ -241,8 +254,7 @@ namespace GPSLogger.Integration
                 locations = default(IEnumerable<Location>);
                 await DoWithClientAsync(server, async client =>
                 {
-                    var response = await client.GetStringAsync($"/api/location/?id={credential.ID}");
-                    locations = JsonConvert.DeserializeObject<IEnumerable<Location>>(response);
+                    locations = await client.GetAsync<IEnumerable<Location>>($"/api/location/?id={credential.ID}");
                 });
                 // Make sure we got back the location we just posted
                 if (locations == null)
