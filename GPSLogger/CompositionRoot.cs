@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Common.Utilities;
 using Common.RemoteStorage.Command;
 using Common.RemoteStorage.Query;
+using Microsoft.Extensions.FileProviders;
 
 namespace GPSLogger
 {
@@ -68,14 +69,29 @@ namespace GPSLogger
                 builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => new ValueTask<RandomNumberGenerator>(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
             }
 
-            // IStorage
+            // App_Data directory
             builder.Register(c =>
             {
                 var environment = c.Resolve<IHostingEnvironment>();
                 var root = new DirectoryInfo(Path.Combine(environment.ContentRootPath, "App_Data"));
                 root.Create();
+                return root;
+            });
+
+            // App_Data file provider
+            builder.Register(c =>
+            {
+                var appData = c.Resolve<DirectoryInfo>();
+                IFileProvider fileProvider = new PhysicalFileProvider(appData.FullName);
+                return fileProvider;
+            }).SingleInstance();
+
+            // IStorage
+            builder.Register(c =>
+            {
+                var appData = c.Resolve<DirectoryInfo>();
                 const int maxKeyLength = 100;
-                return (IStorage<byte[]>)new PhysicalStorage(root, maxKeyLength);
+                return (IStorage<byte[]>)new PhysicalStorage(appData, maxKeyLength);
             }).SingleInstance();
             
             { // Controllers
