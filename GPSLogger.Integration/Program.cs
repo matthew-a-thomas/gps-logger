@@ -61,6 +61,39 @@ namespace GPSLogger.Integration
 
         private async Task RunTests()
         {
+            // Assert that no HMAC has been set yet
+            await DoWithClientAsync(async client =>
+            {
+                var response = await client.GetStringAsync("/api/hmackey");
+                var hmacIsSet = JsonConvert.DeserializeObject<bool>(response);
+                if (hmacIsSet)
+                    throw new Exception("An HMAC key has already been set, even though we just started this server");
+            });
+
+            // Set an HMAC key
+            await DoWithClientAsync(async client =>
+            {
+                string newKey;
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    var buffer = new byte[100];
+                    rng.GetBytes(buffer);
+                    newKey = buffer.ToHexString();
+                }
+                var response = await client.PostAsync("/api/hmackey", new { newKey = newKey });
+                if (!string.IsNullOrWhiteSpace(response))
+                    throw new Exception("The HMAC key controller responded with something after we told it to set the key");
+            });
+
+            // Assert that the HMAC has now been set
+            await DoWithClientAsync(async client =>
+            {
+                var response = await client.GetStringAsync("/api/hmackey");
+                var hmacIsSet = JsonConvert.DeserializeObject<bool>(response);
+                if (!hmacIsSet)
+                    throw new Exception("An HMAC key has not been set, even though we just told the HMAC controller to set it");
+            });
+
             // Get a credential
             var credential = await GetCredentialAsync();
             if (credential == null)
