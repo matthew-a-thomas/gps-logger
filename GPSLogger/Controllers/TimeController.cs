@@ -39,13 +39,13 @@ namespace GPSLogger.Controllers
         {
             var signedRequest = new SignedMessage<bool>
             {
-                HMAC = parameters.HMAC,
+                HMAC = parameters?.HMAC,
                 Message = new Message<bool>
                 {
-                    Contents = parameters.Contents,
-                    ID = parameters.ID,
-                    Salt = parameters.Salt,
-                    UnixTime = parameters.UnixTime
+                    Contents = parameters?.Contents ?? false,
+                    ID = parameters?.ID,
+                    Salt = parameters?.Salt,
+                    UnixTime = parameters?.UnixTime ?? 0
                 }
             };
             return await _messageHandler.CreateResponseAsync(
