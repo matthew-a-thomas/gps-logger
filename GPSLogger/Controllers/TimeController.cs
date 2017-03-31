@@ -12,6 +12,7 @@ namespace GPSLogger.Controllers
     {
         // ReSharper disable once ClassNeverInstantiated.Global
         [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public class GetParameters
         {
             public string HMAC { get; set; }
