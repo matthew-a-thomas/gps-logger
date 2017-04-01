@@ -89,7 +89,9 @@ namespace GPSLogger
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+            app
+                .UseMvc()
+                .UseDeveloperExceptionPage();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
