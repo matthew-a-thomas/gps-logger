@@ -45,5 +45,10 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\SQLDatabase\SQLDatabase.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="logs\stdout\readme.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
