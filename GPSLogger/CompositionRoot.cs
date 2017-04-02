@@ -116,19 +116,29 @@ namespace GPSLogger
                     return new LocationController.LocationProviderAsync(async id =>
                     {
                         var identifiedLocations = await locationProvider.GetAllLocationsAsync(id);
-                        var locations = identifiedLocations.Select(x => new Location { Latitude = x.Latitude, Longitude = x.Longitude });
+                        var locations = identifiedLocations.Select(x => new Common.RemoteStorage.Models.Location { Latitude = x.Latitude, Longitude = x.Longitude, UnixTime = x.UnixTime });
                         return locations;
                     });
                 });
-                
-                // Location serializer
-                builder.Register(c =>
+
+                // Location serializers
+                ISerializer<Location> locationSerializer;
                 {
                     var serializer = new Serializer<Location>();
                     serializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
                     serializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
-                    return (ISerializer<Location>)serializer;
-                }).SingleInstance();
+                    locationSerializer = serializer;
+                }
+                builder.RegisterInstance(locationSerializer).SingleInstance();
+                ISerializer<Common.RemoteStorage.Models.Location> remoteLocationSerializer;
+                {
+                    var serializer = new Serializer<Common.RemoteStorage.Models.Location>();
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
+                    serializer.EnqueueStepAsync(x => Task.FromResult(x.UnixTime));
+                    remoteLocationSerializer = serializer;
+                }
+                builder.RegisterInstance(remoteLocationSerializer).SingleInstance();
 
                 // Credential serializer
                 builder.Register(c =>
@@ -149,9 +159,6 @@ namespace GPSLogger
                         );
 
                     // "Location" requests leading to "bool" responses
-                    var locationSerializer = new Serializer<Location>();
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Latitude));
-                    locationSerializer.EnqueueStepAsync(x => Task.FromResult(x.Longitude));
                     RegisterHandlerValidatorAndSigner(
                         builder,
                         locationSerializer,

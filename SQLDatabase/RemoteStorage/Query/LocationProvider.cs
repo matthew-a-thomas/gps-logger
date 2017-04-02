@@ -27,7 +27,9 @@ namespace SQLDatabase.RemoteStorage.Query
                     return null;
                 var results = await transaction.GetResultsAsync(Commands.Command.Create(@"
 select
-    locations.*
+    locations.latitude,
+    locations.longitude,
+    datediff(s, '1970-01-01 00:00:00', locations.timestamp) as unixTime
 from
     identifiers
     join locations on
@@ -42,7 +44,7 @@ where
                     Identifier = forIdentifier,
                     Latitude = Convert.ToDouble(record["latitude"]),
                     Longitude = Convert.ToDouble(record["longitude"]),
-                    Timestamp = Convert.ToDateTime(record["timestamp"])
+                    UnixTime = Convert.ToInt64(record["unixTime"])
                 }).ToList();
                 return locations;
             }

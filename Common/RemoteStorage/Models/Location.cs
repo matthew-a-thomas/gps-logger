@@ -14,5 +14,10 @@
         /// The longitude
         /// </summary>
         public double Longitude { get; set; }
+
+        /// <summary>
+        /// The number of seconds since Jan 1, 1970 (aka Unix Time)
+        /// </summary>
+        public long UnixTime { get; set; }
     }
 }

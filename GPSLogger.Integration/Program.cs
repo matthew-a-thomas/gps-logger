@@ -217,10 +217,10 @@ namespace GPSLogger.Integration
                     throw new Exception("The server didn't sign the response using our secret");
 
                 // Get all the locations for the first credential
-                var locations = default(IEnumerable<Location>);
+                var locations = default(IEnumerable<Common.RemoteStorage.Models.Location>);
                 await DoWithClientAsync(server, async client =>
                 {
-                    locations = await client.GetAsync<IEnumerable<Location>>($"/api/location/?id={credential.ID}");
+                    locations = await client.GetAsync<IEnumerable<Common.RemoteStorage.Models.Location>>($"/api/location/?id={credential.ID}");
                 });
                 if (locations == null)
                     throw new Exception("Locations is null");
@@ -264,10 +264,10 @@ namespace GPSLogger.Integration
                     throw new Exception("The server indicated the post wasn't successful");
 
                 // Get all the locations for the first credential again
-                locations = default(IEnumerable<Location>);
+                locations = default(IEnumerable<Common.RemoteStorage.Models.Location>);
                 await DoWithClientAsync(server, async client =>
                 {
-                    locations = await client.GetAsync<IEnumerable<Location>>($"/api/location/?id={credential.ID}");
+                    locations = await client.GetAsync<IEnumerable<Common.RemoteStorage.Models.Location>>($"/api/location/?id={credential.ID}");
                 });
                 // Make sure we got back the location we just posted
                 if (locations == null)
@@ -283,6 +283,10 @@ namespace GPSLogger.Integration
                     throw new Exception($"The returned latitude is more than {tolerance} off");
                 if (Math.Abs(firstLocation.Longitude - postedLocation.Longitude) > tolerance)
                     throw new Exception($"The returned longitude is more than {tolerance} off");
+                var timeDifference = Math.Abs(firstLocation.UnixTime - DateTimeOffset.Now.ToUnixTimeSeconds());
+                const long allowedDifference = 10;
+                if (timeDifference > allowedDifference)
+                    throw new Exception($"The returned time is more than {allowedDifference} seconds off");
 
                 // Sign a request to get the current time
                 await DoWithClientAsync(server, async client =>
