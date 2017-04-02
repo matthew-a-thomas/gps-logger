@@ -1,20 +1,14 @@
 # gps-logger
 
-![Build status](https://switchigan.visualstudio.com/_apis/public/build/definitions/b9ab85f0-68c5-423a-ac34-feeb8afba200/5/badge "Build status")
-
-GPS logging website
+Try out the API--get a credential here: https://switchigan.azurewebsites.net/api/credential
 
 [Skip down to the good stuff](#generate-new-client-credentials).
 
-Try out the API here:
- - HTTPS: https://switchigan.azurewebsites.net/api/credential
- - Non-HTTPS: http://switchigan.azurewebsites.net/api/credential
+![Build status](https://switchigan.visualstudio.com/_apis/public/build/definitions/b9ab85f0-68c5-423a-ac34-feeb8afba200/5/badge "Build status")
 
-# Documentation
+## GPS logging website
 
-This is code for a website that lets clients record their physical location, and allows others to query that history.
-
-Everything is being designed with embedded clients in mind.
+This is code for a website that lets clients record their physical location, and allows others to view that history.
 
 ## Security
 
@@ -26,54 +20,73 @@ Therefore, clients can only post locations for themselves. The server can tell i
 
 Timestamps are included in messages so that replay attacks can be limited. The server checks to make sure the request timestamp is within +/- 1 minute of the server's current time, and that it hasn't seen the given request recently. Note that [issue 30](https://github.com/matthew-a-thomas/gps-logger/issues/30) is open to expand this functionality beyond just the Location controller.
 
-MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). Still, [options will be explored for the upcoming v2.0 release](https://github.com/matthew-a-thomas/gps-logger/issues/48).
+MD5 HMAC is used for speed to be nicer to resource-constrained clients. Note that while MD5 hashing has long been broken, there are [no known vulnerabilities to an MD5 HMAC](https://tools.ietf.org/html/rfc6151). Still, [options will be explored for the upcoming v0.4 beta release](https://github.com/matthew-a-thomas/gps-logger/issues/48).
 
 ## Testing
 
 A variety of tests are included in the solution, ranging from unit tests to integration tests.
 
-Most of the integration tests are automatic and you won't need to provide any magic strings or config values. For example, Reflection is used to determine where to create an `App_Data` folder in relation to the `GPSLogger` assembly. Also, test files are automatically retained for a day and then cleaned up after a subsequent test run.
+You don't need to change anything to get the unit tests running.
 
-However, the `SQLDatabase.Tests` do require a magic string: they require a connection string to a dev/test SQL Server database against which to run integration tests. I'm doing my best to only run tests within transactions that are rolled back, but since there's no way to embed SQL Server then you'll need to provide a connection string. That connection string needs to live within a file on your hard drive called `C:\connection string.txt`. If you have other ideas for how I can keep connection strings secret (AKA separate from this GitHub project), then please [comment on this thread](https://github.com/matthew-a-thomas/gps-logger/issues/49).
+However, the integration tests require SQL Server connection settings to be configured. There are three ways to do that; [this is described below](#configure-sql-server-connection).
+
+Note that integration tests create a `tests` folder under the `GPSLogger` project folder. This does not need to be retained.
 
 ## Design choices
 
- - Autofac is used for Dependency Injection
  - Resource-constrained clients
  - Authenticated logging; public reading
  - Abstracted data access layer (currently SQL Server, but will be easy to replace that with a document store)
 
 ## Message protocol
 
-Unless otherwise specified, requests and responses follow a standard format, and the parameters listed for for `GET`/`POST` operations are talking about what's in the `Contents` field.
+Unless otherwise specified, requests and responses follow a standard format, and the parameters listed for for `GET`/`POST` operations are talking about what's in the `contents` field.
 
-Also note that requests with a `Content-Type` of `text/html` will receive responses in JSON.
+Note that responses are JSON-formatted.
 
-### Requests
+### Signed requests
 
-Requests should have these fields:
- - `Contents` - the request's payload. The contents of this field vary with the context of the request
- - `HMAC` - the hexadecimal representation of performing an MD5 HMAC on the request using the secret part of the client's credentials. The hashing should be performed on the the other fields in the above order. And for the fields that are hex strings, make sure you hash them as byte arrays instead of as strings
- - `ID` - hexadecimal string from the client's credentials (see [generating new client credentials](#generate-new-client-credentials))
- - `Salt` - a random hexadecimal string generated by the client
- - `UnixTime` - the client's Unix time (seconds since [epoch](https://en.wikipedia.org/wiki/Unix_time))
+A signed request proves to the server that the request was sent by the client owning the secret that goes along with the specified `id`.
 
-A request is considered invalid if the hex strings aren't really hex strings, if the HMAC isn't right, or if the request seems funny for some other reason.
+Signed requests must have these fields:
+ - `contents` - the request's payload. The contents of this field vary with the context of the request
+ - `hmac` - the hexadecimal representation of performing an MD5 HMAC on the request, keyed using the secret part of the client's credentials. The hashing should be performed on the other fields in the order shown here. And for the fields that are hex strings, make sure you hash their equivalent as byte arrays
+ - `id` - hexadecimal string from the client's credentials (see [generating new client credentials](#generate-new-client-credentials))
+ - `salt` - a random hexadecimal string generated by the client
+ - `unixTime` - the client's Unix time (seconds since [epoch](https://en.wikipedia.org/wiki/Unix_time))
+
+A signed request is considered invalid if the hex strings aren't really hex strings, if the HMAC isn't right, or if the request seems funny for some other reason.
+
+These API endpoints require signed requests:
+ - [`POST /api/location`](#begin-logging-locations)
+
+These API endpoints support signed requests, but don't require them:
+ - `GET /api/time`
+ - [`GET /api/credential`](#generate-new-client-credentials)
+
+### Unsigned requests
+
+Unsigned requests may be made when it isn't necessary to prove an identity to the server, such as when viewing the `/api/time` over HTTPS, or when viewing the `/api/location` history for a particular ID over HTTPS.
+
+These API endpoints don't support signed requests. If security is a concern, then make sure to only access these over HTTPS:
+ - [`GET /api/location?id={id}`](#retrieve-logged-locations)
+ - [`GET /api/hmackey`](#determine-if-hmac-key-has-already-been-initialized)
+ - [`POST /api/hmackey`](#assign-hmac-key)
 
 ### Responses
 
 Responses typically have these fields:
- - `Contents` - the response payload. The contents of this field vary with the context of the response
- - `HMAC` - `null` if there wasn't a valid request. Otherwise this is the same idea as the [request's](#requests) `HMAC`, and also uses the secret part of the client's credentials (the server is able to derive the client's secret based on the client's ID)
- - `ID` - `null` if there wasn't a valid request. Otherwise this is a hexadecimal string that's a copy of the `ID` from the request
- - `Salt` - `null` if there wasn't a valid request. Otherwise this is a hexadecimal string that's a copy of the `Salt` from the request
- - `UnixTime` - the server's Unix time (seconds since [epoch](https://en.wikipedia.org/wiki/Unix_time))
+ - `contents` - the response payload. The contents of this field vary with the context of the response
+ - `hmac` - `null` if there wasn't a valid signed request. Otherwise this is the same idea as the [request's](#requests) `HMAC`, and also uses the secret part of the client's credentials (the server is able to derive the client's secret based on the client's ID)
+ - `id` - `null` if there wasn't a valid signed request. Otherwise this is a hexadecimal string that's a copy of the `ID` from the request
+ - `salt` - `null` if there wasn't a valid signed request. Otherwise this is a hexadecimal string that's a copy of the `Salt` from the request
+ - `unixTime` - the server's Unix time (seconds since [epoch](https://en.wikipedia.org/wiki/Unix_time))
 
 ## Initialization
 
 It is highly recommended that you perform the below steps over an SSL connection to your server.
 
-Alternatively, you can publish a file called `hmac key` containing at least 16 bytes into the `App_Data` folder of your build. The contents of that file will be used as the server's HMAC key, and you can then skip this section.
+Alternatively, you can publish a file called `hmac key` containing at least 16 random bytes as well as a file called `sql.json` into the `App_Data` folder of your build. The contents of `hmac key` will be used as the server's HMAC key, and `sql.json` configures the connection to the SQL Server that persists locations. You can then skip the rest of this section.
 
 ### Determine if HMAC key has already been initialized
 
@@ -88,9 +101,44 @@ Alternatively, you can publish a file called `hmac key` containing at least 16 b
 `POST /api/hmackey`
 
 **Parameters**:
- - `NewKey` = at least 16 bytes in hexadecimal string format. If you have trouble generating hexadecimal strings, you can just use the `ID` that comes from `GET /api/credential`
+ - `newKey` = at least 16 random bytes in hexadecimal string format. There are many online random generators if you have difficulty generating random bytes.
 
 **Returns**: nothing
+
+### Configure SQL Server connection
+
+SQL Server is used to persist posted locations, so you'll need to tell this application how to connect. Alternatively, you could alter this code to persist locations somewhere else.
+
+There are three ways to configure for SQL Server.
+
+#### sql.json
+The first option is to put a file called `sql.json` into the `App_Data` folder. Is should be a JSON file like this:
+```json
+{
+  "server": "your.database.server",
+  "database": "your.database",
+  "user": "user.id",
+  "password": "password.for.user.id"
+}
+```
+
+#### Command line arguments
+The second option is to specify these four command line arguments as you start this web application:
+```
+--server "your.database.server"
+--database "your.database"
+--user "user.id"
+--password "password.for.user.id"
+```
+
+#### Environment variables
+The third option is to set these four environment variables on your web server:
+```
+SQL_server=your.database.server
+SQL_database=your.database
+SQL_user=user.id
+SQL_password=password.for.user.id
+```
 
 ## Generate new client credentials
 
@@ -98,20 +146,17 @@ Make sure you have [initialized the server](#initialization) first.
 
 `GET /api/credential`
 
-Generates some new credentials. The server will be able to verify things you send if you include your `id` and HMAC your message with the `secret`.
+Generates some new credentials for use in [signed requests](#signed-requests).
 
-Note that eavesdroppers will be able to plainly read the response, so if you want to keep new credentials a secret then make sure you generate new credentials over SSL.
+Note that eavesdroppers will be able to plainly read the response, so if you want to keep new credentials a secret then make sure you access this endpoint over SSL.
 
-**Parameters**: none. Note that a valid request is not required. Also note that if you do provide a valid request then the response will be HMAC'd with the secret from your credentials, even though this does nothing to hide the returned value from eavesdroppers
+**Parameters**: none. Note that a valid signed request is not required. Also note that if you do provide a valid signed request then the response will be HMAC'd with the secret from your credentials, even though this does nothing to hide the returned value from eavesdroppers
 
 **Returns**:
- - `ID` = a random hexadecimal string
- - `Secret` = the result of the server HMAC'ing the `id` with its own HMAC key (that was set during [initialization](#initialization)). Keep this a secret
+ - `id` = a random hexadecimal string
+ - `secret` = the result of the server HMAC'ing the `id` with its own HMAC key (that was set during [initialization](#initialization)). Keep this a secret
 
-## Begin logging location
-
-**Incomplete:**
- - Persists only into server's memory, instead of into an object store
+## Begin logging locations
 
 `POST /api/location`
 
