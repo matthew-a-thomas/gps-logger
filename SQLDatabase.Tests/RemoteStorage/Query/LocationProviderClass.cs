@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
@@ -60,13 +59,13 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
                                 {
                                     { "latitude", -9 },
                                     { "longitude", 10 },
-                                    { "timestamp", new DateTime(1000) }
+                                    { "unixTime", 1000 }
                                 },
                                 new Dictionary<string, object>
                                 {
                                     { "latitude", -8 },
                                     { "longitude", 11 },
-                                    { "timestamp", new DateTime(2000) }
+                                    { "unixTime", 2000 }
                                 }
                             }
                         )
@@ -78,11 +77,11 @@ namespace SQLDatabase.Tests.RemoteStorage.Query
 
                 Assert.AreEqual(-9, list[0].Latitude);
                 Assert.AreEqual(10, list[0].Longitude);
-                Assert.AreEqual(1000, list[0].Timestamp.Ticks);
+                Assert.AreEqual(1000, list[0].UnixTime);
 
                 Assert.AreEqual(-8, list[1].Latitude);
                 Assert.AreEqual(11, list[1].Longitude);
-                Assert.AreEqual(2000, list[1].Timestamp.Ticks);
+                Assert.AreEqual(2000, list[1].UnixTime);
             }
         }
     }

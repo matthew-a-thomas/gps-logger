@@ -31,7 +31,7 @@ namespace GPSLogger.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public delegate Task<IEnumerable<Location>> LocationProviderAsync(byte[] id);
+        public delegate Task<IEnumerable<Common.RemoteStorage.Models.Location>> LocationProviderAsync(byte[] id);
         
         public LocationController(
             LocationProviderAsync locationProviderAsync,
@@ -49,7 +49,7 @@ namespace GPSLogger.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IEnumerable<Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Location>() : await _locationProviderAsync(await ByteArrayExtensions.FromHexStringAsync(id));
+        public async Task<IEnumerable<Common.RemoteStorage.Models.Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Common.RemoteStorage.Models.Location>() : await _locationProviderAsync(await ByteArrayExtensions.FromHexStringAsync(id));
 
         /// <summary>
         /// Posts a new location

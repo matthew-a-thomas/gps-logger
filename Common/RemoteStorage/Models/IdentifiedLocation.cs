@@ -1,15 +1,7 @@
-﻿using System;
-
-namespace Common.RemoteStorage.Models
+﻿namespace Common.RemoteStorage.Models
 {
-    public class IdentifiedLocation
+    public class IdentifiedLocation : Location
     {
         public byte[] Identifier { get; set; }
-
-        public DateTime Timestamp { get; set; }
-
-        public double Latitude { get; set; }
-
-        public double Longitude { get; set; }
     }
 }

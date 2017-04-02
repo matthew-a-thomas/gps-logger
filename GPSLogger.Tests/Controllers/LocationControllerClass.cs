@@ -19,8 +19,8 @@ namespace GPSLogger.Tests.Controllers
             public async Task ReturnsLocations()
             {
                 var controller = new LocationController(
-                    id => Task.FromResult<IEnumerable<Location>>(new[]
-                        {new Location {Latitude = 0, Longitude = 1}}),
+                    id => Task.FromResult<IEnumerable<Common.RemoteStorage.Models.Location>>(new[]
+                        {new Common.RemoteStorage.Models.Location {Latitude = 0, Longitude = 1, UnixTime = 99}}),
                     (id, location) => Task.CompletedTask,
                     new Mock<IMessageHandler<Location, bool>>().Object
                 );
