@@ -15,11 +15,11 @@ namespace GPSLogger.Controllers
         [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
         public class GetParameters
         {
+            public bool Contents { get; set; }
             public string HMAC { get; set; }
             public string ID { get; set; }
             public string Salt { get; set; }
             public long UnixTime { get; set; }
-            public bool Contents { get; set; }
         }
 
         private readonly IMessageHandler<bool, long> _messageHandler;
