@@ -326,7 +326,7 @@ namespace GPSLogger.Integration
                     BitConverter.GetBytes(signedRequest.Message.UnixTime)
                 }.SelectMany(_ => _)
                 .ToArray();
-            using (var hmac = new HMACMD5(credential.Secret))
+            using (var hmac = new HMACSHA256(credential.Secret))
             {
                 var hash = hmac.ComputeHash(serialized);
                 signedRequest.HMAC = hash.ToHexString();

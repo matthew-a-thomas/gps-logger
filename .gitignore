@@ -4,3 +4,6 @@
 *.user
 *.secret
 GPSLogger/Properties/launchSettings.json
+/Microsoft.Extensions.Configuration.CommandLine.pdb/
+/Microsoft.Extensions.Configuration.pdb/
+/pingme.txt
