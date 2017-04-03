@@ -12,6 +12,13 @@ create table dbo.locations (
 	longitude float not null
 )
 
+create table dbo.exceptions (
+	[timestamp] datetime not null default GETUTCDATE(),
+	id varchar(max) not null,
+	[message] varchar(max) not null,
+	[hash] varchar(max) not null
+)
+
 CREATE LOGIN test
 	WITH PASSWORD = <Password here>
 
