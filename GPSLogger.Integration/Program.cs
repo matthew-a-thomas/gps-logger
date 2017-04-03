@@ -327,6 +327,20 @@ namespace GPSLogger.Integration
                     if (contents.Contains(message))
                         throw new Exception("The exception controller isn't hiding internal exceptions");
                 });
+
+                // See if we can get an "Access-Control-Allow-Origin" header back
+                await DoWithClientAsync(server, async client =>
+                {
+                    client.DefaultRequestHeaders.Add("Origin", $"https://{Guid.NewGuid().ToString()}.com");
+                    var response = await client.GetAsync("/api/time");
+                    response.EnsureSuccessStatusCode();
+                    var gotHeader = response.Headers.TryGetValues("Access-Control-Allow-Origin", out var values);
+                    var first = values.FirstOrDefault();
+                    if (!gotHeader || string.IsNullOrWhiteSpace(first))
+                        throw new Exception("The server didn't respons with a Access-Control-Allow-Origin header");
+                    if (first != "*")
+                        throw new Exception("The server responded with a Access-Control-Allow-Origin header, but didn't set it to * as expected");
+                });
             }
         }
 
