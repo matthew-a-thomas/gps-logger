@@ -313,6 +313,20 @@ namespace GPSLogger.Integration
                     if (difference > 1)
                         throw new Exception("The time reported by the time controller in response to a signed request was more than one second off");
                 });
+
+                // Now make sure an exception comes back from the exception controller
+                await DoWithClientAsync(server, async client =>
+                {
+                    var message = Guid.NewGuid().ToString();
+                    var response = await client.GetAsync($"/api/exception?message={message}");
+                    if (response.IsSuccessStatusCode)
+                        throw new Exception("The exception controller returned a success status code");
+                    var contents = await response.Content.ReadAsStringAsync();
+                    if (string.IsNullOrWhiteSpace(contents))
+                        throw new Exception("The exception controller returned an empty response");
+                    if (contents.Contains(message))
+                        throw new Exception("The exception controller isn't hiding internal exceptions");
+                });
             }
         }
 
