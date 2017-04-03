@@ -89,24 +89,19 @@ namespace GPSLogger
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseMvc();
+            app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
-            // Enable CORS
-            app.UseCors(builder => builder
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowAnyOrigin()
-            );
+            app.UseMvc();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc();
-
             // Enable CORS
             services.AddCors();
+
+            // Add framework services.
+            services.AddMvc();
 
             // Autofac dependency injection
             var builder = new ContainerBuilder();
