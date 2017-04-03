@@ -36,7 +36,7 @@ namespace SQLDatabase.Errors
             }
         }
 
-        private async Task<string> HandleInternal(Exception e)
+        private async Task<string> HandleInternalAsync(Exception e)
         {
             (var eHashCode, var eMessage) = ComputeHashCodeFor(e);
             try
@@ -73,6 +73,6 @@ values (
             }
         }
 
-        public object Handle(Exception e) => HandleInternal(e);
+        public object Handle(Exception e) => HandleInternalAsync(e).WaitAndGet();
     }
 }
