@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common.Extensions;
-using Common.Messages;
+﻿using System.Threading.Tasks;
 using Common.Security.Signing;
+using GPSLogger.Interfaces;
 using GPSLogger.Models;
+using GPSLogger.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GPSLogger.Controllers
@@ -15,41 +13,24 @@ namespace GPSLogger.Controllers
     [Route("api/[controller]")]
     public class LocationController : ControllerBase
     {
-        private readonly LocationProviderAsync _locationProviderAsync;
-        private readonly HandleLocationPostAsync _handleLocationPostAsync;
-        private readonly IMessageHandler<Location, bool> _messageHandler;
+        private readonly ILocation _location;
+        private readonly IActionResultProducer _resultProducer;
 
-        /// <summary>
-        /// Delegate for storing a new location. The ID has already been validated
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="location"></param>
-        public delegate Task HandleLocationPostAsync(byte[] id, Location location);
-
-        /// <summary>
-        /// Delegate for reading locations for the given ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public delegate Task<IEnumerable<Common.RemoteStorage.Models.Location>> LocationProviderAsync(byte[] id);
-        
         public LocationController(
-            LocationProviderAsync locationProviderAsync,
-            HandleLocationPostAsync handleLocationPostAsync,
-            IMessageHandler<Location, bool> messageHandler)
+            ILocation location,
+            IActionResultProducer resultProducer)
         {
-            _locationProviderAsync = locationProviderAsync;
-            _handleLocationPostAsync = handleLocationPostAsync;
-            _messageHandler = messageHandler;
+            _location = location;
+            _resultProducer = resultProducer;
         }
-        
+
         /// <summary>
         /// Gets all the locations for the given ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IEnumerable<Common.RemoteStorage.Models.Location>> GetAsync(string id = "") => string.IsNullOrWhiteSpace(id) ? Enumerable.Empty<Common.RemoteStorage.Models.Location>() : await _locationProviderAsync(await ByteArrayExtensions.FromHexStringAsync(id));
+        public async Task<IActionResult> GetAsync(string id = "") => await _resultProducer.ProduceAsync(async () => await _location.GetLocationsForAsync(id));
 
         /// <summary>
         /// Posts a new location
@@ -57,14 +38,6 @@ namespace GPSLogger.Controllers
         /// <param name="posted"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<SignedMessage<bool>> PostAsync([FromBody] SignedMessage<Location> posted) => await _messageHandler.CreateResponseAsync(
-            posted,
-            async valid =>
-            {
-                if (valid)
-                    await _handleLocationPostAsync(await ByteArrayExtensions.FromHexStringAsync(posted.Message.ID), posted.Message.Contents);
-
-                return valid;
-            });
+        public async Task<IActionResult> PostAsync([FromBody] SignedMessage<Location> posted) => await _resultProducer.ProduceAsync(async () => await _location.AddLocationAsync(posted));
     }
 }

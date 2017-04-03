@@ -3,14 +3,15 @@ using System.Threading.Tasks;
 using Common.Extensions;
 using Common.Messages;
 using Common.Security.Signing;
-using GPSLogger.Controllers;
+using GPSLogger.Implementations;
+using GPSLogger.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace GPSLogger.Tests.Controllers
+namespace GPSLogger.Tests.Implementations
 {
     [TestClass]
-    public class TimeControllerClass
+    public class TimeClass
     {
         [TestClass]
         public class GetAsyncMethod
@@ -18,15 +19,15 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task HandlesNopConstructorParameters()
             {
-                await new TimeController(new Mock<IMessageHandler<bool, long>>().Object)
-                    .GetAsync(new TimeController.GetParameters());
+                await new Time(new Mock<IMessageHandler<bool, long>>().Object)
+                    .GetCurrentTimeAsync(new TimeGetParameters());
             }
 
             [TestMethod]
             public async Task HandlesNullParameter()
             {
-                await new TimeController(new Mock<IMessageHandler<bool, long>>().Object)
-                    .GetAsync(null);
+                await new Time(new Mock<IMessageHandler<bool, long>>().Object)
+                    .GetCurrentTimeAsync(null);
             }
 
             [TestMethod]
@@ -47,8 +48,8 @@ namespace GPSLogger.Tests.Controllers
                             }
                         });
                     });
-                var controller = new TimeController(mockedHandler.Object);
-                var result = await controller.GetAsync(null);
+                var controller = new Time(mockedHandler.Object);
+                var result = await controller.GetCurrentTimeAsync(null);
                 Assert.IsNotNull(result);
                 Assert.IsNotNull(result.Message);
                 var difference = Math.Abs(DateTimeOffset.Now.ToUnixTimeSeconds() - result.Message.Contents);

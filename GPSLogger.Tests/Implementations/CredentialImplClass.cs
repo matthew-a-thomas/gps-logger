@@ -3,46 +3,46 @@ using System.Threading.Tasks;
 using Common.Messages;
 using Common.Security;
 using Common.Security.Signing;
-using GPSLogger.Controllers;
+using GPSLogger.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace GPSLogger.Tests.Controllers
+namespace GPSLogger.Tests.Implementations
 {
     [TestClass]
-    public class CredentialControllerClass
+    public class CredentialImplClass
     {
-        private static void TestWithNullAndNopConstructorParameters(Action<CredentialController> test)
+        private static void TestWithNullAndNopConstructorParameters(Action<CredentialImpl> test)
         {
-            test(new CredentialController(
+            test(new CredentialImpl(
                 null,
                 null,
                 null));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 null,
                 null,
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 null,
                 id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 null));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 null,
                 id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 () => Task.FromResult(new byte[0]),
                 null,
                 null));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 () => Task.FromResult(new byte[0]),
                 null,
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 () => Task.FromResult(new byte[0]),
                 id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 null));
-            test(new CredentialController(
+            test(new CredentialImpl(
                 () => Task.FromResult(new byte[0]),
                 id => Task.FromResult(new Credential<byte[]> { ID = new byte[0], Secret = new byte[0] }),
                 new Mock<IMessageHandler<bool, Credential<string>>>().Object));
@@ -59,7 +59,7 @@ namespace GPSLogger.Tests.Controllers
         }
 
         [TestClass]
-        public class GetAsyncMethod
+        public class ProduceFromRequestAsyncMethod
         {
             [TestMethod]
             public async Task ReturnsEvenFromInvalidRequest()
@@ -82,7 +82,7 @@ namespace GPSLogger.Tests.Controllers
                             }
                         });
                     });
-                var controller = new CredentialController(
+                var controller = new CredentialImpl(
                     () => Task.FromResult(new byte[0]),
                     id => Task.FromResult(new Credential<byte[]>
                     {
@@ -91,7 +91,7 @@ namespace GPSLogger.Tests.Controllers
                     }),
                     mockMessageHandler.Object
                 );
-                var response = await controller.GetAsync(null);
+                var response = await controller.ProduceFromRequestAsync(null);
                 Assert.IsNotNull(response);
                 Assert.IsNotNull(response.Message.Contents);
             }
@@ -117,7 +117,7 @@ namespace GPSLogger.Tests.Controllers
                             }
                         });
                     });
-                var controller = new CredentialController(
+                var controller = new CredentialImpl(
                     () => Task.FromResult(new byte[0]),
                     id => Task.FromResult(new Credential<byte[]>
                     {
@@ -126,7 +126,7 @@ namespace GPSLogger.Tests.Controllers
                     }),
                     mockMessageHandler.Object
                 );
-                var response = await controller.GetAsync(null);
+                var response = await controller.ProduceFromRequestAsync(null);
                 Assert.IsNotNull(response);
                 Assert.IsNotNull(response.Message.Contents);
             }
@@ -134,7 +134,7 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public void WorksWithNullAndNopParameters()
             {
-                TestWithNullAndNopConstructorParameters(controller => controller.GetAsync(null).Wait());
+                TestWithNullAndNopConstructorParameters(controller => controller.ProduceFromRequestAsync(null).Wait());
             }
         }
     }

@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using Autofac.Core;
+using Common.Errors;
 using Common.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.CommandLine;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.FileProviders;
 using Common.Extensions;
+using SQLDatabase.Errors;
 
 namespace SQLDatabase
 {
@@ -100,6 +102,7 @@ namespace SQLDatabase
             builder.RegisterType<IdentifierPoster>().As<IIdentifierPoster>();
             builder.RegisterType<LocationProvider>().As<ILocationProvider>();
             builder.RegisterType<LocationPoster>().As<ILocationPoster>();
+            builder.RegisterType<ErrorHandler>().As<IErrorHandler>();
         }
     }
 }

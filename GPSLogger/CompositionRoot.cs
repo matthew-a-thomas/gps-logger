@@ -1,24 +1,26 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using Autofac;
+﻿using Autofac;
 using Common.Extensions;
 using Common.LocalStorage;
 using Common.Messages;
+using Common.RemoteStorage.Command;
+using Common.RemoteStorage.Query;
 using Common.Security;
 using Common.Security.Signing;
 using Common.Serialization;
-using GPSLogger.Controllers;
+using Common.Utilities;
+using GPSLogger.Implementations;
+using GPSLogger.Interfaces;
 using GPSLogger.Models;
 using Microsoft.AspNetCore.Hosting;
-using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Common.Utilities;
-using Common.RemoteStorage.Command;
-using Common.RemoteStorage.Query;
 using Microsoft.Extensions.FileProviders;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+using GPSLogger.Utilities;
 
 namespace GPSLogger
 {
@@ -35,7 +37,7 @@ namespace GPSLogger
                     {
                         using (var rng = await rngFactoryAsync())
                         {
-                            return await rng.GetBytesAsync(CredentialController.IDSize);
+                            return await rng.GetBytesAsync(CredentialImpl.IDSize);
                         }
                     });
                 });
@@ -58,7 +60,7 @@ namespace GPSLogger
                 // HMACKeyProvider
                 builder.Register(c =>
                 {
-                    var controller = c.Resolve<HMACKeyController>();
+                    var controller = c.Resolve<IHMACKey>();
                     return new Delegates.HMACKeyProviderAsync(controller.GetCurrentAsync);
                 });
 
@@ -95,12 +97,15 @@ namespace GPSLogger
             }).SingleInstance();
             
             { // Controllers
+                // IActionResultProducer
+                builder.RegisterType<ActionResultProducer>().As<IActionResultProducer>();
+
                 // Location storage and retrieval
                 builder.Register(c =>
                 {
                     var locationPoster = c.Resolve<ILocationPoster>();
 
-                    return new LocationController.HandleLocationPostAsync(async (id, location) =>
+                    return new LocationImpl.HandleLocationPostAsync(async (id, location) =>
                     {
                         await locationPoster.PostLocationAsync(id, new Common.RemoteStorage.Models.Location
                         {
@@ -113,7 +118,7 @@ namespace GPSLogger
                 {
                     var locationProvider = c.Resolve<ILocationProvider>();
 
-                    return new LocationController.LocationProviderAsync(async id =>
+                    return new LocationImpl.LocationProviderAsync(async id =>
                     {
                         var identifiedLocations = await locationProvider.GetAllLocationsAsync(id);
                         var locations = identifiedLocations.Select(x => new Common.RemoteStorage.Models.Location { Latitude = x.Latitude, Longitude = x.Longitude, UnixTime = x.UnixTime });
@@ -147,7 +152,19 @@ namespace GPSLogger
                     serializer.EnqueueStepAsync(x => Task.FromResult(x.ID));
                     serializer.EnqueueStepAsync(x => Task.FromResult(x.Secret));
                     return (ISerializer<Credential<byte[]>>)serializer;
-                });
+                }).SingleInstance();
+
+                // Credential implementation
+                builder.RegisterType<CredentialImpl>().As<ICredential>().SingleInstance();
+
+                // HMAC key implementation
+                builder.RegisterType<HMACKey>().As<IHMACKey>().SingleInstance();
+
+                // Location implementation
+                builder.RegisterType<LocationImpl>().As<ILocation>().SingleInstance();
+
+                // Time implementation
+                builder.RegisterType<Time>().As<ITime>().SingleInstance();
 
                 // Message handlers, validators, and signers
                 {
