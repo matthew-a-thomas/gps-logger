@@ -105,11 +105,29 @@ Alternatively, you can publish a file called `hmac key` containing at least 16 r
 
 **Returns**: nothing
 
+### Configure SQL Server
+
+SQL Server is used to persist posted locations, so you'll need to set up a database for this application, and also tell this application how to connect. Alternatively, you could alter this code to persist locations somewhere else.
+
+To set up a database on SQL Server, execute the initialization script at [`SQLDatabase/Initialization script.sql`](https://github.com/matthew-a-thomas/gps-logger/blob/master/SQLDatabase/Initialization%20script.sql). In order for this script to work, you'll need to change a couple of things:
+ - Give the user account a name other than `test`
+ - Give the user account a long random password
+ - Change the last line to `commit` instead of `rollback`
+
+ This script does a few things:
+  - Creates `identifiers`, `locations`, and `exceptions` tables
+    - `identifiers` maps the relationship between an internal `id` and the client's public ID (called `hex` in the table)
+    - `locations` records timestamped locations for particular `id`s
+    - `exceptions` stores runtime exceptions. When one occurs, users are instructed to open an issue, and are given an ID that corresponds with the `id` column of this table. If there's a problem with the exception handling, then they are instead given two hash codes: one for the exception in the exception-handling code, and one for the exception that was being handled. You might try looking those hash codes up in the `hash` column
+  - Creates a login for this application
+    - Make sure to change the user name to something besides `test`, and give it a long random password
+  - Puts the login into a group that can read/write (but not delete) all tables under the `dbo` schema (this includes the above tables)
+
 ### Configure SQL Server connection
 
-SQL Server is used to persist posted locations, so you'll need to tell this application how to connect. Alternatively, you could alter this code to persist locations somewhere else.
+Once you have [configured the SQL server](#configure-sql-server), there are three ways to tell this application how to connect to it.
 
-There are three ways to configure for SQL Server.
+Note that `user.id` is the login name you used when setting up the database, and `password.for.user.id` is the corresponding password. If your password has a double-quote `"` in it, then you'll need to escape that double-quote character.
 
 #### sql.json
 The first option is to put a file called `sql.json` into the `App_Data` folder. It should be a JSON file like this:
