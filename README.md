@@ -101,7 +101,7 @@ Alternatively, you can publish a file called `hmac key` containing at least 16 r
 `POST /api/hmackey`
 
 **Parameters**:
- - `newKey` = at least 16 random bytes in hexadecimal string format. There are many online random generators if you have difficulty generating random bytes.
+ - `newKey` - at least 16 random bytes in hexadecimal string format. There are many online tools that generate random bytes.
 
 **Returns**: nothing
 
@@ -112,7 +112,7 @@ SQL Server is used to persist posted locations, so you'll need to tell this appl
 There are three ways to configure for SQL Server.
 
 #### sql.json
-The first option is to put a file called `sql.json` into the `App_Data` folder. Is should be a JSON file like this:
+The first option is to put a file called `sql.json` into the `App_Data` folder. It should be a JSON file like this:
 ```json
 {
   "server": "your.database.server",
