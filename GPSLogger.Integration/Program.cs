@@ -326,6 +326,14 @@ namespace GPSLogger.Integration
                         throw new Exception("The exception controller returned an empty response");
                     if (contents.Contains(message))
                         throw new Exception("The exception controller isn't hiding internal exceptions");
+                    try
+                    {
+                        JsonConvert.DeserializeObject<string>(contents);
+                    }
+                    catch
+                    {
+                        throw new Exception("The exception handler isn't returning a plain string");
+                    }
                 });
 
                 // See if we can get an "Access-Control-Allow-Origin" header back
