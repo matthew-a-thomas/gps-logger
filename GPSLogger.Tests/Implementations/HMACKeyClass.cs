@@ -1,35 +1,36 @@
 ﻿using System.Threading.Tasks;
 using Common.Extensions;
 using Common.LocalStorage;
-using GPSLogger.Controllers;
+using GPSLogger.Implementations;
+using GPSLogger.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace GPSLogger.Tests.Controllers
+namespace GPSLogger.Tests.Implementations
 {
     [TestClass]
     // ReSharper disable once InconsistentNaming
-    public class HMACKeyControllerClass
+    public class HMACKeyClass
     {
         private static IStorage<byte[]> CreateStore() => new MemoryStorage<byte[]>();
 
         [TestClass]
-        public class GetAsyncMethod
+        public class IsSetAsyncMethod
         {
             [TestMethod]
             public async Task HandlesNopConstructorParameter()
             {
                 var mockedStore = new Mock<IStorage<byte[]>>();
-                var controller = new HMACKeyController(mockedStore.Object);
-                await controller.GetAsync();
+                var controller = new HMACKey(mockedStore.Object);
+                await controller.IsSetAsync();
             }
 
             [TestMethod]
             public async Task ReturnsFalseAtFirst()
             {
                 var store = CreateStore();
-                var controller = new HMACKeyController(store);
-                var get = await controller.GetAsync();
+                var controller = new HMACKey(store);
+                var get = await controller.IsSetAsync();
                 Assert.IsFalse(get);
             }
 
@@ -37,35 +38,35 @@ namespace GPSLogger.Tests.Controllers
             public async Task ReturnsTrueWhenSet()
             {
                 var store = CreateStore();
-                var controller = new HMACKeyController(store);
-                await controller.PostAsync(new HMACKeyController.PostParameters
+                var controller = new HMACKey(store);
+                await controller.SetAsync(new HMACPostParameters
                 {
                     NewKey = new byte[100].ToHexString()
                 });
-                var get = await controller.GetAsync();
+                var get = await controller.IsSetAsync();
                 Assert.IsTrue(get);
             }
         }
 
         [TestClass]
-        public class PostAsyncClass
+        public class SetAsyncMethod
         {
             [TestMethod]
             public async Task HandlesNopConstructorParameter()
             {
                 var mockedStore = new Mock<IStorage<byte[]>>();
-                var controller = new HMACKeyController(mockedStore.Object);
-                await controller.PostAsync(new HMACKeyController.PostParameters { NewKey = new byte[100].ToHexString() });
+                var controller = new HMACKey(mockedStore.Object);
+                await controller.SetAsync(new HMACPostParameters { NewKey = new byte[100].ToHexString() });
             }
 
             [TestMethod]
             public async Task CannotPostEmptyKey()
             {
-                var controller = new HMACKeyController(CreateStore());
+                var controller = new HMACKey(CreateStore());
                 bool failed;
                 try
                 {
-                    await controller.PostAsync(new HMACKeyController.PostParameters());
+                    await controller.SetAsync(new HMACPostParameters());
                     failed = false;
                 }
                 catch
@@ -78,11 +79,11 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task CannotPostNull()
             {
-                var controller = new HMACKeyController(CreateStore());
+                var controller = new HMACKey(CreateStore());
                 bool failed;
                 try
                 {
-                    await controller.PostAsync(null);
+                    await controller.SetAsync(null);
                     failed = false;
                 }
                 catch
@@ -95,13 +96,13 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task CannotPostTwice()
             {
-                var controller = new HMACKeyController(CreateStore());
-                await controller.PostAsync(new HMACKeyController.PostParameters { NewKey = new byte[100].ToHexString() });
+                var controller = new HMACKey(CreateStore());
+                await controller.SetAsync(new HMACPostParameters { NewKey = new byte[100].ToHexString() });
                 bool failed;
                 try
                 {
-                    await controller.PostAsync(
-                        new HMACKeyController.PostParameters {NewKey = new byte[100].ToHexString()});
+                    await controller.SetAsync(
+                        new HMACPostParameters {NewKey = new byte[100].ToHexString()});
                     failed = false;
                 }
                 catch
@@ -114,12 +115,12 @@ namespace GPSLogger.Tests.Controllers
             [TestMethod]
             public async Task CannotPostSmallKey()
             {
-                var controller = new HMACKeyController(CreateStore());
+                var controller = new HMACKey(CreateStore());
                 bool failed;
                 try
                 {
-                    await controller.PostAsync(
-                        new HMACKeyController.PostParameters { NewKey = new byte[1].ToHexString() });
+                    await controller.SetAsync(
+                        new HMACPostParameters { NewKey = new byte[1].ToHexString() });
                     failed = false;
                 }
                 catch
