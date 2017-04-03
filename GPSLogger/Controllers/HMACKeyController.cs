@@ -1,8 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Common.Extensions;
-using Common.LocalStorage;
+﻿using System.Threading.Tasks;
+using GPSLogger.Interfaces;
+using GPSLogger.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GPSLogger.Controllers
@@ -14,28 +12,16 @@ namespace GPSLogger.Controllers
     // ReSharper disable once InconsistentNaming
     public class HMACKeyController : ControllerBase
     {
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class PostParameters
+        private readonly IHMACKey _hmacKey;
+        private readonly IActionResultProducer _resultProducer;
+
+        public HMACKeyController(
+            IHMACKey hmacKey,
+            IActionResultProducer resultProducer)
         {
-            // ReSharper disable once UnusedAutoPropertyAccessor.Global
-            public string NewKey { get; set; }
+            _hmacKey = hmacKey;
+            _resultProducer = resultProducer;
         }
-
-        // ReSharper disable once InconsistentNaming
-        private const string HMACKeyName = "hmac key";
-        private const int MinKeySize = 16;
-
-        private readonly IStorage<byte[]> _storage;
-
-        public HMACKeyController(IStorage<byte[]> storage)
-        {
-            _storage = storage;
-        }
-
-        /// <summary>
-        /// Generates a new default key
-        /// </summary>
-        private static byte[] DefaultKeyGenerator() => Enumerable.Repeat((byte)0, MinKeySize).ToArray();
 
         /// <summary>
         /// Returns a boolean indicating whether the HMAC key has been set
@@ -43,32 +29,13 @@ namespace GPSLogger.Controllers
         /// <returns></returns>
         [HttpGet]
         // ReSharper disable once MemberCanBePrivate.Global
-        public async Task<bool> GetAsync() => await _storage.ExistsAsync(HMACKeyName);
-        
-        /// <summary>
-        /// Returns the current HMAC key.
-        /// Do not expose this to clients
-        /// </summary>
-        /// <returns></returns>
-        internal async Task<byte[]> GetCurrentAsync() => await _storage.GetAsync(HMACKeyName) ?? DefaultKeyGenerator();
+        public async Task<IActionResult> GetAsync() => await _resultProducer.ProduceAsync(_hmacKey.IsSetAsync);
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
         [HttpPost]
         // ReSharper disable once UnusedMember.Global
-        public async Task PostAsync([FromBody] PostParameters parameters)
-        {
-            if (ReferenceEquals(parameters, null) || string.IsNullOrWhiteSpace(parameters.NewKey))
-                throw new Exception("Please provide a new key");
-            if (await GetAsync())
-                throw new Exception("The HMAC key has already been set");
-            
-            var hmacKeyBytes = await ByteArrayExtensions.FromHexStringAsync(parameters.NewKey);
-            if (hmacKeyBytes.Length < MinKeySize)
-                throw new Exception("Please provide at least " + MinKeySize + " bytes");
-
-            await _storage.SetAsync(HMACKeyName, hmacKeyBytes);
-        }
+        public async Task<IActionResult> PostAsync([FromBody] HMACPostParameters parameters) => await _resultProducer.ProduceAsync(async () => await _hmacKey.SetAsync(parameters));
     }
 }
