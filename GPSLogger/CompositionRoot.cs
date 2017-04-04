@@ -33,11 +33,12 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var rngFactoryAsync = c.Resolve<Delegates.RNGFactoryAsync>();
+                    var keySizeProvider = c.Resolve<KeySizeProvider>();
                     return new Delegates.GenerateSaltDelegateAsync(async () =>
                     {
                         using (var rng = await rngFactoryAsync())
                         {
-                            return await rng.GetBytesAsync(CredentialImpl.IDSize);
+                            return await rng.GetBytesAsync(keySizeProvider.KeySize);
                         }
                     });
                 });
@@ -66,6 +67,18 @@ namespace GPSLogger
 
                 // IHMACProvider
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
+
+                // IKeySizeProvider
+                builder.Register(c =>
+                    {
+                        var hmacProvider = c.Resolve<IHMACProvider>();
+                        using (var hmac = hmacProvider.GetAsync().WaitAndGet())
+                        {
+                            var keySize = hmac.HashSize;
+                            return (IKeySizeProvider) new KeySizeProvider(keySize);
+                        }
+                    })
+                .SingleInstance();
 
                 // RNG factory
                 builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => Task.FromResult(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
