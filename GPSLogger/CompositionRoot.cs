@@ -46,7 +46,7 @@ namespace GPSLogger
                 // GenerateCredentialDelegate
                 builder.Register(c =>
                 {
-                    var hmacProvider = c.Resolve<IHMACProvider>();
+                    var hmacProvider = c.Resolve<IKeyedHMACProvider>();
                     return new Delegates.GenerateCredentialDelegateAsync(async id =>
                     {
                         id = id ?? new byte[0];
@@ -59,14 +59,14 @@ namespace GPSLogger
                 });
                 
                 // IHMACProvider
-                builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
+                builder.RegisterType<KeyedHMACProvider>().As<IHMACProvider>().SingleInstance();
                 builder.RegisterType<HMACKey>().WithParameter(new NamedParameter("keyName", "hmac key")).As<IHMACKey>().SingleInstance();
                 
                 // IKeySizeProvider
                 builder.Register(c =>
                     {
                         var hmacProvider = c.Resolve<IHMACProvider>();
-                        using (var hmac = hmacProvider.GetAsync().WaitAndGet())
+                        using (var hmac = hmacProvider.GetAsync(new byte[0]).WaitAndGet())
                         {
                             var keySize = hmac.HashSize;
                             return (IKeySizeProvider) new KeySizeProvider(keySize);
