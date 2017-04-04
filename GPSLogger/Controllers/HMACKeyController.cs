@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Common.Extensions;
+using Common.Security;
 using GPSLogger.Interfaces;
 using GPSLogger.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +14,14 @@ namespace GPSLogger.Controllers
     // ReSharper disable once InconsistentNaming
     public class HMACKeyController : ControllerBase
     {
-        private readonly IHMACKey _hmacKey;
+        private readonly IHMACKey _key;
         private readonly IActionResultProducer _resultProducer;
 
         public HMACKeyController(
-            IHMACKey hmacKey,
+            IHMACKey key,
             IActionResultProducer resultProducer)
         {
-            _hmacKey = hmacKey;
+            _key = key;
             _resultProducer = resultProducer;
         }
 
@@ -29,13 +31,17 @@ namespace GPSLogger.Controllers
         /// <returns></returns>
         [HttpGet]
         // ReSharper disable once MemberCanBePrivate.Global
-        public async Task<IActionResult> GetAsync() => await _resultProducer.ProduceAsync(_hmacKey.IsSetAsync);
+        public async Task<IActionResult> GetAsync() => await _resultProducer.ProduceAsync(_key.IsSetAsync);
 
         /// <summary>
         /// Sets the HMAC key if it hasn't already been set
         /// </summary>
         [HttpPost]
         // ReSharper disable once UnusedMember.Global
-        public async Task<IActionResult> PostAsync([FromBody] HMACPostParameters parameters) => await _resultProducer.ProduceAsync(async () => await _hmacKey.SetAsync(parameters));
+        public async Task<IActionResult> PostAsync([FromBody] HMACPostParameters parameters) => await _resultProducer.ProduceAsync(async () =>
+        {
+            var hmacKeyBytes = await ByteArrayExtensions.FromHexStringAsync(parameters?.NewKey);
+            await _key.SetAsync(hmacKeyBytes);
+        });
     }
 }

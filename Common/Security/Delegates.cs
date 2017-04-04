@@ -19,13 +19,6 @@ namespace Common.Security
         public delegate Task<byte[]> GenerateSaltDelegateAsync();
         
         /// <summary>
-        /// Returns a copy of this server's HMAC key
-        /// </summary>
-        /// <returns></returns>
-        // ReSharper disable once InconsistentNaming
-        public delegate Task<byte[]> HMACKeyProviderAsync();
-        
-        /// <summary>
         /// Delegate that generates a new RandomNumberGenerator.
         /// The returned object is disposed after use
         /// </summary>

@@ -57,17 +57,11 @@ namespace GPSLogger
                         }
                     });
                 });
-
-                // HMACKeyProvider
-                builder.Register(c =>
-                {
-                    var controller = c.Resolve<IHMACKey>();
-                    return new Delegates.HMACKeyProviderAsync(controller.GetCurrentAsync);
-                });
-
+                
                 // IHMACProvider
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
-
+                builder.RegisterType<HMACKey>().As<IHMACKey>().SingleInstance();
+                
                 // IKeySizeProvider
                 builder.Register(c =>
                     {
@@ -169,10 +163,7 @@ namespace GPSLogger
 
                 // Credential implementation
                 builder.RegisterType<CredentialImpl>().As<ICredential>().SingleInstance();
-
-                // HMAC key implementation
-                builder.RegisterType<HMACKey>().As<IHMACKey>().SingleInstance();
-
+                
                 // Location implementation
                 builder.RegisterType<LocationImpl>().As<ILocation>().SingleInstance();
 
