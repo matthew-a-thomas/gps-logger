@@ -62,14 +62,12 @@ namespace GPSLogger
                 builder.RegisterType<KeyedHMACProvider>().As<IKeyedHMACProvider>().SingleInstance();
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
                 builder.RegisterType<HMACKey>().WithParameter(new NamedParameter("keyName", "hmac key")).As<IHMACKey>().SingleInstance();
-                
-                // IKeySizeProvider
                 builder.Register(c =>
                     {
                         var hmacProvider = c.Resolve<IHMACProvider>();
                         using (var hmac = hmacProvider.GetAsync(new byte[0]).WaitAndGet())
                         {
-                            var keySize = hmac.HashSize;
+                            var keySize = hmac.HashSize / 8;
                             return (IKeySizeProvider) new KeySizeProvider(keySize);
                         }
                     })
