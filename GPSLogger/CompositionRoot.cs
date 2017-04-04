@@ -58,8 +58,9 @@ namespace GPSLogger
                     });
                 });
                 
-                // IHMACProvider
-                builder.RegisterType<KeyedHMACProvider>().As<IHMACProvider>().SingleInstance();
+                // HMAC stuff
+                builder.RegisterType<KeyedHMACProvider>().As<IKeyedHMACProvider>().SingleInstance();
+                builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
                 builder.RegisterType<HMACKey>().WithParameter(new NamedParameter("keyName", "hmac key")).As<IHMACKey>().SingleInstance();
                 
                 // IKeySizeProvider
