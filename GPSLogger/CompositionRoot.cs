@@ -33,11 +33,12 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var rngFactoryAsync = c.Resolve<Delegates.RNGFactoryAsync>();
+                    var keySizeProvider = c.Resolve<IKeySizeProvider>();
                     return new Delegates.GenerateSaltDelegateAsync(async () =>
                     {
                         using (var rng = await rngFactoryAsync())
                         {
-                            return await rng.GetBytesAsync(CredentialImpl.IDSize);
+                            return await rng.GetBytesAsync(keySizeProvider.KeySize);
                         }
                     });
                 });
@@ -45,7 +46,7 @@ namespace GPSLogger
                 // GenerateCredentialDelegate
                 builder.Register(c =>
                 {
-                    var hmacProvider = c.Resolve<IHMACProvider>();
+                    var hmacProvider = c.Resolve<IKeyedHMACProvider>();
                     return new Delegates.GenerateCredentialDelegateAsync(async id =>
                     {
                         id = id ?? new byte[0];
@@ -56,16 +57,21 @@ namespace GPSLogger
                         }
                     });
                 });
-
-                // HMACKeyProvider
-                builder.Register(c =>
-                {
-                    var controller = c.Resolve<IHMACKey>();
-                    return new Delegates.HMACKeyProviderAsync(controller.GetCurrentAsync);
-                });
-
-                // IHMACProvider
+                
+                // HMAC stuff
+                builder.RegisterType<KeyedHMACProvider>().As<IKeyedHMACProvider>().SingleInstance();
                 builder.RegisterType<HMACProvider>().As<IHMACProvider>().SingleInstance();
+                builder.RegisterType<HMACKey>().WithParameter(new NamedParameter("keyName", "hmac key")).As<IHMACKey>().SingleInstance();
+                builder.Register(c =>
+                    {
+                        var hmacProvider = c.Resolve<IHMACProvider>();
+                        using (var hmac = hmacProvider.GetAsync(new byte[0]).WaitAndGet())
+                        {
+                            var keySize = hmac.HashSize / 8;
+                            return (IKeySizeProvider) new KeySizeProvider(keySize);
+                        }
+                    })
+                .SingleInstance();
 
                 // RNG factory
                 builder.RegisterInstance(new Delegates.RNGFactoryAsync(() => Task.FromResult(RandomNumberGenerator.Create()))); // Not single instance, since we need a new RNG each time
@@ -156,10 +162,7 @@ namespace GPSLogger
 
                 // Credential implementation
                 builder.RegisterType<CredentialImpl>().As<ICredential>().SingleInstance();
-
-                // HMAC key implementation
-                builder.RegisterType<HMACKey>().As<IHMACKey>().SingleInstance();
-
+                
                 // Location implementation
                 builder.RegisterType<LocationImpl>().As<ILocation>().SingleInstance();
 

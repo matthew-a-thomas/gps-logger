@@ -10,12 +10,6 @@ namespace GPSLogger.Implementations
 {
     public class CredentialImpl : ICredential
     {
-        /// <summary>
-        /// The number of bytes in a Credential's ID
-        /// </summary>
-        // ReSharper disable once InconsistentNaming
-        public const int IDSize = 16;
-
         private readonly Delegates.GenerateSaltDelegateAsync _generateSaltAsync;
         private readonly Delegates.GenerateCredentialDelegateAsync _generateCredentialAsync;
         private readonly IMessageHandler<bool, Credential<string>> _messageHandler;

@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
 
-namespace GPSLogger.Interfaces
+namespace Common.Security
 {
     // ReSharper disable once InconsistentNaming
     public interface IHMACKey
     {
         Task<byte[]> GetCurrentAsync();
         Task<bool> IsSetAsync();
-        Task SetAsync(HMACPostParameters parameters);
+        Task SetAsync(byte[] newKey);
     }
 }
