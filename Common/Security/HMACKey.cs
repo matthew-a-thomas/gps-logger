@@ -5,33 +5,36 @@ using Common.LocalStorage;
 namespace Common.Security
 {
     // ReSharper disable once InconsistentNaming
-    public class HMACKeySetter : IHMACKeySetter
+    public class HMACKey : IHMACKey
     {
-        private readonly string _keyName;
-        private readonly IHMACKeyProvider _keyProvider;
-        private readonly IKeySizeProvider _keySizeProvider;
-        private readonly IStorage<byte[]> _storage;
+        private static readonly byte[] DefaultKey = new byte[0];
 
-        public HMACKeySetter(
+        private readonly string _keyName;
+        private readonly IStorage<byte[]> _storage;
+        private readonly IKeySizeProvider _keySizeProvider;
+
+        public HMACKey(
             string keyName,
-            IHMACKeyProvider keyProvider,
-            IKeySizeProvider keySizeProvider,
-            IStorage<byte[]> storage
+            IStorage<byte[]> storage,
+            IKeySizeProvider keySizeProvider
             )
         {
             _keyName = keyName;
-            _keyProvider = keyProvider;
-            _keySizeProvider = keySizeProvider;
             _storage = storage;
+            _keySizeProvider = keySizeProvider;
         }
+
+        public async Task<byte[]> GetCurrentAsync() => await _storage.GetAsync(_keyName) ?? DefaultKey;
+
+        public async Task<bool> IsSetAsync() => await _storage.ExistsAsync(_keyName);
 
         public async Task SetAsync(byte[] newKey)
         {
-            if(ReferenceEquals(newKey, null))
-            throw new Exception("Please provide a new key");
-            if (await _keyProvider.IsSetAsync())
+            if (ReferenceEquals(newKey, null))
+                throw new Exception("Please provide a new key");
+            if (await IsSetAsync())
                 throw new Exception("The HMAC key has already been set");
-            
+
             if (newKey.Length < _keySizeProvider.KeySize)
                 throw new Exception($"Please provide at least {_keySizeProvider.KeySize} bytes");
 
