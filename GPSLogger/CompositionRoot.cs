@@ -33,7 +33,7 @@ namespace GPSLogger
                 builder.Register(c =>
                 {
                     var rngFactoryAsync = c.Resolve<Delegates.RNGFactoryAsync>();
-                    var keySizeProvider = c.Resolve<KeySizeProvider>();
+                    var keySizeProvider = c.Resolve<IKeySizeProvider>();
                     return new Delegates.GenerateSaltDelegateAsync(async () =>
                     {
                         using (var rng = await rngFactoryAsync())
