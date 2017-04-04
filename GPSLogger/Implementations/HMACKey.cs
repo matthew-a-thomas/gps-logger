@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common.Extensions;
 using Common.LocalStorage;
+using Common.Security;
 using GPSLogger.Interfaces;
 
 namespace GPSLogger.Implementations
@@ -10,21 +11,25 @@ namespace GPSLogger.Implementations
     // ReSharper disable once InconsistentNaming
     public class HMACKey : IHMACKey
     {
+        private readonly IKeySizeProvider _keySizeProvider;
         private readonly IStorage<byte[]> _storage;
 
         // ReSharper disable once InconsistentNaming
         private const string HMACKeyName = "hmac key";
-        private const int MinKeySize = 16;
 
-        public HMACKey(IStorage<byte[]> storage)
+        public HMACKey(
+            IKeySizeProvider keySizeProvider,
+            IStorage<byte[]> storage
+            )
         {
+            _keySizeProvider = keySizeProvider;
             _storage = storage;
         }
 
         /// <summary>
         /// Generates a new default key
         /// </summary>
-        private static byte[] DefaultKeyGenerator() => Enumerable.Repeat((byte)0, MinKeySize).ToArray();
+        private byte[] DefaultKeyGenerator() => Enumerable.Repeat((byte)0, _keySizeProvider.KeySize).ToArray();
 
         /// <summary>
         /// Returns the current HMAC key.
@@ -43,8 +48,8 @@ namespace GPSLogger.Implementations
                 throw new Exception("The HMAC key has already been set");
 
             var hmacKeyBytes = await ByteArrayExtensions.FromHexStringAsync(parameters.NewKey);
-            if (hmacKeyBytes.Length < MinKeySize)
-                throw new Exception("Please provide at least " + MinKeySize + " bytes");
+            if (hmacKeyBytes.Length < _keySizeProvider.KeySize)
+                throw new Exception($"Please provide at least {_keySizeProvider.KeySize} bytes");
 
             await _storage.SetAsync(HMACKeyName, hmacKeyBytes);
         }
