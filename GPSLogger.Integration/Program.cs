@@ -176,7 +176,8 @@ namespace GPSLogger.Integration
                 // See if we can access the home page
                 await DoWithClientAsync(server, async client =>
                 {
-                    await client.GetAsync<string>("");
+                    var response = await client.GetAsync("");
+                    response.EnsureSuccessStatusCode();
                 });
 
                 // Assert that the time returned from the time controller is within a second of now
