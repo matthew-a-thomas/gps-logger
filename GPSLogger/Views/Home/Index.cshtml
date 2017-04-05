@@ -1,4 +1,4 @@
-﻿@using GPSLogger.Models
+﻿@using GPSLogger.Models.Home
 @model DefaultModel
 
 @{
@@ -6,15 +6,48 @@
 }
 
 <!DOCTYPE html>
-
 <html>
 <head>
     <title>Hello world</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="~/js/js.js"></script>
+    <script>
+        var logger = new Logger({ server: "https://switchigan.azurewebsites.net" });
+        logger.getCredential(function () {
+            $("#id").val(logger.credential.id);
+            $("#secret").val(logger.credential.secret);
+        });
+
+        navigator.geolocation.watchPosition(function(position){
+            console.log(position);
+        });
+    </script>
+    <style>
+        .hashField {
+            width: 64ch;
+        }
+    </style>
 </head>
 <body>
-<div>
-      
-</div>
+<table>
+    <tbody>
+    <tr>
+        <td>
+            <label for="id">ID</label>
+        </td>
+        <td>
+            <input type="text" id="id" class="hashField" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label for="secret">Secret</label>
+        </td>
+        <td>
+            <input type="password" id="secret" class="hashField" />
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>
