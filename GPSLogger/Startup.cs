@@ -91,6 +91,8 @@ namespace GPSLogger
 
             app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
+            app.UseStaticFiles();
+
             app.UseMvc();
         }
 
