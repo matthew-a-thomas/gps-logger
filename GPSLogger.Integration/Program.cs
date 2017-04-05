@@ -173,6 +173,12 @@ namespace GPSLogger.Integration
         {
             using (var server = await CreateServerAsync())
             {
+                // See if we can access the home page
+                await DoWithClientAsync(server, async client =>
+                {
+                    await client.GetAsync<string>("");
+                });
+
                 // Assert that the time returned from the time controller is within a second of now
                 await DoWithClientAsync(server, async client =>
                 {
@@ -408,12 +414,6 @@ namespace GPSLogger.Integration
                         throw new Exception("The server didn't respons with a Access-Control-Allow-Origin header");
                     if (first != "*")
                         throw new Exception("The server responded with a Access-Control-Allow-Origin header, but didn't set it to * as expected");
-                });
-
-                // See if we can access the home page
-                await DoWithClientAsync(server, async client =>
-                {
-                    await client.GetAsync<string>("");
                 });
             }
         }
