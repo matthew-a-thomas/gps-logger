@@ -35,6 +35,53 @@ namespace GPSLogger.Integration
         }
 
         /// <summary>
+        /// Copies everything in a directory
+        /// </summary>
+        /// <param name="sourceDirName"></param>
+        /// <param name="destDirName"></param>
+        /// <param name="copySubDirs"></param>
+        /// <remarks>
+        /// Copied from https://msdn.microsoft.com/en-us/library/bb762914(v=vs.110).aspx, and tweaked to remove R# warnings
+        /// </remarks>
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            // Get the subdirectories for the specified directory.
+            var dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            var dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            var files = dir.GetFiles();
+            foreach (var file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            if (!copySubDirs) return;
+            {
+                foreach (var subdir in dirs)
+                {
+                    string temppath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, temppath, true);
+                }
+            }
+        }
+
+        /// <summary>
         /// Asynchronously spins up a test server.
         /// </summary>
         /// <returns></returns>
@@ -60,23 +107,22 @@ namespace GPSLogger.Integration
             return await Task.Run(() =>
             {
                 // Copy over needed files
-                foreach (var file in new[]
+                foreach (var name in new[]
                 {
                     "appsettings.json",
                     "Views",
                     "wwwroot"
                 })
                 {
-                    var source = Path.Combine(baseDirectory, file);
-                    var destination
+                    var source = Path.Combine(baseDirectory, name);
+                    var destination = Path.Combine(contentRoot, name);
                     if (Directory.Exists(source))
                     {
-                        Directory.CreateDirectory();
-                        foreach (var directory in Directory.GetDirectories())
+                        DirectoryCopy(source, destination, true);
                     }
                     else if (File.Exists(source))
                     {
-                        File.Copy(source, Path.Combine(contentRoot, file));
+                        File.Copy(source, destination);
                     }
                 }
 
@@ -367,7 +413,7 @@ namespace GPSLogger.Integration
                 // See if we can access the home page
                 await DoWithClientAsync(server, async client =>
                 {
-                    var homePage = await client.GetAsync<string>("");
+                    await client.GetAsync<string>("");
                 });
             }
         }
