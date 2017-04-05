@@ -62,9 +62,23 @@ namespace GPSLogger.Integration
                 // Copy over needed files
                 foreach (var file in new[]
                 {
-                    "appsettings.json"
+                    "appsettings.json",
+                    "Views",
+                    "wwwroot"
                 })
-                    File.Copy(Path.Combine(baseDirectory, file), Path.Combine(contentRoot, file));
+                {
+                    var source = Path.Combine(baseDirectory, file);
+                    var destination
+                    if (Directory.Exists(source))
+                    {
+                        Directory.CreateDirectory();
+                        foreach (var directory in Directory.GetDirectories())
+                    }
+                    else if (File.Exists(source))
+                    {
+                        File.Copy(source, Path.Combine(contentRoot, file));
+                    }
+                }
 
                 // Spin up the server
                 Debug.WriteLine($"Starting test server under {contentRoot}");
@@ -348,6 +362,12 @@ namespace GPSLogger.Integration
                         throw new Exception("The server didn't respons with a Access-Control-Allow-Origin header");
                     if (first != "*")
                         throw new Exception("The server responded with a Access-Control-Allow-Origin header, but didn't set it to * as expected");
+                });
+
+                // See if we can access the home page
+                await DoWithClientAsync(server, async client =>
+                {
+                    var homePage = await client.GetAsync<string>("");
                 });
             }
         }
