@@ -2,11 +2,15 @@
 (function () {
     if (!jQuery)
         throw "Need jQuery";
+
+    
+
     Logger = function (options) {
+        var _this = this;
+
         this.server = options.server;
         this.credential = { id: null, secret: null };
 
-        var _this = this;
         var ajax = function (url, callback, data, type) {
             var options = {
                 url: _this.server + url,
@@ -16,11 +20,11 @@
             };
             jQuery.ajax(options);
         };
-        var post = function (url, callback, data) {
-            ajax(url, callback, data, "POST");
-        };
         var get = function (url, callback, data) {
             ajax(url, callback, data, "GET");
+        };
+        var post = function (url, callback, data) {
+            ajax(url, callback, data, "POST");
         };
 
         this.getCredential = function (callback) {
@@ -29,5 +33,9 @@
                 callback(_this.credential);
             });
         }
+
+        this.postLocation = function (location, callback) {
+
+        };
     };
 })();
