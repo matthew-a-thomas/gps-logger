@@ -1,30 +1,23 @@
 ﻿@using GPSLogger.Models.Home
 @model DefaultModel
 
-@{
-    Layout = null;
-}
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Hello world</title>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="~/js/js.js"></script>
-    <script>
-        var logger = new Logger({ server: "https://switchigan.azurewebsites.net" });
-        logger.getCredential(function () {
-            $("#id").val(logger.credential.id);
-            $("#secret").val(logger.credential.secret);
-        });
-
-        navigator.geolocation.watchPosition(function(position){
-            console.log(position);
-        });
-    </script>
+    <link rel="icon" href="https://github.com/favicon.ico" />
     <style>
         .hashField {
             width: 64ch;
+        }
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
         }
     </style>
 </head>
@@ -36,7 +29,7 @@
             <label for="id">ID</label>
         </td>
         <td>
-            <input type="text" id="id" class="hashField" />
+            <input type="text" id="id" class="hashField" value="Loading..." spellcheck="false" />
         </td>
     </tr>
     <tr>
@@ -45,9 +38,18 @@
         </td>
         <td>
             <input type="password" id="secret" class="hashField" />
+            <input type="checkbox" id="eye" value="#" />
+            <label for="eye" class="noselect">Show secret</label>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <button id="generateNew" disabled>Generate new credentials</button>
         </td>
     </tr>
     </tbody>
 </table>
+
+<script data-main="app" src="lib/require.js"></script>
 </body>
 </html>
