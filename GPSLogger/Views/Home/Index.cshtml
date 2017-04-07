@@ -22,29 +22,54 @@
     </style>
 </head>
 <body>
+
 <table>
     <tbody>
+    <!-- ID -->
     <tr>
         <td>
             <label for="id">ID</label>
         </td>
         <td>
-            <input type="text" id="id" class="hashField" value="Loading..." spellcheck="false" />
+            <input type="text" id="id" class="hashField" value="Loading..." spellcheck="false"/>
         </td>
     </tr>
+    <!-- Secret -->
     <tr>
         <td>
             <label for="secret">Secret</label>
         </td>
         <td>
-            <input type="password" id="secret" class="hashField" />
-            <input type="checkbox" id="eye" value="#" />
+            <input type="password" id="secret" class="hashField"/>
+            <input type="checkbox" id="eye" value="#"/>
             <label for="eye" class="noselect">Show secret</label>
         </td>
     </tr>
+    <!-- Generate button -->
     <tr>
         <td colspan="2">
             <button id="generateNew" disabled>Generate new credentials</button>
+        </td>
+    </tr>
+    <!-- Location query ID -->
+    <tr>
+        <td>
+            <label for="locationID">ID</label>
+        </td>
+        <td>
+            <input type="text" id="locationID" spellcheck="false" class="hashField"/>
+        </td>
+    </tr>
+    <!-- Location query button -->
+    <tr>
+        <td colspan="2">
+            <button id="queryLocation">Query location</button>
+        </td>
+    </tr>
+    <!-- Location history output -->
+    <tr>
+        <td colspan="2">
+            <div id="locationOutput"></div>
         </td>
     </tr>
     </tbody>

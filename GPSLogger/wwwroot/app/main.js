@@ -16,7 +16,18 @@
             generateNew.attr("disabled", null);
         });
     };
+    generateNew.click(generateCredentials);
     generateCredentials();
+
+    var queryLocationButton = jquery("#queryLocation");
+    var queryLocationID = jquery("#locationID");
+    var locationOutput = jquery("#locationOutput");
+    queryLocationButton.click(function () {
+        var locationID = queryLocationID.val();
+        logger.getLocations(locationID, function (response) {
+            console.log(response);
+        });
+    });
 
     navigator.geolocation.watchPosition(function (position) {
         console.log(position);
@@ -30,5 +41,4 @@
         secretInput.attr("type", this.checked ? null : "password");
     });
 
-    generateNew.click(generateCredentials);
 });

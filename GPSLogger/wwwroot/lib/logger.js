@@ -4,7 +4,38 @@
 
     var forge = require("forge");
     var jquery = require("jquery");
-    
+
+    var util = {
+        /**
+         * Converts the given byte array to a hex string
+         * @param {array} x 
+         * @returns {string} 
+         */
+        byteArrayToHex: function (x) {
+            return x
+                .map(function (y) {
+                    return (`0${y.toString(16)}`).slice(-2);
+                })
+                .join("");
+        },
+        /**
+         * Returns the byte array equivalent of the given double-precision floating point number, in Little-Endian format
+         * @param {} x 
+         * @returns {} 
+         */
+        serializeFloat64: function (x) {
+            const buffer = new ArrayBuffer(8);
+            const doubles = new Float64Array(buffer);
+            doubles[0] = x;
+            const bytes = new Uint8Array(buffer);
+            const result = [];
+            for (let byte of bytes) {
+                result.push(byte);
+            }
+            return result;
+        }
+    };
+
     // ReSharper disable once InconsistentNaming
     /**
      * Creates a new HMAC using Forge
@@ -12,8 +43,8 @@
      * @returns {hmac}
      */
     var createHMAC = function (secretHex) {
-        var key = forge.util.hexToBytes(secretHex || "");
-        var hmac = forge.hmac.create();
+        const key = forge.util.hexToBytes(secretHex || "");
+        const hmac = forge.hmac.create();
         hmac.start(algo, key);
         return hmac;
     };
@@ -23,7 +54,7 @@
      * @returns {string}
      */
     var createSalt = function () {
-        var bytes = forge.random.getBytesSync(blockSize);
+        const bytes = forge.random.getBytesSync(blockSize);
         return forge.util.bytesToHex(bytes);
     };
 
@@ -50,7 +81,7 @@
      * @returns {string} A raw representation of the serialized bytes
      */
     var serialize = function (message) {
-        var buffer = forge.util.createBuffer();
+        const buffer = forge.util.createBuffer();
         // .contents must already be serialized into hex
         buffer.putBytes(forge.util.hexToBytes(message.contents));
         buffer.putBytes(forge.util.hexToBytes(message.id || ""));
@@ -61,7 +92,7 @@
         return buffer.getBytes();
     };
     
-    var falseByte = "00";
+    const falseByte = "00";
     var trueByte = "01";
 
     return function (options) {
@@ -73,9 +104,13 @@
 
         var ajax = function (url, callback, data, type) {
             // ReSharper disable once DeclarationHides
-            var options = {
+            const options = {
+                contentType: "application/json",
                 url: _this.server + url,
-                data: data,
+                data: JSON.stringify(data),
+                error: function (xhr, status, error) {
+                    console.error(`${status} - ${error}`);
+                },
                 success: callback,
                 type: type
             };
@@ -92,13 +127,13 @@
          * Signs the given message by serializing it, then populating an "hmac" field with a signature derived from this Logger's credentials
          * @param {any} message
          */
-        var sign = function (message) {
-            var serialized = serialize(message);
-            var secret = (_this.credential || {}).secret;
-            var hmac = createHMAC(secret);
+        const getSignature = function (message) {
+            const serialized = serialize(message);
+            const secret = (_this.credential || {}).secret;
+            const hmac = createHMAC(secret);
             hmac.update(serialized);
-            var hashed = hmac.digest().toHex();
-            message.hmac = hashed;
+            const hashed = hmac.digest().toHex();
+            return hashed;
         };
 
         /**
@@ -112,14 +147,15 @@
                 // We have credentials already, so let's create a signed request
 
                 // Start with a basic request object
-                var request = {
+                const request = {
                     contents: trueByte, // Note the contents have to be in hex for signing to work
                     id: this.credential.id
                 };
                 // Decorate it with a salt and the current time
                 saltAndTimestamp(request);
                 // Sign it using our credentials
-                sign(request);
+                const signature = getSignature(request);
+                request.hmac = signature;
                 request.contents = "true"; // We needed the contents to be in hex for signing to work, but the server is expecting a string that can be parsed into a boolean
 
                 // Turn the request object into query parameters (thanks, jQuery!)
@@ -127,10 +163,7 @@
             }
 
             // Fire off the request
-            get("/api/credential?" + parameters, function (json) {
-                // Handle the server's response
-                console.log(json);
-
+            get(`/api/credential?${parameters}`, function (json) {
                 // Pull out the new credential and store it
                 _this.credential = (json.message || {}).contents || { id: null, secret: null };
 
@@ -139,8 +172,48 @@
             });
         }
 
-        this.postLocation = function (location, callback) {
-
+        /**
+         * Retrieves all posted locations for the given ID
+         * @param {hex} forID 
+         * @param {function} callback 
+         * @returns {array} 
+         */
+        this.getLocations = function (forID, callback) {
+            get(`/api/location?id=${forID}`, callback);
         };
+
+        this.postLocation = function (location, callback) {
+            if (!(this.credential && this.credential.secret && this.credential.id))
+                throw "Cannot post locations until this Logger's credentials are set";
+            
+            const contents = [location.latitude, location.longitude]
+                .map(function (x) { return util.serializeFloat64(x); })
+                .map(function (x) { return util.byteArrayToHex(x); })
+                .join("");
+            const message = {
+                contents: contents,
+                id: this.credential.id
+            };
+            saltAndTimestamp(message);
+            const signature = getSignature(message);
+            message.contents = location;
+            const request = {
+                hmac: signature,
+                message: message
+            };
+            
+            post(
+                "/api/location",
+                function (result) {
+                    // "{"hmac":null,"message":{"contents":false,"id":null,"salt":null,"unixTime":1491595739}}"
+                    if (!(result && result.message && result.message.contents))
+                        throw `Failed to post location. Here's the server's response: ${JSON.stringify(result)}`;
+                    callback(result);
+                },
+                request
+            );
+        };
+
+        this.util = util;
     };
 });
