@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Linq;
 using Common.Security.Signing;
 using GPSLogger.Interfaces;
 using GPSLogger.Models;
@@ -30,7 +31,7 @@ namespace GPSLogger.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAsync(string id = "") => await _resultProducer.ProduceAsync(async () => await _location.GetLocationsForAsync(id));
+        public async Task<IActionResult> GetAsync(string id = "") => await _resultProducer.ProduceAsync(async () => (await _location.GetLocationsForAsync(id)).OrderByDescending(x => x.UnixTime));
 
         /// <summary>
         /// Posts a new location
