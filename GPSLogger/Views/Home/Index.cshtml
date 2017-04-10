@@ -1,0 +1,81 @@
+﻿@using GPSLogger.Models.Home
+@model DefaultModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello world</title>
+    <link rel="icon" href="https://github.com/favicon.ico" />
+    <!-- ReSharper disable All -->
+    <style>
+        .hashField {
+            width: 64ch;
+        }
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+        }
+    </style>
+    <!-- ReSharper enable All -->
+</head>
+<body>
+
+<table>
+    <tbody>
+    <!-- ID -->
+    <tr>
+        <td>
+            <label for="id">ID</label>
+        </td>
+        <td>
+            <input type="text" id="id" class="hashField" value="Loading..." spellcheck="false"/>
+        </td>
+    </tr>
+    <!-- Secret -->
+    <tr>
+        <td>
+            <label for="secret">Secret</label>
+        </td>
+        <td>
+            <input type="password" id="secret" class="hashField"/>
+            <input type="checkbox" id="eye" value="#"/>
+            <label for="eye" class="noselect">Show secret</label>
+        </td>
+    </tr>
+    <!-- Generate button -->
+    <tr>
+        <td colspan="2">
+            <button id="generateNew" disabled>Generate new credentials</button>
+        </td>
+    </tr>
+    <!-- Location query ID -->
+    <tr>
+        <td>
+            <label for="locationID">ID</label>
+        </td>
+        <td>
+            <input type="text" id="locationID" spellcheck="false" class="hashField"/>
+        </td>
+    </tr>
+    <!-- Location query button -->
+    <tr>
+        <td colspan="2">
+            <button id="queryLocation">Query location</button>
+        </td>
+    </tr>
+    <!-- Location history output -->
+    <tr>
+        <td colspan="2">
+            <div id="locationOutput"></div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<script data-main="app" src="~/lib/require.js"></script>
+</body>
+</html>
