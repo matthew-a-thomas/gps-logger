@@ -8,21 +8,22 @@
     var secretInput = jquery("#secret");
 
     var logger = new Logger({ server: "" });
-    const generateCredentials = function () {
+    const generateCredentials = function (callback) {
         generateNew.attr("disabled", "");
         logger.getCredential(function () {
             idInput.val(logger.credential.id);
             secretInput.val(logger.credential.secret);
             generateNew.attr("disabled", null);
+            if (callback)
+                callback();
         });
     };
-    generateNew.click(generateCredentials);
-    generateCredentials();
+    generateNew.click(function() { generateCredentials(); });
 
     const queryLocationButton = jquery("#queryLocation");
     // ReSharper disable once InconsistentNaming
     var queryLocationID = jquery("#locationID");
-    //const locationOutput = jquery("#locationOutput");
+    const locationOutput = jquery("#locationOutput");
     queryLocationButton.click(function () {
         // ReSharper disable once InconsistentNaming
         const locationID = queryLocationID.val();
@@ -31,8 +32,22 @@
         });
     });
 
-    navigator.geolocation.watchPosition(function (position) {
-        console.log(position);
+    generateCredentials(function() {
+        navigator.geolocation.watchPosition(function(position) {
+            const coordinates = position.coords;
+            const location = {
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude
+            };
+            logger.postLocation(
+                location,
+                function() {
+                    console.log(location);
+                    var row = jquery("<div>");
+                    row.text(`${location.latitude}, ${location.longitude}`);
+                    locationOutput.prepend(row);
+                });
+        });
     });
 
     const forge = require("forge");
