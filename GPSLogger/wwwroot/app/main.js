@@ -28,7 +28,12 @@
         // ReSharper disable once InconsistentNaming
         const locationID = queryLocationID.val();
         logger.getLocations(locationID, function (response) {
-            console.log(response);
+            locationOutput.empty();
+            for (const location of response) {
+                const row = jquery("<div>");
+                row.text(`${location.latitude}, ${location.longitude}, ${location.unixTime}`);
+                locationOutput.append(row);
+            }
         });
     });
 
@@ -42,8 +47,7 @@
             logger.postLocation(
                 location,
                 function() {
-                    console.log(location);
-                    var row = jquery("<div>");
+                    const row = jquery("<div>");
                     row.text(`${location.latitude}, ${location.longitude}`);
                     locationOutput.prepend(row);
                 });
