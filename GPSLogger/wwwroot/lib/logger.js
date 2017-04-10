@@ -92,7 +92,7 @@
         return buffer.getBytes();
     };
     
-    const falseByte = "00";
+    //const falseByte = "00";
     var trueByte = "01";
 
     return function (options) {
@@ -178,6 +178,7 @@
          * @param {function} callback 
          * @returns {array} 
          */
+        // ReSharper disable once InconsistentNaming
         this.getLocations = function (forID, callback) {
             get(`/api/location?id=${forID}`, callback);
         };

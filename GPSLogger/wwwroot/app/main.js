@@ -1,14 +1,14 @@
 ﻿define(function (require) {
-    var Logger = require("logger");
-    var jquery = require("jquery");
+    const Logger = require("logger");
+    const jquery = require("jquery");
 
-    var eye = jquery("#eye");
+    const eye = jquery("#eye");
     var generateNew = jquery("#generateNew");
     var idInput = jquery("#id");
     var secretInput = jquery("#secret");
 
     var logger = new Logger({ server: "" });
-    var generateCredentials = function () {
+    const generateCredentials = function () {
         generateNew.attr("disabled", "");
         logger.getCredential(function () {
             idInput.val(logger.credential.id);
@@ -19,11 +19,13 @@
     generateNew.click(generateCredentials);
     generateCredentials();
 
-    var queryLocationButton = jquery("#queryLocation");
+    const queryLocationButton = jquery("#queryLocation");
+    // ReSharper disable once InconsistentNaming
     var queryLocationID = jquery("#locationID");
-    var locationOutput = jquery("#locationOutput");
+    //const locationOutput = jquery("#locationOutput");
     queryLocationButton.click(function () {
-        var locationID = queryLocationID.val();
+        // ReSharper disable once InconsistentNaming
+        const locationID = queryLocationID.val();
         logger.getLocations(locationID, function (response) {
             console.log(response);
         });
@@ -33,7 +35,7 @@
         console.log(position);
     });
 
-    var forge = require("forge");
+    const forge = require("forge");
     window.forge = forge;
     window.logger = logger;
 
