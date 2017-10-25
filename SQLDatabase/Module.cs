@@ -4,10 +4,8 @@ using SQLDatabase.RemoteStorage.Query;
 using Common.RemoteStorage.Query;
 using SQLDatabase.RemoteStorage.Command;
 using Common.RemoteStorage.Command;
-using System.Composition;
 using System.Data.SqlClient;
 using System.Linq;
-using Autofac.Core;
 using Common.Errors;
 using Common.Utilities;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +18,6 @@ using SQLDatabase.Errors;
 
 namespace SQLDatabase
 {
-    [Export(typeof(IModule))]
     public class Module : Autofac.Module
     {
         protected override void Load(ContainerBuilder builder)

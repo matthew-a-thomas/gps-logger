@@ -28,6 +28,9 @@ namespace GPSLogger
     {
         protected override void Load(ContainerBuilder builder)
         {
+            // SQL database module
+            builder.RegisterModule<SQLDatabase.Module>();
+            
             { // Security delegates
               // GenerateSaltDelegate
                 builder.Register(c =>
