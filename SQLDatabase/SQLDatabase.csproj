@@ -1,28 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove=".gitignore" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="1.1.0" />
-    <PackageReference Include="System.Composition.AttributedModel" Version="1.0.31" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+    <PackageReference Include="Autofac" Version="4.6.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.0" />
+    <PackageReference Include="System.Composition.AttributedModel" Version="1.1.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Configuration">
       <HintPath>C:\Users\thoma\.nuget\packages\microsoft.extensions.configuration\1.1.1\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
@@ -31,5 +26,4 @@
       <HintPath>C:\Users\thoma\.nuget\packages\microsoft.extensions.configuration.json\1.1.1\lib\netstandard1.3\Microsoft.Extensions.Configuration.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>
