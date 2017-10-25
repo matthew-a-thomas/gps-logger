@@ -147,7 +147,18 @@ namespace GPSLogger
             var assemblies = Directory
                 .GetFiles(directoryHavingThisAssembly, "*.dll", SearchOption.TopDirectoryOnly)
                 .Select(AssemblyLoadContext.GetAssemblyName)
-                .Select(AssemblyLoadContext.Default.LoadFromAssemblyName)
+                .Select(name =>
+                {
+                    try
+                    {
+                        return AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                })
+                .Where(x => !ReferenceEquals(null, x))
                 .Distinct()
                 .ToList();
 
