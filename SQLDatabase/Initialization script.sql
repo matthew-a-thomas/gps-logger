@@ -1,3 +1,5 @@
+-- noinspection SqlNoDataSourceInspectionForFile
+
 begin transaction
 
 create table dbo.identifiers (
