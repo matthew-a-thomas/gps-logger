@@ -104,16 +104,16 @@ namespace GPSLogger
 
             // Add framework services.
             services.AddMvc();
-
+            
             // Autofac dependency injection
             var builder = new ContainerBuilder();
             builder.RegisterInstance(_hostingEnvironment).SingleInstance();
 
-            // Use MEF to search for all Autofac IModules
-            RegisterModules(builder);
-
             // Add services to Autofac
             builder.Populate(services);
+
+            // Use MEF to search for all Autofac IModules
+            RegisterModules(builder);
 
             // Build an Autofac container
             var container = builder.Build();
